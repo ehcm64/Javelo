@@ -4,6 +4,18 @@ public final class Ch1903 {
     private Ch1903(){
 
     }
+
+
+    public static double n(double lon, double lat){
+        lon = Math.toDegrees(lon);
+        lat = Math.toDegrees(lat);
+        double lon1 = 0.0001 * (3600 * lon - 26782.5);
+        double lat1 = 0.001 * (3600 * lat - 169028.66);
+        double nCoord = 1200147.07 + 308807.95 * lat1 + 3745.25 * lon1*lon1 +
+                76.63 * lat1*lat1 - 194.56 * lon1 * lon1 * lat1 + 119.79 * lat1 *lat1 *lat1;
+        return nCoord;
+    }
+
     public static double e(double lon, double lat){
         lon = Math.toDegrees(lon);
         lat = Math.toDegrees(lat);
@@ -13,16 +25,6 @@ public final class Ch1903 {
                 - 0.36 * lon1 * lat1*lat1 - 44.54 * lon1*lon1*lon1;
 
         return eCoord;
-    }
-
-    public static double n(double lon, double lat){
-        lon = Math.toDegrees(lon);
-        lat = Math.toDegrees(lat);
-        double lon1 = 0.0001 * (3600 * lon - 26782.5);
-        double lat1 = 0.001 * (3600 * lat - 169028.66);
-        double nCoord = 1200147.07 + 308807.95 * lat1 + 3745.25 * lon1*lon1 +
-                76.63 * lat*lat - 194.56 * lon * lon * lat + 119.79 * lat1 *lat1 *lat1;
-        return nCoord;
     }
     public static double lon(double e, double n) {
         double x = 1e-6 * (e - 2600000);
