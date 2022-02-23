@@ -37,7 +37,7 @@ public final class Math2 {
     }
 
     public static double dotProduct(double uX, double uY, double vX, double vY) {
-        return (uX*vX + uY*vY);
+        return Math.fma(uX, vX, uY * vY);
     }
 
     public static double squaredNorm (double uX, double uY) {
