@@ -11,7 +11,7 @@ import static ch.epfl.test.TestRandomizer.newRandom;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class PointChTest {/**
+class PointChTest {
  public static final double DELTA = 1e-7;
 
  @Test void pointChConstructorThrowsOnInvalidCoordinates() {
@@ -121,5 +121,5 @@ class PointChTest {/**
     var actual4 = new PointCh(2700000, 1100000).lat();
     var expected4 = 0.8036216134779096;
     assertEquals(expected4, actual4, DELTA);
-    } */
+    }
 }
