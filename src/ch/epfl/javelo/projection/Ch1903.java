@@ -9,9 +9,9 @@ public final class Ch1903 {
     public static double n(double lon, double lat){
         lon = Math.toDegrees(lon);
         lat = Math.toDegrees(lat);
-        double lon1 = 0.0001 * (3600 * lon - 26782.5);
-        double lat1 = 0.001 * (3600 * lat - 169028.66);
-        double nCoord = 1200147.07 + 308807.95 * lat1 + 3745.25 * lon1*lon1 +
+        double lon1 = 1e-4 * (3600 * lon - 26782.5);
+        double lat1 = 1e-4 * (3600 * lat - 169028.66);
+        double nCoord = 1_200_147.07 + 308_807.95 * lat1 + 3_745.25 * lon1*lon1 +
                 76.63 * lat1*lat1 - 194.56 * lon1 * lon1 * lat1 + 119.79 * lat1 *lat1 *lat1;
         return nCoord;
     }
