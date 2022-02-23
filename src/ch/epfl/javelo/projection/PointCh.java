@@ -20,8 +20,6 @@ public record PointCh(double e, double n) {
         return norm*norm;
     }
 
-
-
     public double lon(){
         return Ch1903.lon(e,n);
     }
