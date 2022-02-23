@@ -41,9 +41,4 @@ public final class Ch1903 {
         lat = Math.toRadians(lat);
         return lat;
     }
-
-
-
-
-
 }

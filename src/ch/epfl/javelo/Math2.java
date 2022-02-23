@@ -18,8 +18,7 @@ public final class Math2 {
         if (min > max) throw new IllegalArgumentException();
         else {
             if (v < min) return min;
-            else if (v > max) return max;
-            else return v;
+            else return Math.min(v, max);
         }
     }
 
@@ -27,8 +26,7 @@ public final class Math2 {
         if (min > max) throw new IllegalArgumentException();
         else {
             if (v < min) return min;
-            else if (v > max) return max;
-            else return v;
+            else return Math.min(v, max);
         }
     }
 

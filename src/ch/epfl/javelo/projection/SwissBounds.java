@@ -9,8 +9,6 @@ public final class SwissBounds {
     public static final double HEIGHT = MAX_N - MIN_N;
 
     public static boolean containsEN(double e, double n) {
-        if (e >= MIN_E && e <= MAX_E && n >= MIN_N && n <= MAX_N) {
-            return true;
-        } else return false;
+        return e >= MIN_E && e <= MAX_E && n >= MIN_N && n <= MAX_N;
     }
 }
