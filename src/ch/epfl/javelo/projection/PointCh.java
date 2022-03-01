@@ -1,6 +1,7 @@
 package ch.epfl.javelo.projection;
 
 import ch.epfl.javelo.Math2;
+import ch.epfl.javelo.Preconditions;
 
 /**
  * A point in the swiss coordinate system.
@@ -16,9 +17,7 @@ public record PointCh(double e, double n) {
      * @param n the north coordinate of the point
      */
     public PointCh {
-        if (e > SwissBounds.MAX_E || e < SwissBounds.MIN_E || n > SwissBounds.MAX_N || n < SwissBounds.MIN_N) {
-            throw new IllegalArgumentException();
-        }
+        Preconditions.checkArgument(!(e > SwissBounds.MAX_E || e < SwissBounds.MIN_E || n > SwissBounds.MAX_N || n < SwissBounds.MIN_N));
     }
 
     /**

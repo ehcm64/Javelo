@@ -11,6 +11,6 @@ public final class Bits {
     }
 
     public static int extractUnsigned(int value, int start, int length) {
-        Preconditions.checkArgument(start + length < 32 && start >= 0 && length != 32);
+      Preconditions.checkArgument(start + length < 32 && start >= 0 && length != 32);
     }
 }
