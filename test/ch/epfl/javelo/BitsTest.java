@@ -13,9 +13,7 @@ class BitsTest {
 
     @Test
     void extractSignedThrowsOnNullLength() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            Bits.extractSigned(8, 2, 0);
-        });
+        assertThrows(IllegalArgumentException.class, () -> Bits.extractSigned(8, 2, 0));
     }
 
     @Test
@@ -25,8 +23,6 @@ class BitsTest {
 
     @Test
     void extractUnsignedThrowsOnNullLength() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            Bits.extractUnsigned(8, 2, 0);
-        });
+        assertThrows(IllegalArgumentException.class, () -> Bits.extractUnsigned(8, 2, 0));
     }
 }
