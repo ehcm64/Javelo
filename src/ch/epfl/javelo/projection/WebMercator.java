@@ -8,11 +8,11 @@ public final class WebMercator {
     }
 
     public static double x(double lon) {
-        return (lon + Math.PI) * (1 / (2 * Math.PI));
+        return (lon + Math.PI) * (1D / (2 * Math.PI));
     }
 
     public static double y(double lat) {
-        return (1 / (2 * Math.PI)) * (Math.PI - Math2.asinh(Math.tan(lat)));
+        return (1D / (2 * Math.PI)) * (Math.PI - Math2.asinh(Math.tan(lat)));
     }
 
     public static double lon(double x) {
