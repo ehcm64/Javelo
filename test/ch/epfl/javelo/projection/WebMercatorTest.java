@@ -8,21 +8,21 @@ class WebMercatorTest {
 
     @Test
     void x() {
-        assertEquals(0.75, WebMercator.x(Math.PI / 2), 1e-6);
+        assertEquals(0.518275214444, WebMercator.x(6.5790772), 1e-6);
     }
 
     @Test
     void y() {
-        assertEquals(0.3597250369, WebMercator.y(Math.PI / 4), 1e-6);
+        assertEquals(0.353664894749, WebMercator.y(46.5218976), 1e-6);
     }
 
     @Test
     void lon() {
-        assertEquals(Math.PI / 2, WebMercator.lon(0.75), 1e-6);
+        assertEquals(6.5790772, WebMercator.lon(0.518275214444), 1e-6);
     }
 
     @Test
     void lat() {
-        assertEquals(Math.PI / 4, WebMercator.lat(0.359725037), 1e-6);
+        assertEquals(46.5218976, WebMercator.lat(0.353664894749), 1e-6);
     }
 }

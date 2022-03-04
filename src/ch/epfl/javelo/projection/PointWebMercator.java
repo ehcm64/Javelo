@@ -5,17 +5,14 @@ import ch.epfl.javelo.Preconditions;
 public record PointWebMercator(double x, double y) {
 
     public PointWebMercator {
-        Preconditions.checkArgument(!(x > 1 || x < 0 || y > 1 || y < 0));
+        Preconditions.checkArgument(x <= 1 && x >= 0 && y <= 1 && y >= 0);
     }
 
     public static PointWebMercator of(int zoomLevel, double x, double y) {
-        PointWebMercator point = new PointWebMercator(x, y);
-        double xZoomed = point.xAtZoomLevel(zoomLevel);
-        double yZoomed = point.yAtZoomLevel(zoomLevel);
-        return new PointWebMercator(xZoomed, yZoomed);
-
+        double xUnzoomed = Math.scalb(x, -8 - zoomLevel);
+        double yUnzoomed = Math.scalb(y, -8 - zoomLevel);
+        return new PointWebMercator(xUnzoomed, yUnzoomed);
     }
-
 
     public static PointWebMercator ofPointCh(PointCh pointCh) {
         double longitude = pointCh.lon();
@@ -39,14 +36,12 @@ public record PointWebMercator(double x, double y) {
     }
 
     public double yAtZoomLevel(int zoomLevel) {
-        return Math.scalb(y, 8 + zoomLevel);
+        return Math.scalb(this.y, 8 + zoomLevel);
     }
 
     public PointCh toPointCh() {
-        double longitude = lon();
-        double latitude = lat();
-        double n = Ch1903.n(longitude, latitude);
-        double e = Ch1903.e(longitude, latitude);
+        double n = Ch1903.n(lon(), lat());
+        double e = Ch1903.e(lon(), lat());
         return new PointCh(e, n);
     }
 
