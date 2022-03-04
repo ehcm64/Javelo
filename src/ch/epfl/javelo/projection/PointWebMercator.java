@@ -20,15 +20,14 @@ public record PointWebMercator(double x, double y) {
         double x = WebMercator.x(longitude);
         double y = WebMercator.y(latitude);
         return new PointWebMercator(x, y);
-
     }
 
     public double lon() {
-        return WebMercator.lon(x);
+        return WebMercator.lon(this.x);
     }
 
     public double lat() {
-        return WebMercator.lat(y);
+        return WebMercator.lat(this.y);
     }
 
     public double xAtZoomLevel(int zoomLevel) {
