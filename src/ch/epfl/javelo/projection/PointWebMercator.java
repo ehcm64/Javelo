@@ -43,5 +43,4 @@ public record PointWebMercator(double x, double y) {
         double e = Ch1903.e(lon(), lat());
         return new PointCh(e, n);
     }
-
 }
