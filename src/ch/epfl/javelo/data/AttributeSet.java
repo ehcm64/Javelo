@@ -7,7 +7,8 @@ import java.util.StringJoiner;
 public record AttributeSet(long bits) {
 
     public AttributeSet {
-        Preconditions.checkArgument(bits < (1L << (Attribute.COUNT)) && ((bits & 1L << Long.SIZE - 1) == 0));
+        boolean notNegative = (bits & (1L << Long.SIZE - 1)) == 0;
+        Preconditions.checkArgument(bits < (1L << (Attribute.COUNT)) && notNegative);
     }
 
     public static AttributeSet of(Attribute... attributes) {
