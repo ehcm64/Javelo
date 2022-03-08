@@ -5,12 +5,21 @@ import ch.epfl.javelo.Preconditions;
 
 import java.util.StringJoiner;
 
+/**
+ * Represents a set of OpenStreetMap attributes
+ * @author Edouard Mignan (345875)
+ */
 public record AttributeSet(long bits) {
 
     public AttributeSet {
         Preconditions.checkArgument(bits < Math.scalb(2, Attribute.COUNT));
     }
 
+    /**
+     *  returns a set containing only the attributes given as argument
+      * @param attributes attribute given as argument
+     * @return a set containing only the attributes given as argument
+     */
     public static AttributeSet of(Attribute... attributes) {
         long bits = 0;
         for (Attribute attribute : attributes) {
@@ -20,6 +29,11 @@ public record AttributeSet(long bits) {
         return new AttributeSet(bits);
     }
 
+    /**
+     * returns true iff the receiver set (this) contains the given attribute
+     * @param attribute the given attribute
+     * @return true iff the receiver set (this) contains the given attribute
+     */
     public boolean contains(Attribute attribute) {
         long mask = 1L << attribute.ordinal();
         if ((this.bits & mask) != 0) {
@@ -27,6 +41,11 @@ public record AttributeSet(long bits) {
         } else return false;
     }
 
+    /**
+     * returns true iff the intersection of the receiver set (this) with the one passed as argument (that) is not empty
+     * @param that argument passed as argument
+     * @return true iff the intersection of the receiver set (this) with the one passed as argument (that) is not empty
+     */
     public boolean intersects(AttributeSet that) {
         for (int i = 0; i < Attribute.COUNT; i++) {
             long thisIBit = (this.bits & (1L << i));
