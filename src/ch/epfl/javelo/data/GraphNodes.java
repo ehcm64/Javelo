@@ -23,7 +23,7 @@ public record GraphNodes(IntBuffer buffer) {
      * @return the number of nodes
      */
     public int count() {
-        return buffer.capacity() / 3;
+        return buffer.capacity() / NODE_INTS;
     }
 
     /**
@@ -54,8 +54,7 @@ public record GraphNodes(IntBuffer buffer) {
      */
     public int outDegree(int nodeId) {
         int nbOfEdgesAndFirstEdgeId = buffer.get(nodeId * 3 + OFFSET_OUT_EDGES);
-        int nbEdges = Bits.extractUnsigned(nbOfEdgesAndFirstEdgeId, 28, 4);
-        return nbEdges;
+        return Bits.extractUnsigned(nbOfEdgesAndFirstEdgeId, 28, 4);
     }
 
     /**
