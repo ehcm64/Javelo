@@ -1,7 +1,8 @@
 package ch.epfl.javelo;
 
 /**
- * Allows converting between Integer and Q28.4 coordinates
+ * Allows converting between normal integer and Q28.4 number format.
+ *
  * @author Edouard Mignan (345875)
  */
 public final class Q28_4 {
@@ -19,7 +20,7 @@ public final class Q28_4 {
     }
 
     /**
-     * Converts a Q28.4 vector in an Integer
+     * Converts a Q28.4 vector into its value as a double.
      * @param q28_4 32-bit vector
      * @return the vector as double
      */
@@ -28,7 +29,7 @@ public final class Q28_4 {
     }
 
     /**
-     * Converts a Q28.4 vector in a double
+     * Converts a Q28.4 vector into its value as a float.
      * @param q28_4 32-bit vector
      * @return the vector as float
      */
