@@ -24,7 +24,7 @@ public record GraphSectors(ByteBuffer buffer) {
 
     }
 
-    private static int xToSectorCoord(double e) {
+    private static int xToSectorCoords(double e) {
         double x = 128 / SwissBounds.WIDTH * e - 128 * SwissBounds.MIN_E / SwissBounds.WIDTH;
         return (int) x;
 
@@ -47,8 +47,8 @@ public record GraphSectors(ByteBuffer buffer) {
         List<Sector> sectors = new ArrayList<>();
         double eCoord = center.e();
         double nCoord = center.n();
-        int eMin = xToSectorCoord(eCoord - distance);
-        int eMax = xToSectorCoord(eCoord + distance);
+        int eMin = xToSectorCoords(eCoord - distance);
+        int eMax = xToSectorCoords(eCoord + distance);
         int nMin = yToSectorCoords(nCoord - distance);
         int nMax = yToSectorCoords(nCoord + distance);
 
