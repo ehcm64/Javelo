@@ -23,7 +23,8 @@ class GraphNodesTest {
     }
 
     @Test
-    void edgeId() {
+    void edgeIdSimple() {
+
     }
 
     @Test
