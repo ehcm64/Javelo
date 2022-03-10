@@ -3,11 +3,9 @@ package ch.epfl.javelo.data;
 import ch.epfl.javelo.projection.PointCh;
 import ch.epfl.javelo.projection.SwissBounds;
 
-import javax.sound.midi.Soundbank;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 /**
  * Represents the array containing the 16384 sectors of JaVelo
@@ -39,7 +37,7 @@ public record GraphSectors(ByteBuffer buffer) {
     }
 
     /**
-     * Returns the list of all sectors having an intersection with the centered square around a given point
+     * Returns the list of all sectors having an intersection with the centered square around a given point.
      *
      * @param center   the center of the square
      * @param distance half the size of one side
@@ -56,8 +54,7 @@ public record GraphSectors(ByteBuffer buffer) {
 
         for (int y = nMin; y <= nMax; y++) {
             for (int x = eMin; x <= eMax; x++) {
-                if (y < 0 || x < 0 || y > 127 || x > 127)
-                    continue;
+                if (y < 0 || x < 0 || y > 127 || x > 127) continue;
 
                 int index = 128 * y + x;
                 int firstNode = buffer.getInt(index * OFFSET_SUM);
@@ -65,13 +62,8 @@ public record GraphSectors(ByteBuffer buffer) {
                 int lastNode = firstNode + nodesNumber;
                 Sector s = new Sector(firstNode, lastNode);
                 sectors.add(s);
-
-
             }
         }
-
         return sectors;
     }
-
-
 }
