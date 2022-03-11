@@ -38,17 +38,6 @@ class GraphSectorsTest {
     }
 
     @Test
-    void GraphsSectorsWorksTrivial() {
-        byte[] tab = new byte[48];
-        for (byte i = 0; i < 48; i++) {
-            tab[i] = i;
-        }
-        ByteBuffer b = ByteBuffer.wrap(tab);
-        List<GraphSectors.Sector> output = new ArrayList<GraphSectors.Sector>();
-
-    }
-
-    @Test
     void GraphSectorsWorksWith00() {
 
         byte[] tab = new byte[98304];

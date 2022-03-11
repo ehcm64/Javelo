@@ -103,7 +103,7 @@ public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds, ShortBuff
                 profileSamples[0] = Q28_4.asFloat(elevations.get(firstProfileSampleIndex));
                 for (int i = 1; i < nbOfSamples; i++) {
                     short differences = elevations.get(firstProfileSampleIndex + ((i + 1) / 2));
-                    int sampleDiff = Bits.extractSigned(differences, 8 * (i % 4), 8);
+                    int sampleDiff = Bits.extractSigned(differences, 8 * (i % 2), 8);
                     profileSamples[i] = profileSamples[i - 1] + Q28_4.asFloat(sampleDiff);
                 }
                 return isInverted(edgeId) ? invertArray(profileSamples) : profileSamples;
