@@ -15,10 +15,10 @@ import java.util.List;
 import java.util.function.DoubleUnaryOperator;
 
 public class Graph {
-    private GraphNodes nodes;
-    private GraphSectors sectors;
-    private GraphEdges edges;
-    private List<AttributeSet> attributeSets;
+    private final GraphNodes nodes;
+    private final GraphSectors sectors;
+    private final GraphEdges edges;
+    private final List<AttributeSet> attributeSets;
 
     public Graph(GraphNodes nodes, GraphSectors sectors, GraphEdges edges, List<AttributeSet> attributeSets) {
         this.nodes = nodes;
@@ -114,6 +114,6 @@ public class Graph {
         double length = this.edges.length(edgeId);
         float[] profileSamples = this.edges.profileSamples(edgeId);
         boolean hasProfile = this.edges.hasProfile(edgeId);
-        return hasProfile ? Functions.sampled(profileSamples, length) : /*jsais pas comment faire;
+        return hasProfile ? Functions.sampled(profileSamples, length) :;
     }
 }
