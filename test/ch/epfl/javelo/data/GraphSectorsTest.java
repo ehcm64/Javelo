@@ -17,7 +17,7 @@ class GraphSectorsTest {
 
     @Test
     void checkWithValueTest() {
-        ByteBuffer buffer = ByteBuffer.wrap(new byte[]{0, 0, 0, 16, 0, 20});
+        ByteBuffer buffer = ByteBuffer.wrap(new byte[]{0, 0, 0, 16, 0, 1});
         GraphSectors ns = new GraphSectors(buffer);
         int idStartNode = buffer.getInt(0);
         int idEndNode = idStartNode + toUnsignedInt(buffer.getShort(4));
@@ -26,6 +26,8 @@ class GraphSectorsTest {
         expected0.add(sector);
         List<GraphSectors.Sector> actual0 = ns.sectorsInArea(new PointCh(2485100, 1075100), 100);
         assertEquals(expected0, actual0);
+
+
 
         ByteBuffer buffer1 = ByteBuffer.wrap(new byte[]{0, 0, 0, 16, 0, 20, 0, 0, 0, 21, 0, 12});
         GraphSectors ns1 = new GraphSectors(buffer1);
