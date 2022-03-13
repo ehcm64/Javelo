@@ -21,10 +21,13 @@ public class Graph {
     private final List<AttributeSet> attributeSets;
 
     public Graph(GraphNodes nodes, GraphSectors sectors, GraphEdges edges, List<AttributeSet> attributeSets) {
-        this.nodes = nodes;
-        this.sectors = sectors;
-        this.edges = edges;
-        this.attributeSets = attributeSets;
+        this.nodes = new GraphNodes(nodes.buffer());
+        this.sectors = new GraphSectors(sectors.buffer());
+        this.edges = new GraphEdges(edges.edgesBuffer(), edges.profileIds(), edges.elevations());
+        this.attributeSets = new ArrayList<>();
+        for (AttributeSet attributeSet : attributeSets) {
+            this.attributeSets.add(attributeSet);
+        }
     }
 
     public static Graph loadFrom(Path basePath) throws IOException {
