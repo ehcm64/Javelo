@@ -58,7 +58,7 @@ public record GraphNodes(IntBuffer buffer) {
     }
 
     /**
-     * Returns the "global" index of an edge of a given node.
+     * Returns the "global" index of an edge coming out of a given node.
      *
      * @param nodeId    the index of the node
      * @param edgeIndex the "local" index of the edge (restricted to edges coming out of the node)
