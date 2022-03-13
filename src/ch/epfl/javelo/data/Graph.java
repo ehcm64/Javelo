@@ -87,7 +87,18 @@ public class Graph {
     }
 
     public int nodeClosestTo(PointCh point, double searchDistance) {
-        return 0;
+        PointCh comparisonPoint = new PointCh(point.e() - searchDistance, point.n() - searchDistance);
+        int closestAcceptableNodeId = -1;
+        for (int nodeId : this.nodes.buffer().array()) {
+            PointCh nodePoint = new PointCh(this.nodes.nodeE(nodeId), this.nodes.nodeN(nodeId));
+            double testNodeDistanceSquared = point.squaredDistanceTo(nodePoint);
+            double comparisonDistanceSquared = point.squaredDistanceTo(comparisonPoint);
+            if (testNodeDistanceSquared <= comparisonDistanceSquared) {
+                closestAcceptableNodeId = nodeId;
+                comparisonPoint = nodePoint;
+            }
+        }
+        return closestAcceptableNodeId;
     }
 
     public int edgeTargetNodeId(int edgeId) {
@@ -114,6 +125,6 @@ public class Graph {
         double length = this.edges.length(edgeId);
         float[] profileSamples = this.edges.profileSamples(edgeId);
         boolean hasProfile = this.edges.hasProfile(edgeId);
-        return hasProfile ? Functions.sampled(profileSamples, length) :;
+        return hasProfile ? Functions.sampled(profileSamples, length) : Functions.constant(Double.NaN);
     }
 }
