@@ -40,8 +40,7 @@ public record PointCh(double e, double n) {
      * @return the squared distance
      */
     public double squaredDistanceTo(PointCh that) {
-        double norm = distanceTo(that);
-        return norm * norm;
+        return Math2.squaredNorm(this.e - that.e, this.n - that.n);
     }
 
     /**
