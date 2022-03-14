@@ -4,19 +4,64 @@ import ch.epfl.javelo.projection.PointCh;
 
 import java.util.List;
 
+/**
+ * Represents an itinerary.
+ *
+ * @author Edouard Mignan (345875)
+ */
 public interface Route {
 
-    abstract int indexOfSegmentAt(double position);
+    /**
+     * Returns the index of the segment at the given position.
+     *
+     * @param position the position
+     * @return the index of the segment
+     */
+    int indexOfSegmentAt(double position);
 
-    abstract double length();
+    /**
+     * Returns the length of the itinerary in meters.
+     *
+     * @return the length of the itinerary in meters
+     */
+    double length();
 
-    abstract List<Edge> edges();
+    /**
+     * Returns the entirety of edges in the itinerary.
+     *
+     * @return the list of edges
+     */
+    List<Edge> edges();
 
-    abstract List<PointCh> points();
+    /**
+     * Returns all the points located at the extremities of the edges
+     * of the itinerary.
+     *
+     * @return the list of points
+     */
+    List<PointCh> points();
 
-    abstract PointCh pointAt(double position);
+    /**
+     * Returns the point in swiss coordinates at the given position in the itinerary.
+     *
+     * @param position the position of the point
+     * @return the point in swiss coordinates
+     */
+    PointCh pointAt(double position);
 
-    abstract int nodeClosestTo(double position);
+    /**
+     * Returns the index of the node that belongs to the itinerary which is closest to the given position.
+     *
+     * @param position the position
+     * @return the index of the node
+     */
+    int nodeClosestTo(double position);
 
-    abstract RoutePoint pointClosestTo(PointCh point);
+    /**
+     * Returns the point in the itinerary which is closest to the given reference point.
+     *
+     * @param point the reference point
+     * @return the closest point in the itinerary
+     */
+    RoutePoint pointClosestTo(PointCh point);
 }
