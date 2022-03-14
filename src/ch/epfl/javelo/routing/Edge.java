@@ -22,8 +22,6 @@ public record Edge(int fromNodeId, int toNodeId, PointCh fromPoint, PointCh toPo
         double pY = point.n();
 
         return Math2.projectionLength(aX, aY, bX, bY, pX, pY);
-
-
     }
 
     public PointCh pointAt(double position) {
@@ -39,7 +37,6 @@ public record Edge(int fromNodeId, int toNodeId, PointCh fromPoint, PointCh toPo
         double pY = aY + Math.sin(angle) * position;
 
         return new PointCh(pX, pY);
-
     }
 
     public double elevationAt(double position) {

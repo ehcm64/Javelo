@@ -13,11 +13,9 @@ public record RoutePoint(PointCh point, double position, double distanceToRefere
         double thisDistanceToRef = this.distanceToReference;
         double thatDistanceToRef = that.distanceToReference;
 
-
         if (thisDistanceToRef <= thatDistanceToRef) {
             return this;
         }
-
         return that;
     }
 
