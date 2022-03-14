@@ -38,9 +38,7 @@ public class Graph {
         this.sectors = new GraphSectors(sectors.buffer());
         this.edges = new GraphEdges(edges.edgesBuffer(), edges.profileIds(), edges.elevations());
         this.attributeSets = new ArrayList<>();
-        for (AttributeSet attributeSet : attributeSets) {
-            this.attributeSets.add(attributeSet);
-        }
+        this.attributeSets.addAll(attributeSets);
     }
 
     /**
@@ -48,7 +46,7 @@ public class Graph {
      *
      * @param basePath the path to the files
      * @return the graph built from these files
-     * @throws IOException
+     * @throws IOException if file missing
      */
     public static Graph loadFrom(Path basePath) throws IOException {
         Path nodesPath = basePath.resolve("nodes.bin");
@@ -133,6 +131,8 @@ public class Graph {
         return this.nodes.edgeId(nodeId, edgeIndex);
     }
 
+    //TODO : Refaire la méthode en ne prenant que les noeuds de secteurs dans le searchdistance.
+
     /**
      * Returns the index of the node closest to a given point.
      *
@@ -143,13 +143,16 @@ public class Graph {
     public int nodeClosestTo(PointCh point, double searchDistance) {
         PointCh comparisonPoint = new PointCh(point.e() - searchDistance, point.n() - searchDistance);
         int closestAcceptableNodeId = -1;
-        for (int nodeId : this.nodes.buffer().array()) {
-            PointCh nodePoint = new PointCh(this.nodes.nodeE(nodeId), this.nodes.nodeN(nodeId));
-            double testNodeDistanceSquared = point.squaredDistanceTo(nodePoint);
-            double comparisonDistanceSquared = point.squaredDistanceTo(comparisonPoint);
-            if (testNodeDistanceSquared <= comparisonDistanceSquared) {
-                closestAcceptableNodeId = nodeId;
-                comparisonPoint = nodePoint;
+        List<GraphSectors.Sector> sectorsInArea = sectors.sectorsInArea(point, searchDistance);
+        for (GraphSectors.Sector sector : sectorsInArea) {
+            for (int nodeId = sector.startNodeId(); nodeId <= sector.endNodeId(); nodeId++) {
+                PointCh nodePoint = new PointCh(this.nodes.nodeE(nodeId), this.nodes.nodeN(nodeId));
+                double testNodeDistanceSquared = point.squaredDistanceTo(nodePoint);
+                double comparisonDistanceSquared = point.squaredDistanceTo(comparisonPoint);
+                if (testNodeDistanceSquared <= comparisonDistanceSquared) {
+                    closestAcceptableNodeId = nodeId;
+                    comparisonPoint = nodePoint;
+                }
             }
         }
         return closestAcceptableNodeId;
