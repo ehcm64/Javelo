@@ -1,130 +1,145 @@
 package ch.epfl.javelo.data;
 
-import ch.epfl.javelo.Bits;
 import ch.epfl.javelo.projection.PointCh;
-import ch.epfl.javelo.projection.SwissBounds;
 import org.junit.jupiter.api.Test;
 
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.Comparator;
 import java.util.List;
 
-import static java.lang.Short.toUnsignedInt;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class GraphSectorsTest {
+    private static final double SWISS_MIN_E = 2_485_000;
+    private static final double SWISS_MIN_N = 1_075_000;
+    private static final double SWISS_WIDTH = 349_000;
+    private static final double SWISS_HEIGHT = 221_000;
 
-    @Test
-    void checkWithValueTest() {
-        ByteBuffer buffer = ByteBuffer.wrap(new byte[]{0, 0, 0, 16, 0, 20});
-        GraphSectors ns = new GraphSectors(buffer);
-        int idStartNode = buffer.getInt(0);
-        int idEndNode = idStartNode + toUnsignedInt(buffer.getShort(4));
-        GraphSectors.Sector sector = new GraphSectors.Sector(idStartNode, idEndNode);
-        List<GraphSectors.Sector> expected0 = new ArrayList<>();
-        expected0.add(sector);
-        List<GraphSectors.Sector> actual0 = ns.sectorsInArea(new PointCh(2485100, 1075100), 100);
-        assertEquals(expected0, actual0);
+    private static final int SUBDIVISIONS_PER_SIDE = 128;
+    private static final int SECTORS_COUNT = SUBDIVISIONS_PER_SIDE * SUBDIVISIONS_PER_SIDE;
+    private static final ByteBuffer SECTORS_BUFFER = createSectorsBuffer();
+    private static final double SECTOR_WIDTH = SWISS_WIDTH / SUBDIVISIONS_PER_SIDE;
+    private static final double SECTOR_HEIGHT = SWISS_HEIGHT / SUBDIVISIONS_PER_SIDE;
 
-        ByteBuffer buffer1 = ByteBuffer.wrap(new byte[]{0, 0, 0, 16, 0, 20, 0, 0, 0, 21, 0, 12});
-        GraphSectors ns1 = new GraphSectors(buffer1);
-        int idEndNode1 = buffer1.getInt(6) + toUnsignedInt(buffer1.getShort(10));
-        GraphSectors.Sector sector1 = new GraphSectors.Sector(buffer1.getInt(6), idEndNode1);
-        List<GraphSectors.Sector> expected1 = new ArrayList<GraphSectors.Sector>();
-        expected1.add(sector1);
-        List<GraphSectors.Sector> actual1 = ns1.sectorsInArea(new PointCh(2488050, 1076050), 50);
-        assertEquals(expected1, actual1);
+    private static ByteBuffer createSectorsBuffer() {
+        ByteBuffer sectorsBuffer = ByteBuffer.allocate(SECTORS_COUNT * (Integer.BYTES + Short.BYTES));
+        for (int i = 0; i < SECTORS_COUNT; i += 1) {
+            sectorsBuffer.putInt(i);
+            sectorsBuffer.putShort((short) 1);
+        }
+        assert !sectorsBuffer.hasRemaining();
+        return sectorsBuffer.rewind().asReadOnlyBuffer();
     }
 
     @Test
-    void GraphSectorsWorksWith00() {
-
-        byte[] tab = new byte[98304];
-
-        for (int i = 0; i < 98304; i += 6) {
-
-            tab[i] = (byte) Bits.extractUnsigned(i * 4, 24, 8);
-            tab[i + 1] = (byte) Bits.extractUnsigned(i * 4, 16, 8);
-            tab[i + 2] = (byte) Bits.extractUnsigned(i * 4, 8, 8);
-            tab[i + 3] = (byte) Bits.extractUnsigned(i * 4, 0, 8);
-
-            tab[i + 4] = (byte) 0;
-            tab[i + 5] = (byte) 1;
-
+    void graphSectorsSectorsInAreaWorksForSingleSector() {
+        var graphSectors = new GraphSectors(SECTORS_BUFFER);
+        for (int i = 0; i < SECTORS_COUNT; i += 1) {
+            var x = i % SUBDIVISIONS_PER_SIDE;
+            var y = i / SUBDIVISIONS_PER_SIDE;
+            var e = SWISS_MIN_E + (x + 0.5) * SECTOR_WIDTH;
+            var n = SWISS_MIN_N + (y + 0.5) * SECTOR_HEIGHT;
+            var sectors = graphSectors.sectorsInArea(new PointCh(e, n), 0.49 * SECTOR_HEIGHT);
+            assertEquals(List.of(new GraphSectors.Sector(i, i + 1)), sectors);
         }
-
-        ByteBuffer buffer = ByteBuffer.wrap(tab);
-
-        GraphSectors graph = new GraphSectors(buffer);
-
-        ArrayList<GraphSectors.Sector> output = new ArrayList<>();
-        output.add(new GraphSectors.Sector(0, 1));
-
-        List<GraphSectors.Sector> actual = graph.sectorsInArea(new PointCh(SwissBounds.MIN_E, SwissBounds.MIN_N), 5);
-        assertEquals(output.get(0), actual.get(0));
-
     }
 
     @Test
-    void GraphSectorsWorksWithExpected() {
+    void graphSectorsSectorsInAreaWorksFor4NeighbouringSectors() {
+        var graphSectors = new GraphSectors(SECTORS_BUFFER);
+        for (int x = 1; x <= SUBDIVISIONS_PER_SIDE - 1; x += 1) {
+            for (int y = 1; y <= SUBDIVISIONS_PER_SIDE - 1; y += 1) {
+                var e = SWISS_MIN_E + x * SECTOR_WIDTH;
+                var n = SWISS_MIN_N + y * SECTOR_HEIGHT;
+                var p = new PointCh(e, n);
+                var sectors = graphSectors.sectorsInArea(p, SECTOR_HEIGHT / 2.0);
+                sectors.sort(Comparator.comparingInt(GraphSectors.Sector::startNodeId));
 
-        byte[] tab = new byte[98304];
+                var i1 = sectorIndex(x - 1, y - 1);
+                var i2 = sectorIndex(x, y - 1);
+                var i3 = sectorIndex(x - 1, y);
+                var i4 = sectorIndex(x, y);
+                var expectedSectors = List.of(
+                        new GraphSectors.Sector(i1, i1 + 1),
+                        new GraphSectors.Sector(i2, i2 + 1),
+                        new GraphSectors.Sector(i3, i3 + 1),
+                        new GraphSectors.Sector(i4, i4 + 1));
 
-        for (int i = 0; i < 16384; i++) {
-
-            tab[i * 6] = (byte) Bits.extractUnsigned(i * 4, 24, 8);
-            tab[6 * i + 1] = (byte) Bits.extractUnsigned(i * 4, 16, 8);
-            tab[6 * i + 2] = (byte) Bits.extractUnsigned(i * 4, 8, 8);
-            tab[6 * i + 3] = (byte) Bits.extractUnsigned(i * 4, 0, 8);
-
-            tab[6 * i + 4] = (byte) 0;
-            tab[6 * i + 5] = (byte) 4;
-
-        }
-
-        ByteBuffer buffer = ByteBuffer.wrap(tab);
-
-        GraphSectors graph = new GraphSectors(buffer);
-
-        ArrayList<GraphSectors.Sector> output = new ArrayList<>();
-
-        for (int i = 0; i < 384; i += 128) {
-            for (int j = 0; j < 3; j++) {
-                output.add(new GraphSectors.Sector((j + i) * 4, (j + i + 1) * 4));
+                assertEquals(expectedSectors, sectors);
             }
         }
-        List<GraphSectors.Sector> actual = graph.sectorsInArea(new PointCh(SwissBounds.MIN_E + 3700, SwissBounds.MIN_N + 2500), 2000);
-        assertArrayEquals(output.toArray(), actual.toArray());
     }
 
     @Test
-    void GraphSectorsWorksWithEntireMap() {
-        byte[] tab = new byte[98304];
+    void graphSectorsSectorsInAreaWorksFor8NeighbouringSectors() {
+        var graphSectors = new GraphSectors(SECTORS_BUFFER);
+        for (int x = 1; x <= SUBDIVISIONS_PER_SIDE - 1; x += 1) {
+            for (int y = 2; y <= SUBDIVISIONS_PER_SIDE - 2; y += 1) {
+                var e = SWISS_MIN_E + x * SECTOR_WIDTH;
+                var n = SWISS_MIN_N + y * SECTOR_HEIGHT;
+                var p = new PointCh(e, n);
+                var sectors = graphSectors.sectorsInArea(p, SECTOR_HEIGHT * 1.1);
+                sectors.sort(Comparator.comparingInt(GraphSectors.Sector::startNodeId));
 
-        for (int i = 0; i < 16384; i++) {
+                var i1 = sectorIndex(x - 1, y - 2);
+                var i2 = sectorIndex(x, y - 2);
+                var i3 = sectorIndex(x - 1, y - 1);
+                var i4 = sectorIndex(x, y - 1);
+                var i5 = sectorIndex(x - 1, y);
+                var i6 = sectorIndex(x, y);
+                var i7 = sectorIndex(x - 1, y + 1);
+                var i8 = sectorIndex(x, y + 1);
+                var expectedSectors = List.of(
+                        new GraphSectors.Sector(i1, i1 + 1),
+                        new GraphSectors.Sector(i2, i2 + 1),
+                        new GraphSectors.Sector(i3, i3 + 1),
+                        new GraphSectors.Sector(i4, i4 + 1),
+                        new GraphSectors.Sector(i5, i5 + 1),
+                        new GraphSectors.Sector(i6, i6 + 1),
+                        new GraphSectors.Sector(i7, i7 + 1),
+                        new GraphSectors.Sector(i8, i8 + 1));
 
-            tab[i * 6] = (byte) Bits.extractUnsigned(i * 4, 24, 8);
-            tab[6 * i + 1] = (byte) Bits.extractUnsigned(i * 4, 16, 8);
-            tab[6 * i + 2] = (byte) Bits.extractUnsigned(i * 4, 8, 8);
-            tab[6 * i + 3] = (byte) Bits.extractUnsigned(i * 4, 0, 8);
-
-            tab[6 * i + 4] = (byte) 0;
-            tab[6 * i + 5] = (byte) 4;
-
-        }
-
-        ByteBuffer buffer = ByteBuffer.wrap(tab);
-        GraphSectors graph = new GraphSectors(buffer);
-        ArrayList<GraphSectors.Sector> output = new ArrayList<>();
-
-        for (int j = 0; j < 128; j++) {
-            for (int i = 0; i < 128; i++) {
-                output.add(new GraphSectors.Sector((j * 128 + i) * 4, (j * 128 + i + 1) * 4));
+                assertEquals(expectedSectors, sectors);
             }
         }
-        List<GraphSectors.Sector> actual = graph.sectorsInArea(new PointCh(SwissBounds.MIN_E + SwissBounds.WIDTH / 2 + 10, SwissBounds.MIN_N + SwissBounds.HEIGHT / 2 + 10), SwissBounds.WIDTH);
-        System.out.println(output.size() + " " + actual.size());
-        assertArrayEquals(output.toArray(), actual.toArray());
+    }
+
+    private int sectorIndex(int x, int y) {
+        return y * SUBDIVISIONS_PER_SIDE + x;
+    }
+
+    @Test
+    void graphSectorsSectorsInAreaWorksForSectorsWithLargeNumberOfNodes() {
+        ByteBuffer sectorsBuffer = ByteBuffer.allocate(SECTORS_COUNT * (Integer.BYTES + Short.BYTES));
+        var maxSectorSize = 0xFFFF;
+        for (int i = 0; i < SECTORS_COUNT; i += 1) {
+            sectorsBuffer.putInt(i * maxSectorSize);
+            sectorsBuffer.putShort((short) maxSectorSize);
+        }
+        var readOnlySectorsBuffer = sectorsBuffer.rewind().asReadOnlyBuffer();
+        var graphSectors = new GraphSectors(readOnlySectorsBuffer);
+        var d = 100;
+        var e = SWISS_MIN_E + 2 * d;
+        var n = SWISS_MIN_N + 2 * d;
+        var sectors = graphSectors.sectorsInArea(new PointCh(e, n), d);
+        assertEquals(List.of(new GraphSectors.Sector(0, maxSectorSize)), sectors);
+    }
+
+    @Test
+    void graphSectorsSectorsInAreaWorksForAllOfThem() {
+        var graphSectors = new GraphSectors(SECTORS_BUFFER);
+        var e = SWISS_MIN_E + 0.5 * SWISS_WIDTH;
+        var n = SWISS_MIN_N + 0.5 * SWISS_HEIGHT;
+        var sectors = graphSectors.sectorsInArea(new PointCh(e, n), SWISS_WIDTH);
+        assertEquals(SECTORS_COUNT, sectors.size());
+        BitSet expectedSectors = new BitSet();
+        expectedSectors.set(0, SECTORS_COUNT);
+        for (GraphSectors.Sector sector : sectors) {
+            assertTrue(expectedSectors.get(sector.startNodeId()));
+            expectedSectors.clear(sector.startNodeId());
+        }
+        assertEquals(0, expectedSectors.cardinality());
     }
 }

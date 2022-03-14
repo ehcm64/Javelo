@@ -58,7 +58,7 @@ public record GraphSectors(ByteBuffer buffer) {
 
                 int index = 128 * y + x;
                 int firstNode = buffer.getInt(index * OFFSET_SUM);
-                int nodesNumber = buffer().getShort(index * OFFSET_SUM + OFFSET_INTEGER);
+                int nodesNumber = Short.toUnsignedInt(buffer().getShort(index * OFFSET_SUM + OFFSET_INTEGER));
                 int lastNode = firstNode + nodesNumber;
                 Sector s = new Sector(firstNode, lastNode);
                 sectors.add(s);

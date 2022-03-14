@@ -56,7 +56,7 @@ public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds, ShortBuff
      * @return the length of the edge
      */
     public double length(int edgeId) {
-        return Q28_4.asDouble(edgesBuffer.getShort(edgeId * NEW_EDGE_OFFSET + LENGTH_OFFSET));
+        return Q28_4.asDouble(Short.toUnsignedInt(edgesBuffer.getShort(edgeId * NEW_EDGE_OFFSET + LENGTH_OFFSET)));
     }
 
     /**
@@ -67,7 +67,7 @@ public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds, ShortBuff
      * @return the net positive elevation gain
      */
     public double elevationGain(int edgeId) {
-        return Q28_4.asDouble(edgesBuffer.getShort(edgeId * NEW_EDGE_OFFSET + HEIGHT_DIFFERENCE_OFFSET));
+        return Q28_4.asDouble(Short.toUnsignedInt(edgesBuffer.getShort(edgeId * NEW_EDGE_OFFSET + HEIGHT_DIFFERENCE_OFFSET)));
     }
 
     /**
@@ -96,7 +96,7 @@ public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds, ShortBuff
         switch (profileType) {
             case 1:
                 for (int i = 0; i < nbOfSamples; i++) {
-                    profileSamples[i] = Q28_4.asFloat(elevations.get(firstProfileSampleIndex + i));
+                    profileSamples[i] = Q28_4.asFloat(Short.toUnsignedInt(elevations.get(firstProfileSampleIndex + i)));
                 }
                 return isInverted(edgeId) ? invertArray(profileSamples) : profileSamples;
             case 2:
@@ -132,6 +132,6 @@ public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds, ShortBuff
      * @return the index of the attribute set
      */
     public int attributesIndex(int edgeId) {
-        return edgesBuffer.getShort(edgeId * NEW_EDGE_OFFSET + ATTRIBUTES_INDEX_OFFSET);
+        return Short.toUnsignedInt(edgesBuffer.getShort(edgeId * NEW_EDGE_OFFSET + ATTRIBUTES_INDEX_OFFSET));
     }
 }
