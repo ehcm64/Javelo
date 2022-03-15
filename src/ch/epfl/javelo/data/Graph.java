@@ -46,7 +46,7 @@ public class Graph {
      *
      * @param basePath the path to the files
      * @return the graph built from these files
-     * @throws IOException if file missing
+     * @throws IOException if there is a problem with a file or the path
      */
     public static Graph loadFrom(Path basePath) throws IOException {
         Path nodesPath = basePath.resolve("nodes.bin");
@@ -78,9 +78,9 @@ public class Graph {
         }
         try (FileChannel attributesChannel = FileChannel.open(attributesPath)) {
             LongBuffer attributeSetsBuffer = attributesChannel.map(FileChannel.MapMode.READ_ONLY, 0, attributesChannel.size()).asLongBuffer();
-            attributeSets = new ArrayList<>(attributeSetsBuffer.capacity());
+            attributeSets = new ArrayList<>();
             for (int i = 0; i < attributeSetsBuffer.capacity(); i++) {
-                attributeSets.set(i, new AttributeSet(attributeSetsBuffer.get(i)));
+                attributeSets.add(new AttributeSet(attributeSetsBuffer.get(i)));
             }
         }
 
@@ -131,8 +131,6 @@ public class Graph {
         return this.nodes.edgeId(nodeId, edgeIndex);
     }
 
-    //TODO : Refaire la méthode en ne prenant que les noeuds de secteurs dans le searchdistance.
-
     /**
      * Returns the index of the node closest to a given point.
      *
@@ -141,7 +139,7 @@ public class Graph {
      * @return the index of the closest node, or -1 if there is no node
      */
     public int nodeClosestTo(PointCh point, double searchDistance) {
-        PointCh comparisonPoint = new PointCh(point.e() - searchDistance, point.n() - searchDistance);
+        PointCh comparisonPoint = new PointCh(point.e() - searchDistance, point.n());
         int closestAcceptableNodeId = -1;
         List<GraphSectors.Sector> sectorsInArea = sectors.sectorsInArea(point, searchDistance);
         for (GraphSectors.Sector sector : sectorsInArea) {
