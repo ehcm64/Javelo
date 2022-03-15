@@ -10,16 +10,10 @@ public record RoutePoint(PointCh point, double position, double distanceToRefere
     }
 
     public RoutePoint min(RoutePoint that) {
-        if (this.distanceToReference <= that.distanceToReference) {
-            return this;
-        }
-        return that;
+        return this.distanceToReference <= that.distanceToReference ? this : that;
     }
 
     public RoutePoint min(PointCh thatPoint, double thatPosition, double thatDistanceToReference) {
-        if (this.distanceToReference <= thatDistanceToReference) {
-            return this;
-        }
-        return new RoutePoint(thatPoint, thatPosition, thatDistanceToReference);
+        return this.distanceToReference <= thatDistanceToReference ? this : new RoutePoint(thatPoint, thatPosition, thatDistanceToReference);
     }
 }
