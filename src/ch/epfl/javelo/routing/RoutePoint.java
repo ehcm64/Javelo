@@ -6,7 +6,7 @@ public record RoutePoint(PointCh point, double position, double distanceToRefere
     public static final RoutePoint NONE = new RoutePoint(null, Double.NaN, Double.POSITIVE_INFINITY);
 
     public RoutePoint withPositionShiftedBy(double positionDifference) {
-        return null;
+        return new RoutePoint(this.point, this.position + positionDifference, this.distanceToReference);
     }
 
     public RoutePoint min(RoutePoint that) {
@@ -17,7 +17,6 @@ public record RoutePoint(PointCh point, double position, double distanceToRefere
     }
 
     public RoutePoint min(PointCh thatPoint, double thatPosition, double thatDistanceToReference) {
-
         if (this.distanceToReference <= thatDistanceToReference) {
             return this;
         }
