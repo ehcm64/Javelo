@@ -31,10 +31,10 @@ class GraphTest {
     void nodeClosestTo() throws IOException {
         Path basePath = Path.of("lausanne");
         Graph testGraph = Graph.loadFrom(basePath);
-        PointCh bern = new PointCh(2_533_132, 1_152_206);
-        int closestNode = testGraph.nodeClosestTo(bern, 500);
+        PointCh rolex = new PointCh(2_533_132, 1_152_206);
+        int closestNode = testGraph.nodeClosestTo(rolex, 2000);
         PointCh closestPoint = testGraph.nodePoint(closestNode);
-        System.out.println(Double.toString(closestPoint.e()) + " " + Double.toString(closestPoint.n()));
+        System.out.println("e : " + closestPoint.e() + "   n : " + closestPoint.n());
     }
 
     @Test

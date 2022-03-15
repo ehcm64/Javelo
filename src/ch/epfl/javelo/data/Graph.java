@@ -214,8 +214,11 @@ public class Graph {
      */
     public DoubleUnaryOperator edgeProfile(int edgeId) {
         double length = this.edges.length(edgeId);
-        float[] profileSamples = this.edges.profileSamples(edgeId);
         boolean hasProfile = this.edges.hasProfile(edgeId);
-        return hasProfile ? Functions.sampled(profileSamples, length) : Functions.constant(Double.NaN);
+        if (hasProfile) {
+            float[] profileSamples = this.edges.profileSamples(edgeId);
+            return Functions.sampled(profileSamples, length);
+        }
+        return Functions.constant(Double.NaN);
     }
 }
