@@ -95,7 +95,7 @@ public class ElevationProfile {
             double delta = secondElevation - firstElevation;
             if (delta < 0) totalDescent += delta;
         }
-        return totalDescent;
+        return -totalDescent;
     }
 
     /**
