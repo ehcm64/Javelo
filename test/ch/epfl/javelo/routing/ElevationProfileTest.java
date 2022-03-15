@@ -39,5 +39,7 @@ class ElevationProfileTest {
         float[] elevationSamples = {10, 12, 5, 6, 9, 8};
         ElevationProfile profile = new ElevationProfile(5, elevationSamples);
         assertEquals(11, profile.elevationAt(0.5));
+        assertEquals(10, profile.elevationAt(-1));
+        assertEquals(8, profile.elevationAt(6));
     }
 }
