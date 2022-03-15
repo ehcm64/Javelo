@@ -143,7 +143,7 @@ public class Graph {
         int closestAcceptableNodeId = -1;
         List<GraphSectors.Sector> sectorsInArea = sectors.sectorsInArea(point, searchDistance);
         for (GraphSectors.Sector sector : sectorsInArea) {
-            for (int nodeId = sector.startNodeId(); nodeId <= sector.endNodeId(); nodeId++) {
+            for (int nodeId = sector.startNodeId(); nodeId < sector.endNodeId(); nodeId++) {
                 PointCh nodePoint = new PointCh(this.nodes.nodeE(nodeId), this.nodes.nodeN(nodeId));
                 double testNodeDistanceSquared = point.squaredDistanceTo(nodePoint);
                 double comparisonDistanceSquared = point.squaredDistanceTo(comparisonPoint);

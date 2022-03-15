@@ -4,7 +4,6 @@ import ch.epfl.javelo.projection.PointCh;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.nio.IntBuffer;
 import java.nio.LongBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.file.Path;
@@ -32,7 +31,8 @@ class GraphTest {
         Path basePath = Path.of("lausanne");
         Graph testGraph = Graph.loadFrom(basePath);
         PointCh rolex = new PointCh(2_533_132, 1_152_206);
-        int closestNode = testGraph.nodeClosestTo(rolex, 2000);
+        int closestNode = testGraph.nodeClosestTo(rolex, 20);
+        System.out.println(closestNode);
         PointCh closestPoint = testGraph.nodePoint(closestNode);
         System.out.println("e : " + closestPoint.e() + "   n : " + closestPoint.n());
     }
@@ -47,18 +47,5 @@ class GraphTest {
                     .asLongBuffer();
         }
         assertEquals(310876657, osmIdBuffer.get(2022));
-    }
-
-    @Test
-    void getBufferWorks() throws IOException {
-        Path filePath = Path.of("lausanne/nodes.bin");
-        IntBuffer nodesBuffer;
-        try (FileChannel channel = FileChannel.open(filePath)) {
-            nodesBuffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size()).asIntBuffer();
-
-        }
-        for (int i = 0; i < nodesBuffer.capacity(); i++) {
-            System.out.println(i + " " + Integer.toBinaryString(nodesBuffer.get(i)));
-        }
     }
 }
