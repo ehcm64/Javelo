@@ -30,11 +30,22 @@ public record Edge(int fromNodeId, int toNodeId, PointCh fromPoint, PointCh toPo
         double bX = toPoint.e();
         double bY = toPoint.n();
 
-        double diffX = aX - bX;
-        double diffY = aY - bY;
-        double angle = Math.atan2(diffY, diffX);
+        double diffX = bX - aX;
+        double diffY = bY - aY;
+        double absDiffX = Math.abs(diffX);
+        double absDiffY = Math.abs(diffY);
+        double angle = Math.atan2(absDiffY, absDiffX);
+
         double pX = aX + Math.cos(angle) * position;
         double pY = aY + Math.sin(angle) * position;
+
+        if (diffX < 0) {
+            pX = aX - Math.cos(angle) * position;
+        }
+        if (diffY < 0)
+            pY = aY - Math.sin(angle) * position;
+
+        System.out.println("x: " + pX + " y: " + pY);
 
         return new PointCh(pX, pY);
     }
