@@ -93,9 +93,9 @@ public class ElevationProfile {
             double firstElevation = this.elevationSamples[i - 1];
             double secondElevation = this.elevationSamples[i];
             double delta = secondElevation - firstElevation;
-            if (delta < 0) totalDescent += delta;
+            if (delta < 0) totalDescent -= delta;
         }
-        return -totalDescent;
+        return totalDescent;
     }
 
     /**

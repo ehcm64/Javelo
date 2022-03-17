@@ -145,9 +145,7 @@ public class Graph {
         for (GraphSectors.Sector sector : sectorsInArea) {
             for (int nodeId = sector.startNodeId(); nodeId < sector.endNodeId(); nodeId++) {
                 PointCh nodePoint = new PointCh(this.nodes.nodeE(nodeId), this.nodes.nodeN(nodeId));
-                double testNodeDistanceSquared = point.squaredDistanceTo(nodePoint);
-                double comparisonDistanceSquared = point.squaredDistanceTo(comparisonPoint);
-                if (testNodeDistanceSquared <= comparisonDistanceSquared) {
+                if (point.squaredDistanceTo(nodePoint) <= point.squaredDistanceTo(comparisonPoint)) {
                     closestAcceptableNodeId = nodeId;
                     comparisonPoint = nodePoint;
                 }

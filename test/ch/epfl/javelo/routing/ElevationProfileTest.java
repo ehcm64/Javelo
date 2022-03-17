@@ -14,6 +14,13 @@ class ElevationProfileTest {
     }
 
     @Test
+    void minElevationWorksOnNull() {
+        float[] elevationSamples = {0, 0};
+        ElevationProfile profile = new ElevationProfile(10, elevationSamples);
+        assertEquals(0, profile.minElevation());
+    }
+
+    @Test
     void maxElevation() {
         float[] elevationSamples = {10, 12, 5, 6, 9};
         ElevationProfile profile = new ElevationProfile(10, elevationSamples);
@@ -28,10 +35,24 @@ class ElevationProfileTest {
     }
 
     @Test
+    void totalAscentWorksOnNull() {
+        float[] elevationSamples = {0, 0, 0, 0, 0};
+        ElevationProfile profile = new ElevationProfile(10, elevationSamples);
+        assertEquals(0, profile.totalAscent());
+    }
+
+    @Test
     void totalDescent() {
         float[] elevationSamples = {10, 12, 5, 6, 9};
         ElevationProfile profile = new ElevationProfile(10, elevationSamples);
         assertEquals(7, profile.totalDescent());
+    }
+
+    @Test
+    void totalDescentWorksOnNull() {
+        float[] elevationSamples = {0, 0, 0, 0, 0};
+        ElevationProfile profile = new ElevationProfile(10, elevationSamples);
+        assertEquals(0, profile.totalDescent());
     }
 
     @Test
