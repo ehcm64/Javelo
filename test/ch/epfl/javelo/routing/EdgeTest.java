@@ -23,9 +23,9 @@ class EdgeTest {
         double edgeVector_E = edge.toPoint().e() - edge.fromPoint().e();
         double edgeVector_N = edge.toPoint().n() - edge.fromPoint().n();
 
-        PointCh testPoint = new PointCh(edge.fromPoint().e() + edgeVector_E * (1), edge.fromPoint().n() + edgeVector_N * (1));
-        assertEquals(testPoint.e(), edge.pointAt(edge.length()).e());
-        assertEquals(testPoint.n(), edge.pointAt(edge.length()).n());
+        PointCh testPoint = new PointCh(edge.fromPoint().e() + edgeVector_E * (50 / edge.length()), edge.fromPoint().n() + edgeVector_N * (50 / edge.length()));
+        assertEquals(testPoint.e(), edge.pointAt(50).e(), 1e-1);
+        assertEquals(testPoint.n(), edge.pointAt(50).n(), 1e-1);
     }
 
 }
