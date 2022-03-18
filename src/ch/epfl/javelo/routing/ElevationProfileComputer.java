@@ -1,5 +1,9 @@
 package ch.epfl.javelo.routing;
 
+import ch.epfl.javelo.Math2;
+
+import java.util.Arrays;
+
 /**
  * Represents an elevation profile calculator.
  *
@@ -18,6 +22,79 @@ public final class ElevationProfileComputer {
      * @return the elevation profile
      */
     public static ElevationProfile elevationProfile(Route route, double maxStepLength) {
-        return null;
+        int nbOfSamples = (int) Math.ceil(route.length() / maxStepLength) + 1;
+        float stepLength = (float) ((nbOfSamples - 1) / route.length());
+        float[] elevationSamples = new float[nbOfSamples];
+        double alongEdgePosition = 0;
+        int samplesIndex = 0;
+
+        for (int edgeIndex = 0; edgeIndex < route.edges().size(); edgeIndex++) {
+            Edge edge = route.edges().get(edgeIndex);
+            if (edgeIndex != 0) alongEdgePosition -= route.edges().get(edgeIndex - 1).length();
+            while (alongEdgePosition <= edge.length()) {
+                elevationSamples[samplesIndex] = (float) edge.elevationAt(alongEdgePosition);
+                samplesIndex++;
+                alongEdgePosition += stepLength;
+            }
+        }
+
+        if (arrayContainsNaN(elevationSamples)) {
+            if (arrayContainsRealValue(elevationSamples)) {
+                int realValueIndex = closestUpperRealElevationIndex(elevationSamples, 0);
+                Arrays.fill(elevationSamples, 0, realValueIndex - 1, elevationSamples[realValueIndex]);
+                realValueIndex = closestLowerRealElevationIndex(elevationSamples, elevationSamples.length - 1);
+                Arrays.fill(elevationSamples, realValueIndex + 1, elevationSamples.length - 1, elevationSamples[realValueIndex]);
+            } else {
+                Arrays.fill(elevationSamples, 0, elevationSamples.length - 1, 0);
+            }
+
+            while (arrayContainsNaN(elevationSamples)) {
+                int firstNaNIndex = findFirstNaNIndex(elevationSamples);
+                int nextRealValue = closestUpperRealElevationIndex(elevationSamples, firstNaNIndex);
+                double distance = (nextRealValue - firstNaNIndex + 1) * stepLength;
+
+                elevationSamples[firstNaNIndex] = (float) Math2.interpolate(elevationSamples[firstNaNIndex - 1],
+                        elevationSamples[nextRealValue],
+                        stepLength / distance);
+            }
+        }
+        return new ElevationProfile(route.length(), elevationSamples);
+    }
+
+    private static int closestUpperRealElevationIndex(float[] samples, int index) {
+        int i = index;
+        while (Double.isNaN(samples[i])) {
+            i++;
+        }
+        return i;
+    }
+
+    private static int closestLowerRealElevationIndex(float[] samples, int index) {
+        int i = index;
+        while (Double.isNaN(samples[i])) {
+            i--;
+        }
+        return i;
+    }
+
+    private static boolean arrayContainsRealValue(float[] samples) {
+        for (int i = 0; i < samples.length; i++) {
+            if (!Double.isNaN(samples[i])) return true;
+        }
+        return false;
+    }
+
+    private static boolean arrayContainsNaN(float[] samples) {
+        for (int i = 0; i < samples.length; i++) {
+            if (Double.isNaN(samples[i])) return true;
+        }
+        return false;
+    }
+
+    private static int findFirstNaNIndex(float[] samples) {
+        for (int i = 0; i < samples.length; i++) {
+            if (Double.isNaN(samples[i])) return i;
+        }
+        return 0;
     }
 }
