@@ -50,6 +50,14 @@ public interface Route {
     PointCh pointAt(double position);
 
     /**
+     * Returns the altitude of the point at the given position on the itinerary.
+     *
+     * @param position the position of the point
+     * @return the elevation
+     */
+    double elevationAt(double position);
+
+    /**
      * Returns the index of the node that belongs to the itinerary which is closest to the given position.
      *
      * @param position the position
@@ -64,12 +72,4 @@ public interface Route {
      * @return the closest point in the itinerary
      */
     RoutePoint pointClosestTo(PointCh point);
-
-    /**
-     * Returns the altitude of the point at the given position on the itinerary.
-     *
-     * @param position the position of the point
-     * @return the elevation
-     */
-    double elevationAt(double position);
 }
