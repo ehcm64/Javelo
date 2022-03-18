@@ -64,4 +64,12 @@ public interface Route {
      * @return the closest point in the itinerary
      */
     RoutePoint pointClosestTo(PointCh point);
+
+    /**
+     * Returns the altitude of the point at the given position on the itinerary.
+     *
+     * @param position the position of the point
+     * @return the elevation
+     */
+    double elevationAt(double position);
 }

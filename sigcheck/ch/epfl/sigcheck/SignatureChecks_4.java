@@ -7,29 +7,6 @@ package ch.epfl.sigcheck;
 
 final class SignatureChecks_4 {
     ch.epfl.javelo.data.Graph v01;
-    ch.epfl.javelo.data.GraphNodes v02;
-    ch.epfl.javelo.data.GraphSectors v03;
-    ch.epfl.javelo.data.GraphEdges v04;
-    java.util.List<ch.epfl.javelo.data.AttributeSet> v05;
-    java.nio.file.Path v06;
-    int v07;
-    ch.epfl.javelo.data.AttributeSet v08;
-    double v09;
-    boolean v10;
-    java.util.function.DoubleUnaryOperator v11;
-    ch.epfl.javelo.projection.PointCh v12;
-    ch.epfl.javelo.routing.ElevationProfile v13;
-    float[] v14;
-    ch.epfl.javelo.routing.Edge v15;
-    java.lang.Object v16;
-    java.lang.String v17;
-    ch.epfl.javelo.routing.Route v18;
-    java.util.List<ch.epfl.javelo.routing.Edge> v19;
-    ch.epfl.javelo.routing.RoutePoint v20;
-    java.util.List<ch.epfl.javelo.projection.PointCh> v21;
-
-    private SignatureChecks_4() {
-    }
 
     void checkGraph() throws Exception {
         v01 = new ch.epfl.javelo.data.Graph(v02, v03, v04, v05);
@@ -73,16 +50,7 @@ final class SignatureChecks_4 {
         v12 = v15.toPoint();
         v17 = v15.toString();
     }
-
-    void checkRoute() throws Exception {
-        v19 = v18.edges();
-        v07 = v18.indexOfSegmentAt(v09);
-        v09 = v18.length();
-        v07 = v18.nodeClosestTo(v09);
-        v12 = v18.pointAt(v09);
-        v20 = v18.pointClosestTo(v12);
-        v21 = v18.points();
-    }
+    ch.epfl.javelo.data.GraphNodes v02;
 
     void checkRoutePoint() throws Exception {
         v20 = new ch.epfl.javelo.routing.RoutePoint(v12, v09, v09);
@@ -96,5 +64,39 @@ final class SignatureChecks_4 {
         v09 = v20.position();
         v17 = v20.toString();
         v20 = v20.withPositionShiftedBy(v09);
+    }
+
+    ch.epfl.javelo.data.GraphSectors v03;
+    ch.epfl.javelo.data.GraphEdges v04;
+    java.util.List<ch.epfl.javelo.data.AttributeSet> v05;
+    java.nio.file.Path v06;
+    int v07;
+    ch.epfl.javelo.data.AttributeSet v08;
+    double v09;
+    boolean v10;
+    java.util.function.DoubleUnaryOperator v11;
+    ch.epfl.javelo.projection.PointCh v12;
+    ch.epfl.javelo.routing.ElevationProfile v13;
+    float[] v14;
+    ch.epfl.javelo.routing.Edge v15;
+    java.lang.Object v16;
+    java.lang.String v17;
+    ch.epfl.javelo.routing.Route v18;
+    java.util.List<ch.epfl.javelo.routing.Edge> v19;
+    ch.epfl.javelo.routing.RoutePoint v20;
+    java.util.List<ch.epfl.javelo.projection.PointCh> v21;
+
+    private SignatureChecks_4() {
+    }
+
+    void checkRoute() throws Exception {
+        v19 = v18.edges();
+        v09 = v18.elevationAt(v09);
+        v07 = v18.indexOfSegmentAt(v09);
+        v09 = v18.length();
+        v07 = v18.nodeClosestTo(v09);
+        v12 = v18.pointAt(v09);
+        v20 = v18.pointClosestTo(v12);
+        v21 = v18.points();
     }
 }
