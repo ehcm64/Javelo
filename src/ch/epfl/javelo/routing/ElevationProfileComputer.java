@@ -78,15 +78,15 @@ public final class ElevationProfileComputer {
     }
 
     private static boolean arrayContainsRealValue(float[] samples) {
-        for (int i = 0; i < samples.length; i++) {
-            if (!Double.isNaN(samples[i])) return true;
+        for (float sample : samples) {
+            if (!Double.isNaN(sample)) return true;
         }
         return false;
     }
 
     private static boolean arrayContainsNaN(float[] samples) {
-        for (int i = 0; i < samples.length; i++) {
-            if (Double.isNaN(samples[i])) return true;
+        for (float sample : samples) {
+            if (Double.isNaN(sample)) return true;
         }
         return false;
     }
