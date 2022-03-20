@@ -50,11 +50,11 @@ public final class ElevationProfileComputer {
 
             while (arrayContainsNaN(elevationSamples)) {
                 int firstNaNIndex = findFirstNaNIndex(elevationSamples);
-                int nextRealValue = closestUpperRealElevationIndex(elevationSamples, firstNaNIndex);
-                double distance = (nextRealValue - firstNaNIndex + 1) * stepLength;
+                int nextRealValueIndex = closestUpperRealElevationIndex(elevationSamples, firstNaNIndex);
+                double distance = (nextRealValueIndex - firstNaNIndex + 1) * stepLength;
 
                 elevationSamples[firstNaNIndex] = (float) Math2.interpolate(elevationSamples[firstNaNIndex - 1],
-                        elevationSamples[nextRealValue],
+                        elevationSamples[nextRealValueIndex],
                         stepLength / distance);
             }
         }
