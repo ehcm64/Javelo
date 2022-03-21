@@ -23,7 +23,7 @@ public final class ElevationProfileComputer {
      */
     public static ElevationProfile elevationProfile(Route route, double maxStepLength) {
         int nbOfSamples = (int) Math.ceil(route.length() / maxStepLength) + 1;
-        float stepLength = (float) ((nbOfSamples - 1) / route.length());
+        float stepLength = (float) ((route.length() / (nbOfSamples - 1)));
         float[] elevationSamples = new float[nbOfSamples];
         double alongEdgePosition = 0;
         int samplesIndex = 0;
