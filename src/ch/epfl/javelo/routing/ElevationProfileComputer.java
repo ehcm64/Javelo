@@ -63,7 +63,7 @@ public final class ElevationProfileComputer {
 
     private static int closestUpperRealElevationIndex(float[] samples, int index) {
         int i = index;
-        while (Double.isNaN(samples[i])) {
+        while (Float.isNaN(samples[i])) {
             i++;
         }
         return i;
@@ -71,7 +71,7 @@ public final class ElevationProfileComputer {
 
     private static int closestLowerRealElevationIndex(float[] samples, int index) {
         int i = index;
-        while (Double.isNaN(samples[i])) {
+        while (Float.isNaN(samples[i])) {
             i--;
         }
         return i;
@@ -79,21 +79,21 @@ public final class ElevationProfileComputer {
 
     private static boolean arrayContainsRealValue(float[] samples) {
         for (float sample : samples) {
-            if (!Double.isNaN(sample)) return true;
+            if (!Float.isNaN(sample)) return true;
         }
         return false;
     }
 
     private static boolean arrayContainsNaN(float[] samples) {
         for (float sample : samples) {
-            if (Double.isNaN(sample)) return true;
+            if (Float.isNaN(sample)) return true;
         }
         return false;
     }
 
     private static int findFirstNaNIndex(float[] samples) {
         for (int i = 0; i < samples.length; i++) {
-            if (Double.isNaN(samples[i])) return i;
+            if (Float.isNaN(samples[i])) return i;
         }
         return 0;
     }
