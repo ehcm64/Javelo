@@ -118,14 +118,21 @@ public final class SingleRoute implements Route {
             PointCh closestPoint = edge.pointAt(edge.positionClosestTo(point));
             closestPoints[i] = closestPoint;
         }
-        PointCh closestPoint = closestPoints[0];
 
-        for (PointCh testPoint : closestPoints) {
-            if (point.squaredDistanceTo(testPoint) < point.squaredDistanceTo(closestPoint)) {
-                closestPoint = testPoint;
+        PointCh closestPoint = closestPoints[0];
+        double lengthOfEdges = 0;
+        double positionOfPoint = 0;
+        double distanceToReference = 0;
+
+        for (int i = 0; i < closestPoints.length; i++) {
+            if (i != 0) lengthOfEdges += this.edges.get(i - 1).length();
+            distanceToReference = point.squaredDistanceTo(closestPoints[i]);
+            if (distanceToReference < point.squaredDistanceTo(closestPoint)) {
+                closestPoint = closestPoints[i];
+                positionOfPoint = lengthOfEdges + this.edges.get(i).positionClosestTo(closestPoint);
             }
         }
-        return RoutePoint.NONE;
+        return new RoutePoint(closestPoint, positionOfPoint, Math.sqrt(distanceToReference));
     }
 
     private double[] getNodePositions() {
