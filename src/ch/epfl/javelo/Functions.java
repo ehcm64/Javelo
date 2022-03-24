@@ -70,8 +70,9 @@ public final class Functions {
          */
         @Override
         public double applyAsDouble(double x) {
-            if (x <= 0) return this.samples[0];
-            else {
+            if (x <= 0) {
+                return this.samples[0];
+            } else {
                 double step = xMax / (this.samples.length - 1);
                 for (int i = 1; i < this.samples.length; i++) {
                     if (x < i * step)

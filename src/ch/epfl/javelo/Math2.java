@@ -19,7 +19,7 @@ public final class Math2 {
      * @throws IllegalArgumentException if x is negative or y is negative or equal to 0
      */
     public static int ceilDiv(int x, int y) {
-        Preconditions.checkArgument(!(x < 0 || y <= 0));
+        Preconditions.checkArgument(x >= 0 && y > 0);
         return (x + y - 1) / y;
     }
 
@@ -45,7 +45,7 @@ public final class Math2 {
      * @throws IllegalArgumentException if minimum value is greater than maximum value
      */
     public static int clamp(int min, int v, int max) {
-        Preconditions.checkArgument(!(min > max));
+        Preconditions.checkArgument(max >= min);
         if (v < min) return min;
         else return Math.min(v, max);
     }
@@ -60,7 +60,7 @@ public final class Math2 {
      * @throws IllegalArgumentException if minimum value is greater than maximum value
      */
     public static double clamp(double min, double v, double max) {
-        Preconditions.checkArgument(!(min > max));
+        Preconditions.checkArgument(max >= min);
         if (v < min) return min;
         else return Math.min(v, max);
     }

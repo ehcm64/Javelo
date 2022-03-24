@@ -45,17 +45,16 @@ public record GraphSectors(ByteBuffer buffer) {
      */
     public List<Sector> sectorsInArea(PointCh center, double distance) {
         List<Sector> sectors = new ArrayList<>();
-        double eCoord = center.e();
-        double nCoord = center.n();
-        int eMin = xToSectorCoords(eCoord - distance);
-        int eMax = xToSectorCoords(eCoord + distance);
-        int nMin = yToSectorCoords(nCoord - distance);
-        int nMax = yToSectorCoords(nCoord + distance);
+
+        int eMin = xToSectorCoords(center.e() - distance);
+        int eMax = xToSectorCoords(center.e() + distance);
+        int nMin = yToSectorCoords(center.n() - distance);
+        int nMax = yToSectorCoords(center.n() + distance);
 
         for (int y = nMin; y <= nMax; y++) {
             for (int x = eMin; x <= eMax; x++) {
-                if (y < 0 || x < 0 || y > 127 || x > 127) continue;
-
+                if (y < 0 || x < 0 || y > 127 || x > 127)
+                    continue;
                 int index = 128 * y + x;
                 int firstNode = buffer.getInt(index * OFFSET_SUM);
                 int nodesNumber = Short.toUnsignedInt(buffer().getShort(index * OFFSET_SUM + OFFSET_INTEGER));

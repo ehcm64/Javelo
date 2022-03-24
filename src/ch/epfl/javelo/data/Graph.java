@@ -34,11 +34,10 @@ public class Graph {
      * @param attributeSets the attribute sets of the edges of the graph
      */
     public Graph(GraphNodes nodes, GraphSectors sectors, GraphEdges edges, List<AttributeSet> attributeSets) {
-        this.nodes = new GraphNodes(nodes.buffer());
-        this.sectors = new GraphSectors(sectors.buffer());
-        this.edges = new GraphEdges(edges.edgesBuffer(), edges.profileIds(), edges.elevations());
-        this.attributeSets = new ArrayList<>();
-        this.attributeSets.addAll(attributeSets);
+        this.nodes = nodes;
+        this.sectors = sectors;
+        this.edges = edges;
+        this.attributeSets = List.copyOf(attributeSets);
     }
 
     /**
@@ -83,7 +82,6 @@ public class Graph {
                 attributeSets.add(new AttributeSet(attributeSetsBuffer.get(i)));
             }
         }
-
         GraphNodes nodes = new GraphNodes(nodesBuffer);
         GraphSectors sectors = new GraphSectors(sectorsBuffer);
         GraphEdges edges = new GraphEdges(edgesBuffer, profilesBuffer, elevationsBuffer);

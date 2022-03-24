@@ -17,7 +17,7 @@ public record PointCh(double e, double n) {
      * @param n the north coordinate of the point
      */
     public PointCh {
-        Preconditions.checkArgument(!(e > SwissBounds.MAX_E || e < SwissBounds.MIN_E || n > SwissBounds.MAX_N || n < SwissBounds.MIN_N));
+        Preconditions.checkArgument(e <= SwissBounds.MAX_E && e >= SwissBounds.MIN_E && n <= SwissBounds.MAX_N && n >= SwissBounds.MIN_N);
     }
 
     /**
@@ -27,10 +27,7 @@ public record PointCh(double e, double n) {
      * @return the distance
      */
     public double distanceTo(PointCh that) {
-        double xDistance = this.e - that.e();
-        double yDistance = this.n - that.n();
-
-        return Math2.norm(xDistance, yDistance);
+        return Math2.norm(this.e - that.e, this.n - that.n);
     }
 
     /**

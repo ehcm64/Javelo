@@ -22,13 +22,13 @@ public final class Ch1903 {
         lat = Math.toDegrees(lat);
         double lon1 = 1e-4 * (3600 * lon - 26782.5);
         double lat1 = 1e-4 * (3600 * lat - 169028.66);
-        double nCoord = 1_200_147.07
+        double n = 1_200_147.07
                 + 308_807.95 * lat1
                 + 3_745.25 * lon1 * lon1
                 + 76.63 * lat1 * lat1
                 - 194.56 * lon1 * lon1 * lat1
                 + 119.79 * lat1 * lat1 * lat1;
-        return nCoord;
+        return n;
     }
 
     /**
@@ -43,12 +43,12 @@ public final class Ch1903 {
         lat = Math.toDegrees(lat);
         double lon1 = 1e-4 * (3600 * lon - 26782.5);
         double lat1 = 1e-4 * (3600 * lat - 169028.66);
-        double eCoord = 2600072.37
+        double e = 2600072.37
                 + 211455.93 * lon1
                 - 10938.51 * lon1 * lat1
                 - 0.36 * lon1 * lat1 * lat1
                 - 44.54 * lon1 * lon1 * lon1;
-        return eCoord;
+        return e;
     }
 
     /**

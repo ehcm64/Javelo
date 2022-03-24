@@ -15,6 +15,9 @@ import java.util.List;
  */
 public final class SingleRoute implements Route {
     private final List<Edge> edges;
+    private final double[] nodePositions;
+    private final Edge FIRST_EDGE;
+    private final Edge LAST_EDGE;
 
     /**
      * Creates a single route from a given list of edges.
@@ -24,6 +27,9 @@ public final class SingleRoute implements Route {
     public SingleRoute(List<Edge> edges) {
         Preconditions.checkArgument(edges.size() != 0);
         this.edges = List.copyOf(edges);
+        this.nodePositions = getNodePositions();
+        this.FIRST_EDGE = this.edges.get(0);
+        this.LAST_EDGE = this.edges.get(this.edges.size() - 1);
     }
 
     @Override
@@ -48,7 +54,7 @@ public final class SingleRoute implements Route {
     @Override
     public List<PointCh> points() {
         List<PointCh> points = new ArrayList<>();
-        points.add(this.edges.get(0).fromPoint());
+        points.add(FIRST_EDGE.fromPoint());
         for (Edge edge : this.edges) {
             points.add(edge.toPoint());
         }
@@ -57,57 +63,54 @@ public final class SingleRoute implements Route {
 
     @Override
     public PointCh pointAt(double position) {
-        if (position < 0) return this.edges.get(0).fromPoint();
-        if (position > this.length()) return this.edges.get(this.edges.size() - 1).toPoint();
-        double[] nodePositions = getNodePositions();
+        if (position <= 0)
+            return FIRST_EDGE.fromPoint();
+        if (position > this.length())
+            return LAST_EDGE.toPoint();
 
-        int index = Arrays.binarySearch(nodePositions, position);
+        int index = Arrays.binarySearch(this.nodePositions, position);
         if (index > 0) {
             return this.edges.get(index - 1).toPoint();
-        } else if (index < 0) {
+        } else {
             int indexOfNode = -index - 2;
-            double positionAlongEdge = position - nodePositions[indexOfNode];
+            double positionAlongEdge = position - this.nodePositions[indexOfNode];
             return this.edges.get(indexOfNode).pointAt(positionAlongEdge);
         }
-        return this.edges.get(0).fromPoint();
     }
 
     @Override
     public double elevationAt(double position) {
-        if (position < 0) return this.edges.get(0).elevationAt(0);
-        if (position > this.length()) {
-            double positionAlongEdge = this.edges.get(this.edges.size() - 1).length();
-            return this.edges.get(this.edges.size() - 1).elevationAt(positionAlongEdge);
-        }
-        double[] nodePositions = getNodePositions();
+        if (position <= 0)
+            return FIRST_EDGE.elevationAt(0);
+        if (position >= this.length())
+            return LAST_EDGE.elevationAt(LAST_EDGE.length());
 
-        int index = Arrays.binarySearch(nodePositions, position);
+        int index = Arrays.binarySearch(this.nodePositions, position);
         if (index > 0) {
             return this.edges.get(index).elevationAt(0);
-        } else if (index < 0) {
+        } else {
             int indexOfNode = -index - 2;
-            double positionAlongEdge = position - nodePositions[indexOfNode];
+            double positionAlongEdge = position - this.nodePositions[indexOfNode];
             return this.edges.get(indexOfNode).elevationAt(positionAlongEdge);
         }
-        return this.edges.get(0).elevationAt(0);
     }
 
     @Override
     public int nodeClosestTo(double position) {
-        if (position < 0) return this.edges.get(0).fromNodeId();
-        if (position > this.length()) return this.edges.get(this.edges.size() - 1).toNodeId();
-        double[] nodePositions = getNodePositions();
+        if (position <= 0)
+            return FIRST_EDGE.fromNodeId();
+        if (position >= this.length())
+            return LAST_EDGE.toNodeId();
 
         int index = Arrays.binarySearch(nodePositions, position);
         if (index > 0) {
             return this.edges.get(index - 1).toNodeId();
-        } else if (index < 0) {
+        } else {
             int indexOfNode = -index - 2;
             double positionAlongEdge = position - nodePositions[indexOfNode];
             double ratio = positionAlongEdge / this.edges.get(indexOfNode).length();
             return ratio <= 0.5 ? this.edges.get(indexOfNode).fromNodeId() : this.edges.get(indexOfNode).toNodeId();
         }
-        return this.edges.get(0).fromNodeId();
     }
 
     @Override
@@ -122,17 +125,18 @@ public final class SingleRoute implements Route {
         PointCh closestPoint = closestPoints[0];
         double lengthOfEdges = 0;
         double positionOfPoint = 0;
-        double distanceToReference = 0;
+        double squaredDistanceToReference = 0;
 
         for (int i = 0; i < closestPoints.length; i++) {
-            if (i != 0) lengthOfEdges += this.edges.get(i - 1).length();
-            distanceToReference = point.squaredDistanceTo(closestPoints[i]);
-            if (distanceToReference < point.squaredDistanceTo(closestPoint)) {
+            if (i != 0)
+                lengthOfEdges += this.edges.get(i - 1).length();
+            if (point.squaredDistanceTo(closestPoints[i]) < point.squaredDistanceTo(closestPoint)) {
                 closestPoint = closestPoints[i];
                 positionOfPoint = lengthOfEdges + this.edges.get(i).positionClosestTo(closestPoint);
+                squaredDistanceToReference = point.squaredDistanceTo(closestPoints[i]);
             }
         }
-        return new RoutePoint(closestPoint, positionOfPoint, Math.sqrt(distanceToReference));
+        return new RoutePoint(closestPoint, positionOfPoint, Math.sqrt(squaredDistanceToReference));
     }
 
     private double[] getNodePositions() {

@@ -13,6 +13,7 @@ import java.util.DoubleSummaryStatistics;
 public class ElevationProfile {
     private final double length;
     private final float[] elevationSamples;
+    private final DoubleSummaryStatistics samplesStatistics;
 
     /**
      * Creates an elevation profile.
@@ -24,8 +25,10 @@ public class ElevationProfile {
         Preconditions.checkArgument(length > 0 && elevationSamples.length >= 2);
         this.length = length;
         this.elevationSamples = new float[elevationSamples.length];
-        for (int i = 0; i < elevationSamples.length; i++) {
-            this.elevationSamples[i] = elevationSamples[i];
+        System.arraycopy(elevationSamples, 0, this.elevationSamples, 0, elevationSamples.length);
+        this.samplesStatistics = new DoubleSummaryStatistics();
+        for (float elevation : this.elevationSamples) {
+            this.samplesStatistics.accept(elevation);
         }
     }
 
@@ -44,11 +47,7 @@ public class ElevationProfile {
      * @return the smallest altitude in the array of elevations
      */
     public double minElevation() {
-        DoubleSummaryStatistics s = new DoubleSummaryStatistics();
-        for (float elevation : this.elevationSamples) {
-            s.accept(elevation);
-        }
-        return s.getMin();
+        return this.samplesStatistics.getMin();
     }
 
     /**
@@ -57,11 +56,7 @@ public class ElevationProfile {
      * @return the greatest altitude in the array of elevations
      */
     public double maxElevation() {
-        DoubleSummaryStatistics s = new DoubleSummaryStatistics();
-        for (float elevation : this.elevationSamples) {
-            s.accept(elevation);
-        }
-        return s.getMax();
+        return this.samplesStatistics.getMax();
     }
 
     /**
