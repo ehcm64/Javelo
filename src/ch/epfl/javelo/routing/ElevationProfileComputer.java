@@ -1,6 +1,7 @@
 package ch.epfl.javelo.routing;
 
 import ch.epfl.javelo.Math2;
+import ch.epfl.javelo.Preconditions;
 
 import java.util.Arrays;
 
@@ -22,6 +23,8 @@ public final class ElevationProfileComputer {
      * @return the elevation profile
      */
     public static ElevationProfile elevationProfile(Route route, double maxStepLength) {
+        Preconditions.checkArgument(maxStepLength > 0);
+
         int nbOfSamples = (int) Math.ceil(route.length() / maxStepLength) + 1;
         float stepLength = (float) ((route.length() / (nbOfSamples - 1)));
         float[] elevationSamples = new float[nbOfSamples];
@@ -44,7 +47,7 @@ public final class ElevationProfileComputer {
             int nextRealValueIndex = nextRealValueIndex(elevationSamples, 0);
             Arrays.fill(elevationSamples, 0, nextRealValueIndex - 1, elevationSamples[nextRealValueIndex]);
         }
-        if (Float.isNaN(elevationSamples[elevationSamples.length - 1])) {
+        if (Float.isNaN(elevationSamples[elevationSamples.length - 1]) && arrayContainsRealValue(elevationSamples)) {
             int previousRealValueIndex = previousRealValueIndex(elevationSamples, elevationSamples.length - 1);
             Arrays.fill(elevationSamples, previousRealValueIndex + 1, elevationSamples.length - 1, elevationSamples[previousRealValueIndex]);
         }

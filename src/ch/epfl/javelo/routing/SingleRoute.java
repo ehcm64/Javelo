@@ -131,7 +131,7 @@ public final class SingleRoute implements Route {
         for (int i = 0; i < closestPoints.length; i++) {
             if (i != 0)
                 lengthOfEdges += this.edges.get(i - 1).length();
-            if (point.squaredDistanceTo(closestPoints[i]) < point.squaredDistanceTo(closestPoint)) {
+            if (point.squaredDistanceTo(closestPoints[i]) <= point.squaredDistanceTo(closestPoint)) {
                 closestPoint = closestPoints[i];
                 positionOfPoint = lengthOfEdges + this.edges.get(i).positionClosestTo(closestPoint);
                 squaredDistanceToReference = point.squaredDistanceTo(closestPoints[i]);
