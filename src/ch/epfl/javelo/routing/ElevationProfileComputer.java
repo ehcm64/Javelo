@@ -45,14 +45,14 @@ public final class ElevationProfileComputer {
         // Replace NaN in head and tail of array by closest real elevations
         if (Float.isNaN(elevationSamples[0]) && arrayContainsRealValue(elevationSamples)) {
             int nextRealValueIndex = nextRealValueIndex(elevationSamples, 0);
-            Arrays.fill(elevationSamples, 0, nextRealValueIndex - 1, elevationSamples[nextRealValueIndex]);
+            Arrays.fill(elevationSamples, 0, nextRealValueIndex, elevationSamples[nextRealValueIndex]);
         }
         if (Float.isNaN(elevationSamples[elevationSamples.length - 1]) && arrayContainsRealValue(elevationSamples)) {
             int previousRealValueIndex = previousRealValueIndex(elevationSamples, elevationSamples.length - 1);
-            Arrays.fill(elevationSamples, previousRealValueIndex + 1, elevationSamples.length - 1, elevationSamples[previousRealValueIndex]);
+            Arrays.fill(elevationSamples, previousRealValueIndex, elevationSamples.length, elevationSamples[previousRealValueIndex]);
         }
         if (!arrayContainsRealValue(elevationSamples)) {
-            Arrays.fill(elevationSamples, 0, elevationSamples.length - 1, 0);
+            Arrays.fill(elevationSamples, 0, elevationSamples.length, 0);
         }
 
         // Replace NaN holes in array by interpolation from the closest real values
