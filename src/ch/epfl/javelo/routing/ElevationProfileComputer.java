@@ -26,7 +26,7 @@ public final class ElevationProfileComputer {
         Preconditions.checkArgument(maxStepLength > 0);
 
         int nbOfSamples = (int) Math.ceil(route.length() / maxStepLength) + 1;
-        float stepLength = (float) ((route.length() / (nbOfSamples - 1)));
+        double stepLength = (float) (route.length() / (nbOfSamples - 1));
         float[] elevationSamples = new float[nbOfSamples];
         double alongEdgePosition = 0;
         int samplesIndex = 0;
@@ -49,7 +49,7 @@ public final class ElevationProfileComputer {
         }
         if (Float.isNaN(elevationSamples[elevationSamples.length - 1]) && arrayContainsRealValue(elevationSamples)) {
             int previousRealValueIndex = previousRealValueIndex(elevationSamples, elevationSamples.length - 1);
-            Arrays.fill(elevationSamples, previousRealValueIndex, elevationSamples.length, elevationSamples[previousRealValueIndex]);
+            Arrays.fill(elevationSamples, previousRealValueIndex + 1, elevationSamples.length, elevationSamples[previousRealValueIndex]);
         }
         if (!arrayContainsRealValue(elevationSamples)) {
             Arrays.fill(elevationSamples, 0, elevationSamples.length, 0);
@@ -59,10 +59,10 @@ public final class ElevationProfileComputer {
         while (arrayContainsNaN(elevationSamples)) {
             int NaNIndex = firstNaNIndex(elevationSamples);
             int nextRealValueIndex = nextRealValueIndex(elevationSamples, NaNIndex);
-            double distance = (nextRealValueIndex - NaNIndex + 1) * stepLength;
+            double distance = (nextRealValueIndex - NaNIndex + 1);
             elevationSamples[NaNIndex] = (float) Math2.interpolate(elevationSamples[NaNIndex - 1],
                     elevationSamples[nextRealValueIndex],
-                    stepLength / distance);
+                    1 / distance);
         }
         return new ElevationProfile(route.length(), elevationSamples);
     }

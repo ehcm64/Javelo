@@ -271,6 +271,7 @@ class ElevationProfileComputerTest {
         float[] samples = {0, Float.NaN, 150, 150};
         DoubleUnaryOperator a = Functions.sampled(samples, 30);
         Edge edge = new Edge(fromNodeId, toNodeId, fromPoint, toPointCh, length, a);
+        System.out.println(a.applyAsDouble(0));
         List<Edge> edges = new ArrayList<>();
         edges.add(edge);
         SingleRoute route = new SingleRoute(edges);
@@ -373,7 +374,6 @@ class ElevationProfileComputerTest {
         for (int i = 0; i <= 50; i++) {
             assertEquals(360 + 2 * i / 10.0, ElevationProfileComputer.elevationProfile(route, 2).elevationAt(50 + i), 1e-4);
         }
-
     }
 
     @Test
