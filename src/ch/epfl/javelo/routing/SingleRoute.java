@@ -1,5 +1,6 @@
 package ch.epfl.javelo.routing;
 
+import ch.epfl.javelo.Math2;
 import ch.epfl.javelo.Preconditions;
 import ch.epfl.javelo.projection.PointCh;
 
@@ -115,29 +116,24 @@ public final class SingleRoute implements Route {
 
     @Override
     public RoutePoint pointClosestTo(PointCh point) {
-        PointCh[] closestPoints = new PointCh[this.edges.size()];
-
+        double minDistance = Double.MAX_VALUE;
+        double edgePosition = 0;
+        double totalPosition = 0;
+        double positionAlongEdge, testDistance;
+        Edge minEdge = null;
+        Edge edge;
         for (int i = 0; i < this.edges.size(); i++) {
-            Edge edge = this.edges.get(i);
-            PointCh closestPoint = edge.pointAt(edge.positionClosestTo(point));
-            closestPoints[i] = closestPoint;
-        }
-
-        PointCh closestPoint = closestPoints[0];
-        double lengthOfEdges = 0;
-        double positionOfPoint = 0;
-        double squaredDistanceToReference = 0;
-
-        for (int i = 0; i < closestPoints.length; i++) {
-            if (i != 0)
-                lengthOfEdges += this.edges.get(i - 1).length();
-            if (point.squaredDistanceTo(closestPoints[i]) <= point.squaredDistanceTo(closestPoint)) {
-                closestPoint = closestPoints[i];
-                positionOfPoint = lengthOfEdges + this.edges.get(i).positionClosestTo(closestPoint);
-                squaredDistanceToReference = point.squaredDistanceTo(closestPoints[i]);
+            edge = this.edges.get(i);
+            positionAlongEdge = Math2.clamp(0, edge.positionClosestTo(point), edge.length());
+            testDistance = point.squaredDistanceTo(edge.pointAt(positionAlongEdge));
+            if (testDistance < minDistance) {
+                minEdge = edge;
+                minDistance = testDistance;
+                edgePosition = positionAlongEdge;
+                totalPosition = this.nodePositions[i] + positionAlongEdge;
             }
         }
-        return new RoutePoint(closestPoint, positionOfPoint, Math.sqrt(squaredDistanceToReference));
+        return new RoutePoint(minEdge.pointAt(edgePosition), totalPosition, Math.sqrt(minDistance));
     }
 
     private double[] getNodePositions() {

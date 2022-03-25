@@ -26,7 +26,7 @@ public final class ElevationProfileComputer {
         Preconditions.checkArgument(maxStepLength > 0);
 
         int nbOfSamples = (int) Math.ceil(route.length() / maxStepLength) + 1;
-        double stepLength = (float) (route.length() / (nbOfSamples - 1));
+        float stepLength = (float) (route.length() / (nbOfSamples - 1));
         float[] elevationSamples = new float[nbOfSamples];
         double alongEdgePosition = 0;
         int samplesIndex = 0;
@@ -42,7 +42,7 @@ public final class ElevationProfileComputer {
             }
         }
 
-        // Replace NaN in head and tail of array by closest real elevations
+        // replace NaN in head and tail of array by closest real elevations
         if (Float.isNaN(elevationSamples[0]) && arrayContainsRealValue(elevationSamples)) {
             int nextRealValueIndex = nextRealValueIndex(elevationSamples, 0);
             Arrays.fill(elevationSamples, 0, nextRealValueIndex, elevationSamples[nextRealValueIndex]);
@@ -55,7 +55,7 @@ public final class ElevationProfileComputer {
             Arrays.fill(elevationSamples, 0, elevationSamples.length, 0);
         }
 
-        // Replace NaN holes in array by interpolation from the closest real values
+        // replace NaN holes in array by interpolation from the closest real values
         while (arrayContainsNaN(elevationSamples)) {
             int NaNIndex = firstNaNIndex(elevationSamples);
             int nextRealValueIndex = nextRealValueIndex(elevationSamples, NaNIndex);

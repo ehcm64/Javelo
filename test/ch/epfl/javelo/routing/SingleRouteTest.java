@@ -578,4 +578,44 @@ class SingleRouteTest {
         assertEquals(1000, singleRoute.elevationAt(225.35678));
         assertEquals(1000, singleRoute.elevationAt(100000));
     }
+
+    @Test
+    void testNodeClosestTo() {
+        List<Edge> l = new ArrayList<Edge>();
+        PointCh fromPoint = new PointCh(SwissBounds.MIN_E, SwissBounds.MIN_N);
+        PointCh toPoint = new PointCh(SwissBounds.MIN_E + 5, SwissBounds.MIN_N);
+        float[] profileTab = {500f, 505f, 510f, 515f, 520f, 525f};
+        DoubleUnaryOperator profile = Functions.sampled(profileTab, 5);
+        Edge edge1 = new Edge(0, 1, fromPoint, toPoint, 5, profile);
+        l.add(edge1);
+        PointCh fromPoint2 = new PointCh(SwissBounds.MIN_E + 5, SwissBounds.MIN_N);
+        PointCh toPoint2 = new PointCh(SwissBounds.MIN_E + 10, SwissBounds.MIN_N);
+        float[] profileTab2 = {525f, 530f, 535f, 540f, 545f, 550f};
+        DoubleUnaryOperator profile2 = Functions.sampled(profileTab2, 5);
+        Edge edge2 = new Edge(1, 2, fromPoint2, toPoint2, 5, profile2);
+        l.add(edge2);
+        SingleRoute s = new SingleRoute(l);
+        assertEquals(2, s.nodeClosestTo(10));
+        assertEquals(2, s.nodeClosestTo(10.1));
+        assertEquals(2, s.nodeClosestTo(12));
+        assertEquals(2, s.nodeClosestTo(20));
+        assertEquals(2, s.nodeClosestTo(100));
+        for (double i = 0; i < 10.0; i += 0.1) {
+            //System.out.println("i=" + i + " closest=" + s.nodeClosestTo(i));
+            if (i <= 2.5) {
+                assertEquals(0, s.nodeClosestTo(i));
+            } else if (i <= 7.5) {
+                assertEquals(1, s.nodeClosestTo(i));
+            } else {
+                assertEquals(2, s.nodeClosestTo(i));
+            }
+        }
+        //according to the assistant, when we are at half way we should choose left node
+        assertEquals(0, s.nodeClosestTo(2.5));
+        assertEquals(1, s.nodeClosestTo(7.5));
+        assertEquals(0, s.nodeClosestTo(-1));
+        assertEquals(0, s.nodeClosestTo(0));
+        assertEquals(0, s.nodeClosestTo(-6));
+        assertEquals(0, s.nodeClosestTo(-1000));
+    }
 }

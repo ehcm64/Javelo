@@ -1,7 +1,9 @@
 package ch.epfl.javelo.routing;
 
 import ch.epfl.javelo.Functions;
+import ch.epfl.javelo.Math2;
 import ch.epfl.javelo.projection.PointCh;
+import ch.epfl.javelo.projection.SwissBounds;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -12,6 +14,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class ElevationProfileComputerTest {
+
+    private static final double DOUBLE_DELTA = 1e-4;
 
     @Test
     void elevationProfileExceptionTest() {
@@ -452,5 +456,37 @@ class ElevationProfileComputerTest {
         assertEquals(4600, ElevationProfileComputer.elevationProfile(route, 76).elevationAt(800));
         assertEquals(4600, ElevationProfileComputer.elevationProfile(route, 76).elevationAt(900));
         assertEquals(4600, ElevationProfileComputer.elevationProfile(route, 76).elevationAt(1000));
+    }
+
+    private PointCh relPoint(double e, double n) {
+        double newE = Math2.clamp(SwissBounds.MIN_E, SwissBounds.MIN_E + e, SwissBounds.MAX_E);
+        double newN = Math2.clamp(SwissBounds.MIN_N, SwissBounds.MIN_N + e, SwissBounds.MAX_N);
+        return new PointCh(newE, newN);
+    }
+
+    Route createInterpolatedTestRoute() {
+        List<Edge> edges = new ArrayList<>();
+        DoubleUnaryOperator profile1 = Functions.sampled(new float[]{0, 2, 4, 2, 1}, 4);
+        DoubleUnaryOperator profile2 = Functions.sampled(new float[]{1, 0, 2, 0, 2}, 2);
+        DoubleUnaryOperator profile3 = Functions.constant(Float.NaN);
+        edges.add(new Edge(0, 1, relPoint(1, 1), relPoint(10, 10), 4, profile1));
+        edges.add(new Edge(1, 2, relPoint(10, 10), relPoint(2, 20), 2, profile2));
+        edges.add(new Edge(2, 0, relPoint(20, 2), relPoint(4, 4), 1, profile3));
+        edges.add(new Edge(0, 3, relPoint(1, 1), relPoint(6, 1), 2, profile2));
+        return new SingleRoute(edges);
+    }
+
+    @Test
+    void elevationProfileDoesWorkWithInterpolatedRoute() {
+        Route r = createInterpolatedTestRoute();
+        float[] expectedSamples = {0, 1, 2, 3, 4, 3, 2, 1.5f, 1, 1, 0, 2, 0, 2, 1.5f, 1, 0, 2, 0, 2}; // step : 0.5, use this to double-check stuff.
+        ElevationProfile elev = ElevationProfileComputer.elevationProfile(r, 0.5);
+        assertEquals(r.length(), elev.length());
+        assertEquals(0, elev.minElevation(), DOUBLE_DELTA);
+        assertEquals(4, elev.maxElevation(), DOUBLE_DELTA);
+        assertEquals(12, elev.totalAscent(), DOUBLE_DELTA);
+        assertEquals(10, elev.totalDescent(), DOUBLE_DELTA);
+        assertEquals(1.5f, elev.elevationAt(6.5), DOUBLE_DELTA);
+        assertEquals(1.5f, elev.elevationAt(3.5), DOUBLE_DELTA);
     }
 }
