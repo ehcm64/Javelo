@@ -116,6 +116,7 @@ public final class SingleRoute implements Route {
     @Override
     public RoutePoint pointClosestTo(PointCh point) {
         PointCh[] closestPoints = new PointCh[this.edges.size()];
+
         for (int i = 0; i < this.edges.size(); i++) {
             Edge edge = this.edges.get(i);
             PointCh closestPoint = edge.pointAt(edge.positionClosestTo(point));
