@@ -120,20 +120,20 @@ public final class SingleRoute implements Route {
         double edgePosition = 0;
         double totalPosition = 0;
         double positionAlongEdge, testDistance;
-        Edge minEdge = null;
-        Edge edge;
+        Edge bestEdge = null;
+
         for (int i = 0; i < this.edges.size(); i++) {
-            edge = this.edges.get(i);
+            Edge edge = this.edges.get(i);
             positionAlongEdge = Math2.clamp(0, edge.positionClosestTo(point), edge.length());
             testDistance = point.squaredDistanceTo(edge.pointAt(positionAlongEdge));
             if (testDistance < minDistance) {
-                minEdge = edge;
+                bestEdge = edge;
                 minDistance = testDistance;
                 edgePosition = positionAlongEdge;
                 totalPosition = this.nodePositions[i] + positionAlongEdge;
             }
         }
-        return new RoutePoint(minEdge.pointAt(edgePosition), totalPosition, Math.sqrt(minDistance));
+        return new RoutePoint(bestEdge.pointAt(edgePosition), totalPosition, Math.sqrt(minDistance));
     }
 
     private double[] getNodePositions() {

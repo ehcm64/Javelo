@@ -2,6 +2,7 @@ package ch.epfl.javelo.routing;
 
 import ch.epfl.javelo.projection.PointCh;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -23,41 +24,96 @@ public final class MultiRoute implements Route {
 
     @Override
     public int indexOfSegmentAt(double position) {
-        return 0;
+        double positionMinusSegments = position;
+        int index = 0;
+        for (Route segment : this.segments) {
+            if (positionMinusSegments <= segment.length()) {
+                index += segment.indexOfSegmentAt(positionMinusSegments);
+            } else {
+                positionMinusSegments -= segment.length();
+                index += segment.indexOfSegmentAt(segment.length()) + 1;
+            }
+        }
+        return index;
     }
 
     @Override
     public double length() {
-        return 0;
+        double totalLength = 0;
+        for (Route segment : this.segments) {
+            totalLength += segment.length();
+        }
+        return totalLength;
     }
 
     @Override
     public List<Edge> edges() {
-        return null;
+        List<Edge> edges = new ArrayList<>();
+        for (Route segment : this.segments) {
+            edges.addAll(segment.edges());
+        }
+        return edges;
     }
 
     @Override
     public List<PointCh> points() {
-        return null;
+        List<PointCh> points = new ArrayList<>();
+        for (Route segment : this.segments) {
+            points.addAll(segment.points());
+        }
+        return points;
     }
 
     @Override
     public PointCh pointAt(double position) {
-        return null;
+        double positionMinusSegments = position;
+        for (Route segment : this.segments) {
+            if (positionMinusSegments <= segment.length()) {
+                return segment.pointAt(positionMinusSegments);
+            } else {
+                positionMinusSegments -= segment.length();
+            }
+        }
+        return pointAt(this.length());
     }
 
     @Override
     public double elevationAt(double position) {
-        return 0;
+        double positionMinusSegments = position;
+        for (Route segment : this.segments) {
+            if (positionMinusSegments <= segment.length()) {
+                return segment.elevationAt(positionMinusSegments);
+            } else {
+                positionMinusSegments -= segment.length();
+            }
+        }
+        return elevationAt(this.length());
     }
 
     @Override
     public int nodeClosestTo(double position) {
-        return 0;
+        double positionMinusSegments = position;
+        for (Route segment : this.segments) {
+            if (positionMinusSegments <= segment.length()) {
+                return segment.nodeClosestTo(positionMinusSegments);
+            } else {
+                positionMinusSegments -= segment.length();
+            }
+        }
+        return nodeClosestTo(this.length());
     }
 
     @Override
     public RoutePoint pointClosestTo(PointCh point) {
-        return null;
+        double minDistance = Double.MAX_VALUE;
+        RoutePoint closestPoint = null;
+        for (Route segment : this.segments) {
+            RoutePoint testPoint = segment.pointClosestTo(point);
+            if (testPoint.distanceToReference() < minDistance) {
+                minDistance = testPoint.distanceToReference();
+                closestPoint = testPoint;
+            }
+        }
+        return closestPoint;
     }
 }
