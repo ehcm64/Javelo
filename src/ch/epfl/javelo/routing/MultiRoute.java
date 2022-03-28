@@ -29,10 +29,9 @@ public final class MultiRoute implements Route {
         for (Route segment : this.segments) {
             if (positionMinusSegments <= segment.length()) {
                 index += segment.indexOfSegmentAt(positionMinusSegments);
-            } else {
-                positionMinusSegments -= segment.length();
-                index += segment.indexOfSegmentAt(segment.length()) + 1;
             }
+            positionMinusSegments -= segment.length();
+            index += segment.indexOfSegmentAt(segment.length()) + 1;
         }
         return index;
     }
@@ -70,9 +69,8 @@ public final class MultiRoute implements Route {
         for (Route segment : this.segments) {
             if (positionMinusSegments <= segment.length()) {
                 return segment.pointAt(positionMinusSegments);
-            } else {
-                positionMinusSegments -= segment.length();
             }
+            positionMinusSegments -= segment.length();
         }
         return pointAt(this.length());
     }
@@ -83,9 +81,8 @@ public final class MultiRoute implements Route {
         for (Route segment : this.segments) {
             if (positionMinusSegments <= segment.length()) {
                 return segment.elevationAt(positionMinusSegments);
-            } else {
-                positionMinusSegments -= segment.length();
             }
+            positionMinusSegments -= segment.length();
         }
         return elevationAt(this.length());
     }
@@ -96,9 +93,8 @@ public final class MultiRoute implements Route {
         for (Route segment : this.segments) {
             if (positionMinusSegments <= segment.length()) {
                 return segment.nodeClosestTo(positionMinusSegments);
-            } else {
-                positionMinusSegments -= segment.length();
             }
+            positionMinusSegments -= segment.length();
         }
         return nodeClosestTo(this.length());
     }
