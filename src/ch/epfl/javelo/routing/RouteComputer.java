@@ -2,10 +2,10 @@ package ch.epfl.javelo.routing;
 
 import ch.epfl.javelo.Preconditions;
 import ch.epfl.javelo.data.Graph;
+import ch.epfl.javelo.projection.PointCh;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.PriorityQueue;
+import java.util.*;
+import java.util.function.DoubleUnaryOperator;
 
 /**
  * Represents an itinerary planner.
@@ -37,33 +37,56 @@ public final class RouteComputer {
     public Route bestRouteBetween(int startNodeId, int endNodeId) {
         Preconditions.checkArgument(startNodeId != endNodeId);
 
-        List<Double> distances = new ArrayList<>();
+        Map<Integer, Double> distances = new TreeMap<>();
         PriorityQueue<WeightedNode> exploring = new PriorityQueue<>();
-        List<Integer> predecessors = new ArrayList<>();
+        Map<Integer, Integer> predecessors = new TreeMap<>();
 
-        for (int i = 0; i <= endNodeId - startNodeId; i++) {
-            distances.add(Double.POSITIVE_INFINITY);
-            predecessors.add(0);
+        for (int nodeId = 0; nodeId < graph.nodeCount(); nodeId++) {
+            distances.put(nodeId, Double.POSITIVE_INFINITY);
+            predecessors.put(nodeId, 0);
         }
-        distances.set(0, 0d);
+        distances.put(0, 0d);
         exploring.add(new WeightedNode(startNodeId, 0d));
 
         while (exploring.size() != 0) {
             WeightedNode node = exploring.remove();
-            distances.set(node.nodeId - startNodeId, Double.NEGATIVE_INFINITY);
+            distances.put(node.nodeId, Double.NEGATIVE_INFINITY);
 
             if (node.nodeId == endNodeId) {
+                List<Integer> nodes = new ArrayList<>();
+                int nodeId = endNodeId;
+                while (nodeId != startNodeId) {
+                    int predecessor = predecessors.get(nodeId);
+                    nodes.add(predecessor);
+                    nodeId = predecessor;
+                }
+                Collections.reverse(nodes);
                 List<Edge> edges = new ArrayList<>();
-                return null;
+                for (int i = 0; i < nodes.size() - 1; i++) {
+                    int fromNodeId = nodes.get(i);
+                    int toNodeId = nodes.get(i + 1);
+                    PointCh fromPoint = graph.nodePoint(fromNodeId);
+                    PointCh toPoint = graph.nodePoint(toNodeId);
+                    int edgeId = 0;
+                    for (int j = 0; j < graph.nodeOutDegree(fromNodeId); j++) {
+                        edgeId = graph.nodeOutEdgeId(fromNodeId, j);
+                        if (graph.edgeTargetNodeId(edgeId) == toNodeId)
+                            break;
+                    }
+                    double length = graph.edgeLength(edgeId);
+                    DoubleUnaryOperator profile = graph.edgeProfile(edgeId);
+                    edges.add(new Edge(fromNodeId, toNodeId, fromPoint, toPoint, length, profile));
+                }
+                return new SingleRoute(edges);
             }
 
-            for (int i = 0; i < graph.nodeOutDegree(node.nodeId); i++) {
-                int edgeId = graph.nodeOutEdgeId(node.nodeId, i);
+            for (int edgeIndex = 0; edgeIndex < graph.nodeOutDegree(node.nodeId); edgeIndex++) {
+                int edgeId = graph.nodeOutEdgeId(node.nodeId, edgeIndex);
                 int arrivalNodeId = graph.edgeTargetNodeId(edgeId);
-                double distance = node.distance + graph.edgeLength(edgeId);
-                if (distance < distances.get(arrivalNodeId - startNodeId)) {
-                    distances.set(arrivalNodeId - startNodeId, distance);
-                    predecessors.set(arrivalNodeId - startNodeId, node.nodeId);
+                double distance = node.distance + this.costFunction.costFactor(node.nodeId, edgeId) * graph.edgeLength(edgeId);
+                if (distance < distances.get(arrivalNodeId)) {
+                    distances.put(arrivalNodeId, distance);
+                    predecessors.put(arrivalNodeId, node.nodeId);
                     exploring.add(new WeightedNode(arrivalNodeId, distance));
                 }
             }
