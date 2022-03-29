@@ -55,7 +55,9 @@ public final class RouteComputer {
             WeightedNode node = exploring.remove();
             distances.set(node.nodeId, Float.NEGATIVE_INFINITY);
             if (node.nodeId == endNodeId) {
-                List<Integer> routeNodes = getRouteNodes(predecessors, endNodeId, startNodeId);
+                List<Integer> routeNodes = getRouteNodes(predecessors,
+                        endNodeId,
+                        startNodeId);
                 List<Edge> edges = getRouteEdges(routeNodes);
                 return new SingleRoute(edges);
             }
