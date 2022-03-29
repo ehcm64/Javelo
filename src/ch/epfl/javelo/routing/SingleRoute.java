@@ -18,7 +18,6 @@ public final class SingleRoute implements Route {
     private final List<Edge> edges;
     private final double[] nodePositions;
     private final Edge FIRST_EDGE;
-    private final Edge LAST_EDGE;
 
     /**
      * Creates a single route from a given list of edges.
@@ -30,7 +29,6 @@ public final class SingleRoute implements Route {
         this.edges = List.copyOf(edges);
         this.nodePositions = getNodePositions();
         this.FIRST_EDGE = this.edges.get(0);
-        this.LAST_EDGE = this.edges.get(this.edges.size() - 1);
     }
 
     @Override
@@ -64,31 +62,28 @@ public final class SingleRoute implements Route {
 
     @Override
     public PointCh pointAt(double position) {
-        if (position <= 0)
+        double clamp = Math2.clamp(0, position, this.length());
+        int index = Arrays.binarySearch(this.nodePositions, clamp);
+        if (index == 0)
             return FIRST_EDGE.fromPoint();
-        if (position > this.length())
-            return LAST_EDGE.toPoint();
-
-        int index = Arrays.binarySearch(this.nodePositions, position);
         if (index > 0) {
             return this.edges.get(index - 1).toPoint();
         } else {
             int indexOfNode = -index - 2;
-            double positionAlongEdge = position - this.nodePositions[indexOfNode];
+            double positionAlongEdge = clamp - this.nodePositions[indexOfNode];
             return this.edges.get(indexOfNode).pointAt(positionAlongEdge);
         }
     }
 
     @Override
     public double elevationAt(double position) {
-        if (position <= 0)
+        double clamp = Math2.clamp(0, position, this.length());
+        int index = Arrays.binarySearch(this.nodePositions, clamp);
+        if (index == 0)
             return FIRST_EDGE.elevationAt(0);
-        if (position >= this.length())
-            return LAST_EDGE.elevationAt(LAST_EDGE.length());
-
-        int index = Arrays.binarySearch(this.nodePositions, position);
         if (index > 0) {
-            return this.edges.get(index).elevationAt(0);
+            Edge edge = this.edges.get(index - 1);
+            return edge.elevationAt(edge.length());
         } else {
             int indexOfNode = -index - 2;
             double positionAlongEdge = position - this.nodePositions[indexOfNode];
@@ -98,12 +93,10 @@ public final class SingleRoute implements Route {
 
     @Override
     public int nodeClosestTo(double position) {
-        if (position <= 0)
+        double clamp = Math2.clamp(0, position, this.length());
+        int index = Arrays.binarySearch(nodePositions, clamp);
+        if (index == 0)
             return FIRST_EDGE.fromNodeId();
-        if (position >= this.length())
-            return LAST_EDGE.toNodeId();
-
-        int index = Arrays.binarySearch(nodePositions, position);
         if (index > 0) {
             return this.edges.get(index - 1).toNodeId();
         } else {
@@ -116,7 +109,7 @@ public final class SingleRoute implements Route {
 
     @Override
     public RoutePoint pointClosestTo(PointCh point) {
-        double minDistance = Double.MAX_VALUE;
+        double minDistance = Double.POSITIVE_INFINITY;
         double edgePosition = 0;
         double totalPosition = 0;
         double positionAlongEdge, testDistance;

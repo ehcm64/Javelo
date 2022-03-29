@@ -1,5 +1,6 @@
 package ch.epfl.javelo.routing;
 
+import ch.epfl.javelo.Math2;
 import ch.epfl.javelo.projection.PointCh;
 
 import java.util.ArrayList;
@@ -24,7 +25,7 @@ public final class MultiRoute implements Route {
 
     @Override
     public int indexOfSegmentAt(double position) {
-        double positionMinusSegments = position;
+        double positionMinusSegments = Math2.clamp(0, position, this.length());
         int index = 0;
         for (Route segment : this.segments) {
             if (positionMinusSegments <= segment.length()) {
@@ -65,7 +66,7 @@ public final class MultiRoute implements Route {
 
     @Override
     public PointCh pointAt(double position) {
-        double positionMinusSegments = position;
+        double positionMinusSegments = Math2.clamp(0, position, this.length());
         for (Route segment : this.segments) {
             if (positionMinusSegments <= segment.length()) {
                 return segment.pointAt(positionMinusSegments);
@@ -77,7 +78,7 @@ public final class MultiRoute implements Route {
 
     @Override
     public double elevationAt(double position) {
-        double positionMinusSegments = position;
+        double positionMinusSegments = Math2.clamp(0, position, this.length());
         for (Route segment : this.segments) {
             if (positionMinusSegments <= segment.length()) {
                 return segment.elevationAt(positionMinusSegments);
@@ -89,7 +90,7 @@ public final class MultiRoute implements Route {
 
     @Override
     public int nodeClosestTo(double position) {
-        double positionMinusSegments = position;
+        double positionMinusSegments = Math2.clamp(0, position, this.length());
         for (Route segment : this.segments) {
             if (positionMinusSegments <= segment.length()) {
                 return segment.nodeClosestTo(positionMinusSegments);
@@ -101,7 +102,7 @@ public final class MultiRoute implements Route {
 
     @Override
     public RoutePoint pointClosestTo(PointCh point) {
-        double minDistance = Double.MAX_VALUE;
+        double minDistance = Double.POSITIVE_INFINITY;
         RoutePoint closestPoint = null;
         for (Route segment : this.segments) {
             RoutePoint testPoint = segment.pointClosestTo(point);

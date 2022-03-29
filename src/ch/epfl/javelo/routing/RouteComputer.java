@@ -1,6 +1,10 @@
 package ch.epfl.javelo.routing;
 
+import ch.epfl.javelo.Preconditions;
 import ch.epfl.javelo.data.Graph;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Represents an itinerary planner.
@@ -8,6 +12,8 @@ import ch.epfl.javelo.data.Graph;
  * @author Edouard Mignan (345875) and Timo Moebel (345665)
  */
 public final class RouteComputer {
+    private final Graph graph;
+    private final CostFunction costFunction;
 
     /**
      * Creates a route planner from the given graph and cost function.
@@ -16,7 +22,8 @@ public final class RouteComputer {
      * @param costFunction the cost function
      */
     public RouteComputer(Graph graph, CostFunction costFunction) {
-
+        this.graph = graph;
+        this.costFunction = costFunction;
     }
 
     /**
@@ -27,6 +34,16 @@ public final class RouteComputer {
      * @return the best route between the two nodes
      */
     public Route bestRouteBetween(int startNodeId, int endNodeId) {
+        Preconditions.checkArgument(startNodeId != endNodeId);
+        double[] distances = new double[endNodeId - startNodeId + 1];
+        distances[0] = 0;
+        for (int i = 1; i < distances.length; i++) {
+            distances[i] = Double.POSITIVE_INFINITY;
+        }
+
+        List<Integer> exploring = new ArrayList<>();
+        exploring.add(startNodeId);
+
         return null;
     }
 }
