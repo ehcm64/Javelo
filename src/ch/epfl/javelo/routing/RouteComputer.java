@@ -5,6 +5,7 @@ import ch.epfl.javelo.data.Graph;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.PriorityQueue;
 
 /**
  * Represents an itinerary planner.
@@ -35,15 +36,45 @@ public final class RouteComputer {
      */
     public Route bestRouteBetween(int startNodeId, int endNodeId) {
         Preconditions.checkArgument(startNodeId != endNodeId);
-        double[] distances = new double[endNodeId - startNodeId + 1];
-        distances[0] = 0;
-        for (int i = 1; i < distances.length; i++) {
-            distances[i] = Double.POSITIVE_INFINITY;
+
+        List<Double> distances = new ArrayList<>();
+        PriorityQueue<WeightedNode> exploring = new PriorityQueue<>();
+        List<Integer> predecessors = new ArrayList<>();
+
+        for (int i = 0; i <= endNodeId - startNodeId; i++) {
+            distances.add(Double.POSITIVE_INFINITY);
+            predecessors.add(0);
         }
+        distances.set(0, 0d);
+        exploring.add(new WeightedNode(startNodeId, 0d));
 
-        List<Integer> exploring = new ArrayList<>();
-        exploring.add(startNodeId);
+        while (exploring.size() != 0) {
+            WeightedNode node = exploring.remove();
+            distances.set(node.nodeId - startNodeId, Double.NEGATIVE_INFINITY);
 
+            if (node.nodeId == endNodeId) {
+                List<Edge> edges = new ArrayList<>();
+                return null;
+            }
+
+            for (int i = 0; i < graph.nodeOutDegree(node.nodeId); i++) {
+                int edgeId = graph.nodeOutEdgeId(node.nodeId, i);
+                int arrivalNodeId = graph.edgeTargetNodeId(edgeId);
+                double distance = node.distance + graph.edgeLength(edgeId);
+                if (distance < distances.get(arrivalNodeId - startNodeId)) {
+                    distances.set(arrivalNodeId - startNodeId, distance);
+                    predecessors.set(arrivalNodeId - startNodeId, node.nodeId);
+                    exploring.add(new WeightedNode(arrivalNodeId, distance));
+                }
+            }
+        }
         return null;
+    }
+
+    record WeightedNode(int nodeId, double distance) implements Comparable<WeightedNode> {
+        @Override
+        public int compareTo(WeightedNode that) {
+            return Double.compare(this.distance, that.distance);
+        }
     }
 }
