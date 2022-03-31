@@ -30,9 +30,10 @@ public final class MultiRoute implements Route {
         for (Route segment : this.segments) {
             if (positionMinusSegments <= segment.length()) {
                 index += segment.indexOfSegmentAt(positionMinusSegments);
+            } else {
+                positionMinusSegments -= segment.length();
+                index += segment.indexOfSegmentAt(segment.length()) + 1;
             }
-            positionMinusSegments -= segment.length();
-            index += segment.indexOfSegmentAt(segment.length()) + 1;
         }
         return index;
     }
@@ -58,8 +59,11 @@ public final class MultiRoute implements Route {
     @Override
     public List<PointCh> points() {
         List<PointCh> points = new ArrayList<>();
+        points.add(this.pointAt(0));
         for (Route segment : this.segments) {
-            points.addAll(segment.points());
+            List<PointCh> pointsMinus0 = segment.points();
+            pointsMinus0.remove(0);
+            points.addAll(pointsMinus0);
         }
         return points;
     }
@@ -70,8 +74,9 @@ public final class MultiRoute implements Route {
         for (Route segment : this.segments) {
             if (positionMinusSegments <= segment.length()) {
                 return segment.pointAt(positionMinusSegments);
+            } else {
+                positionMinusSegments -= segment.length();
             }
-            positionMinusSegments -= segment.length();
         }
         return pointAt(this.length());
     }
@@ -82,8 +87,9 @@ public final class MultiRoute implements Route {
         for (Route segment : this.segments) {
             if (positionMinusSegments <= segment.length()) {
                 return segment.elevationAt(positionMinusSegments);
+            } else {
+                positionMinusSegments -= segment.length();
             }
-            positionMinusSegments -= segment.length();
         }
         return elevationAt(this.length());
     }
@@ -94,8 +100,9 @@ public final class MultiRoute implements Route {
         for (Route segment : this.segments) {
             if (positionMinusSegments <= segment.length()) {
                 return segment.nodeClosestTo(positionMinusSegments);
+            } else {
+                positionMinusSegments -= segment.length();
             }
-            positionMinusSegments -= segment.length();
         }
         return nodeClosestTo(this.length());
     }
@@ -104,13 +111,20 @@ public final class MultiRoute implements Route {
     public RoutePoint pointClosestTo(PointCh point) {
         double minDistance = Double.POSITIVE_INFINITY;
         RoutePoint closestPoint = null;
-        for (Route segment : this.segments) {
+        double globalPosition = 0;
+        double pointPosition = 0;
+        for (int i = 0; i < this.segments.size(); i++) {
+            Route segment = this.segments.get(i);
             RoutePoint testPoint = segment.pointClosestTo(point);
+            if (i != 0)
+                globalPosition += this.segments.get(i - 1).length();
             if (testPoint.distanceToReference() < minDistance) {
                 minDistance = testPoint.distanceToReference();
                 closestPoint = testPoint;
+                pointPosition = testPoint.position() + globalPosition;
             }
         }
-        return closestPoint;
+        double positionDifference = pointPosition - closestPoint.position();
+        return closestPoint.withPositionShiftedBy(positionDifference);
     }
 }
