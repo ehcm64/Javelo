@@ -133,7 +133,7 @@ public class Graph {
      * Returns the index of the node closest to a given point.
      *
      * @param point          the point in swiss coordinates
-     * @param searchDistance the maximum search distance around the point
+     * @param searchDistance the maximum search startDistance around the point
      * @return the index of the closest node, or -1 if there is no node
      */
     public int nodeClosestTo(PointCh point, double searchDistance) {

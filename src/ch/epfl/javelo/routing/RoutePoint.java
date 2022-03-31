@@ -36,7 +36,7 @@ public record RoutePoint(PointCh point, double position, double distanceToRefere
      *
      * @param thatPoint               other point
      * @param thatPosition            other point's position
-     * @param thatDistanceToReference other point's distance to reference point
+     * @param thatDistanceToReference other point's startDistance to reference point
      * @return the closest RoutePoint
      */
     public RoutePoint min(PointCh thatPoint, double thatPosition, double thatDistanceToReference) {

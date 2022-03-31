@@ -38,22 +38,26 @@ public final class RouteComputer {
      * @return the best route between the two nodes
      */
     public Route bestRouteBetween(int startNodeId, int endNodeId) {
+        // Initialisation
         Preconditions.checkArgument(startNodeId != endNodeId);
-
-        List<Float> distances = new ArrayList<>();
+        float[] distances = new float[graph.nodeCount()];
+        int[] predecessors = new int[graph.nodeCount()];
         PriorityQueue<WeightedNode> exploring = new PriorityQueue<>();
-        List<Integer> predecessors = new ArrayList<>();
 
         for (int nodeId = 0; nodeId < graph.nodeCount(); nodeId++) {
-            distances.add(Float.POSITIVE_INFINITY);
-            predecessors.add(0);
+            distances[nodeId] = Float.POSITIVE_INFINITY;
+            predecessors[nodeId] = 0;
         }
-        distances.set(0, 0f);
-        exploring.add(new WeightedNode(startNodeId, 0f));
+        distances[0] = 0f;
+        float startToEndDistance = (float) graph.nodePoint(startNodeId)
+                .distanceTo(graph.nodePoint(endNodeId));
+        exploring.add(new WeightedNode(startNodeId, 0f, startToEndDistance));
 
+        // Node exploration loop
         while (exploring.size() != 0) {
             WeightedNode node = exploring.remove();
-            distances.set(node.nodeId, Float.NEGATIVE_INFINITY);
+            distances[node.nodeId] = Float.NEGATIVE_INFINITY;
+            // End node found
             if (node.nodeId == endNodeId) {
                 List<Integer> routeNodes = getRouteNodes(predecessors,
                         endNodeId,
@@ -61,28 +65,31 @@ public final class RouteComputer {
                 List<Edge> edges = getRouteEdges(routeNodes);
                 return new SingleRoute(edges);
             }
+            // Exploration of all the nodes' edges
             int nbOfEdges = graph.nodeOutDegree(node.nodeId);
             for (int edgeIndex = 0; edgeIndex < nbOfEdges; edgeIndex++) {
                 int edgeId = graph.nodeOutEdgeId(node.nodeId, edgeIndex);
                 int arrivalNodeId = graph.edgeTargetNodeId(edgeId);
-                float distance = (float) (node.distance
+                float distance = (float) (node.startDistance
                         + this.costFunction.costFactor(node.nodeId, edgeId)
                         * graph.edgeLength(edgeId));
-                if (distance < distances.get(arrivalNodeId)) {
-                    distances.set(arrivalNodeId, distance);
-                    predecessors.set(arrivalNodeId, node.nodeId);
-                    exploring.add(new WeightedNode(arrivalNodeId, distance));
+                if (distance < distances[arrivalNodeId]) {
+                    distances[arrivalNodeId] = distance;
+                    predecessors[arrivalNodeId] = node.nodeId;
+                    float distanceToEnd = (float) graph.nodePoint(arrivalNodeId)
+                            .distanceTo(graph.nodePoint(endNodeId));
+                    exploring.add(new WeightedNode(arrivalNodeId, distance, distanceToEnd));
                 }
             }
         }
         return null;
     }
 
-    private List<Integer> getRouteNodes(List<Integer> predecessors, int endNodeId, int startNodeId) {
+    private List<Integer> getRouteNodes(int[] predecessors, int endNodeId, int startNodeId) {
         List<Integer> routeNodes = new ArrayList<>();
         int nodeId = endNodeId;
         while (nodeId != startNodeId) {
-            int predecessor = predecessors.get(nodeId);
+            int predecessor = predecessors[nodeId];
             routeNodes.add(predecessor);
             nodeId = predecessor;
         }
@@ -92,14 +99,14 @@ public final class RouteComputer {
 
     private List<Edge> getRouteEdges(List<Integer> routeNodes) {
         List<Edge> edges = new ArrayList<>();
-        for (int i = 0; i < routeNodes.size() - 1; i++) {
-            int fromNodeId = routeNodes.get(i);
-            int toNodeId = routeNodes.get(i + 1);
+        for (int nodeId = 0; nodeId < routeNodes.size() - 1; nodeId++) {
+            int fromNodeId = routeNodes.get(nodeId);
+            int toNodeId = routeNodes.get(nodeId + 1);
             PointCh fromPoint = graph.nodePoint(fromNodeId);
             PointCh toPoint = graph.nodePoint(toNodeId);
             int edgeId = 0;
-            for (int j = 0; j < graph.nodeOutDegree(fromNodeId); j++) {
-                edgeId = graph.nodeOutEdgeId(fromNodeId, j);
+            for (int i = 0; i < graph.nodeOutDegree(fromNodeId); i++) {
+                edgeId = graph.nodeOutEdgeId(fromNodeId, i);
                 if (graph.edgeTargetNodeId(edgeId) == toNodeId)
                     break;
             }
@@ -110,10 +117,13 @@ public final class RouteComputer {
         return edges;
     }
 
-    record WeightedNode(int nodeId, float distance) implements Comparable<WeightedNode> {
+    record WeightedNode(int nodeId, float startDistance,
+                        float endDistance) implements Comparable<WeightedNode> {
+
         @Override
         public int compareTo(WeightedNode that) {
-            return Float.compare(this.distance, that.distance);
+            return Float.compare(this.startDistance + this.endDistance
+                    , that.startDistance + that.endDistance);
         }
     }
 }

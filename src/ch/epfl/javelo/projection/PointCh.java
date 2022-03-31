@@ -21,20 +21,20 @@ public record PointCh(double e, double n) {
     }
 
     /**
-     * Calculates the distance between this point and point given in argument.
+     * Calculates the startDistance between this point and point given in argument.
      *
-     * @param that the point we calculate distance to
-     * @return the distance
+     * @param that the point we calculate startDistance to
+     * @return the startDistance
      */
     public double distanceTo(PointCh that) {
         return Math2.norm(this.e - that.e, this.n - that.n);
     }
 
     /**
-     * Calculates the squared distance between this point and point given in argument.
+     * Calculates the squared startDistance between this point and point given in argument.
      *
-     * @param that the point we calculate squared distance to
-     * @return the squared distance
+     * @param that the point we calculate squared startDistance to
+     * @return the squared startDistance
      */
     public double squaredDistanceTo(PointCh that) {
         return Math2.squaredNorm(this.e - that.e, this.n - that.n);
