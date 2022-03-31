@@ -65,7 +65,8 @@ public record GraphNodes(IntBuffer buffer) {
      * @return the index of the edge
      */
     public int edgeId(int nodeId, int edgeIndex) {
-        Preconditions.checkArgument(0 <= edgeIndex && edgeIndex < outDegree(nodeId));
+        Preconditions.checkArgument(0 <= edgeIndex
+                && edgeIndex < outDegree(nodeId));
         int nbOfEdgesAndFirstEdgeId = buffer.get(nodeId * NODE_INTS + OFFSET_OUT_EDGES);
         int firstEdgeId = Bits.extractUnsigned(nbOfEdgesAndFirstEdgeId, 0, 28);
         return firstEdgeId + edgeIndex;

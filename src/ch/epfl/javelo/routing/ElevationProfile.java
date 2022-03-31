@@ -22,10 +22,13 @@ public class ElevationProfile {
      * @param elevationSamples the array containing the elevations (float) at fixed intervals
      */
     public ElevationProfile(double length, float[] elevationSamples) {
-        Preconditions.checkArgument(length > 0 && elevationSamples.length >= 2);
+        Preconditions.checkArgument(length > 0
+                && elevationSamples.length >= 2);
         this.length = length;
         this.elevationSamples = new float[elevationSamples.length];
-        System.arraycopy(elevationSamples, 0, this.elevationSamples, 0, elevationSamples.length);
+        System.arraycopy(elevationSamples, 0,
+                this.elevationSamples, 0,
+                elevationSamples.length);
         this.samplesStatistics = new DoubleSummaryStatistics();
         for (float elevation : this.elevationSamples) {
             this.samplesStatistics.accept(elevation);

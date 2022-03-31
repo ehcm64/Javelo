@@ -121,7 +121,8 @@ public final class SingleRoute implements Route {
             positionAlongEdge = Math2.clamp(0,
                     edge.positionClosestTo(point),
                     edge.length());
-            testDistance = point.squaredDistanceTo(edge.pointAt(positionAlongEdge));
+            testDistance = point.squaredDistanceTo(
+                    edge.pointAt(positionAlongEdge));
             if (testDistance < minDistance) {
                 bestEdge = edge;
                 minDistance = testDistance;

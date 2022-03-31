@@ -142,8 +142,11 @@ public class Graph {
         List<GraphSectors.Sector> sectorsInArea = sectors.sectorsInArea(point, searchDistance);
         for (GraphSectors.Sector sector : sectorsInArea) {
             for (int nodeId = sector.startNodeId(); nodeId < sector.endNodeId(); nodeId++) {
-                PointCh nodePoint = new PointCh(this.nodes.nodeE(nodeId), this.nodes.nodeN(nodeId));
-                if (point.squaredDistanceTo(nodePoint) <= point.squaredDistanceTo(comparisonPoint)) {
+                PointCh nodePoint = new PointCh(
+                        this.nodes.nodeE(nodeId),
+                        this.nodes.nodeN(nodeId));
+                if (point.squaredDistanceTo(nodePoint)
+                        <= point.squaredDistanceTo(comparisonPoint)) {
                     closestAcceptableNodeId = nodeId;
                     comparisonPoint = nodePoint;
                 }

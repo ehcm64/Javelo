@@ -121,7 +121,9 @@ public final class Math2 {
      * @param pY the y coordinate of point P
      * @return the length of the projection
      */
-    public static double projectionLength(double aX, double aY, double bX, double bY, double pX, double pY) {
+    public static double projectionLength(double aX, double aY,
+                                          double bX, double bY,
+                                          double pX, double pY) {
         double uX = pX - aX;
         double uY = pY - aY;
 

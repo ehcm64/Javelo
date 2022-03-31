@@ -17,7 +17,10 @@ public record PointCh(double e, double n) {
      * @param n the north coordinate of the point
      */
     public PointCh {
-        Preconditions.checkArgument(e <= SwissBounds.MAX_E && e >= SwissBounds.MIN_E && n <= SwissBounds.MAX_N && n >= SwissBounds.MIN_N);
+        Preconditions.checkArgument(e <= SwissBounds.MAX_E
+                && e >= SwissBounds.MIN_E
+                && n <= SwissBounds.MAX_N
+                && n >= SwissBounds.MIN_N);
     }
 
     /**

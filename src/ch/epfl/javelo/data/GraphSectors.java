@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Represents the array containing the 16384 sectors of JaVelo
+ * Represents the array containing the sectors of JaVelo
  *
  * @author Timo Moebel (345665)
  */
@@ -25,13 +25,15 @@ public record GraphSectors(ByteBuffer buffer) {
     }
 
     private static int xToSectorCoords(double e) {
-        double x = 128 / SwissBounds.WIDTH * e - 128 * SwissBounds.MIN_E / SwissBounds.WIDTH;
+        double x = 128 / SwissBounds.WIDTH * e
+                - 128 * SwissBounds.MIN_E / SwissBounds.WIDTH;
         return (int) x;
 
     }
 
     private static int yToSectorCoords(double n) {
-        double y = 128 / SwissBounds.HEIGHT * n - 128 * SwissBounds.MIN_N / SwissBounds.HEIGHT;
+        double y = 128 / SwissBounds.HEIGHT * n
+                - 128 * SwissBounds.MIN_N / SwissBounds.HEIGHT;
         return (int) y;
 
     }
@@ -57,7 +59,8 @@ public record GraphSectors(ByteBuffer buffer) {
                     continue;
                 int index = 128 * y + x;
                 int firstNode = buffer.getInt(index * OFFSET_SUM);
-                int nodesNumber = Short.toUnsignedInt(buffer().getShort(index * OFFSET_SUM + OFFSET_INTEGER));
+                int nodesNumber = Short.toUnsignedInt(
+                        buffer().getShort(index * OFFSET_SUM + OFFSET_INTEGER));
                 int lastNode = firstNode + nodesNumber;
                 Sector s = new Sector(firstNode, lastNode);
                 sectors.add(s);

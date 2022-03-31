@@ -44,16 +44,18 @@ public final class ElevationProfileComputer {
         }
 
         int LastIndex = elevationSamples.length - 1;
+        float firstSample = elevationSamples[0];
+        float lastSample = elevationSamples[LastIndex];
 
         // replace NaN in head and tail of array by closest real elevations
-        if (Float.isNaN(elevationSamples[0]) && containsRealValue(elevationSamples)) {
+        if (Float.isNaN(firstSample) && containsRealValue(elevationSamples)) {
             int nextRealIndex = nextRealIndex(elevationSamples, 0);
             Arrays.fill(elevationSamples,
                     0,
                     nextRealIndex,
                     elevationSamples[nextRealIndex]);
         }
-        if (Float.isNaN(elevationSamples[LastIndex]) && containsRealValue(elevationSamples)) {
+        if (Float.isNaN(lastSample) && containsRealValue(elevationSamples)) {
             int previousRealIndex = previousRealIndex(elevationSamples, LastIndex);
             Arrays.fill(elevationSamples,
                     previousRealIndex + 1,

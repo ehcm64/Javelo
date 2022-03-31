@@ -11,8 +11,8 @@ import java.util.function.DoubleUnaryOperator;
  *
  * @author Timo Moebel (345665)
  */
-public record Edge(int fromNodeId, int toNodeId, PointCh fromPoint, PointCh toPoint, double length,
-                   DoubleUnaryOperator profile) {
+public record Edge(int fromNodeId, int toNodeId, PointCh fromPoint, PointCh toPoint,
+                   double length, DoubleUnaryOperator profile) {
 
     /**
      * Static method to create an edge from given arguments.

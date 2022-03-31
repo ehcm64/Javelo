@@ -18,7 +18,7 @@ class RouteComputerTest {
         Route r = rc.bestRouteBetween(159049, 117669);
         System.out.printf("Itinéraire calculé en %d ms\n",
                 (System.nanoTime() - t0) / 1_000_000);
-        KmlPrinter.write("javelo.kml", r);
+        KmlPrinter.write("test1.kml", r);
     }
 
     @Test
@@ -30,6 +30,6 @@ class RouteComputerTest {
         Route r = rc.bestRouteBetween(2046055, 2694240);
         System.out.printf("Itinéraire calculé en %d ms\n",
                 (System.nanoTime() - t0) / 1_000_000);
-        KmlPrinter.write("javelo.kml", r);
+        KmlPrinter.write("test2.kml", r);
     }
 }

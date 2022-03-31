@@ -75,8 +75,12 @@ public final class Functions {
             } else {
                 double step = xMax / (this.samples.length - 1);
                 for (int i = 1; i < this.samples.length; i++) {
-                    if (x < i * step)
-                        return Math2.interpolate(this.samples[i - 1], this.samples[i], (x - (i - 1) * step) / step);
+                    if (x < i * step) {
+                        double newX = (x / step) - i + 1;
+                        return Math2.interpolate(this.samples[i - 1],
+                                this.samples[i],
+                                newX);
+                    }
                 }
             }
             return this.samples[this.samples.length - 1];

@@ -8,7 +8,8 @@ import ch.epfl.javelo.projection.PointCh;
  * @author Timo Moebel (345665)
  */
 public record RoutePoint(PointCh point, double position, double distanceToReference) {
-    public static final RoutePoint NONE = new RoutePoint(null, Double.NaN, Double.POSITIVE_INFINITY);
+    public static final RoutePoint NONE =
+            new RoutePoint(null, Double.NaN, Double.POSITIVE_INFINITY);
 
     /**
      * Returns an identical point but with position shifted by a given difference.
@@ -17,7 +18,9 @@ public record RoutePoint(PointCh point, double position, double distanceToRefere
      * @return the same point but with a different position attribute
      */
     public RoutePoint withPositionShiftedBy(double positionDifference) {
-        return new RoutePoint(this.point, this.position + positionDifference, this.distanceToReference);
+        return new RoutePoint(this.point,
+                this.position + positionDifference,
+                this.distanceToReference);
     }
 
     /**
@@ -40,6 +43,7 @@ public record RoutePoint(PointCh point, double position, double distanceToRefere
      * @return the closest RoutePoint
      */
     public RoutePoint min(PointCh thatPoint, double thatPosition, double thatDistanceToReference) {
-        return this.distanceToReference <= thatDistanceToReference ? this : new RoutePoint(thatPoint, thatPosition, thatDistanceToReference);
+        return this.distanceToReference <= thatDistanceToReference ?
+                this : new RoutePoint(thatPoint, thatPosition, thatDistanceToReference);
     }
 }
