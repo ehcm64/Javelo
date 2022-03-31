@@ -165,7 +165,7 @@ public class MultiRouteTest {
         //Tester les élévations
         assertEquals(300, route.elevationAt(0));
         assertEquals(300, route.elevationAt(101));
-        //TODO FIX assertEquals(405, route.elevationAt(111));
+        assertEquals(405, route.elevationAt(200));
         assertEquals(400, route.elevationAt(213));
         //TODO FIX assertEquals(400, route.elevationAt(233));
         assertEquals(fromNodeId1, route.nodeClosestTo(0));

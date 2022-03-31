@@ -27,7 +27,7 @@ public final class Functions {
      * Returns a function mapping a set of values between 0 and a maximum value
      *
      * @param samples set of values
-     * @param xMax maximum value
+     * @param xMax    maximum step value
      * @return a function
      */
     public static DoubleUnaryOperator sampled(float[] samples, double xMax) {
@@ -44,7 +44,8 @@ public final class Functions {
 
         /**
          * Returns the constant value for each value
-         * @param x input value
+         *
+         * @param x the input value
          * @return the constant
          */
         @Override
@@ -64,9 +65,10 @@ public final class Functions {
         }
 
         /**
-         * Returns the value related to an input value
-         * @param x input value
-         * @return related value
+         * Returns the f(x) by interpolation
+         *
+         * @param x the input value
+         * @return the image of x
          */
         @Override
         public double applyAsDouble(double x) {
