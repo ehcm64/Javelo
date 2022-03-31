@@ -43,8 +43,8 @@ public class MultiRouteTest {
         int toNodeId12 = 15;
         double length11 = 101;
         double length12 = 10;
-        DoubleUnaryOperator a1 = Functions.sampled(samples11, 2);
-        DoubleUnaryOperator b1 = Functions.sampled(samples12, 2);
+        DoubleUnaryOperator a1 = Functions.sampled(samples11, length11);
+        DoubleUnaryOperator b1 = Functions.sampled(samples12, length12);
         Edge edge11 = new Edge(fromNodeId1, toNodeId11, route1start, route1etape, length11, a1);
         Edge edge12 = new Edge(toNodeId11, toNodeId12, route1etape, route1to2, length12, b1);
         List<Edge> edges1 = new ArrayList<>();
@@ -59,8 +59,8 @@ public class MultiRouteTest {
         int toNodeId22 = 25;
         double length21 = 102;
         double length22 = 20;
-        DoubleUnaryOperator a2 = Functions.sampled(samples21, 2);
-        DoubleUnaryOperator b2 = Functions.sampled(samples22, 2);
+        DoubleUnaryOperator a2 = Functions.sampled(samples21, length21);
+        DoubleUnaryOperator b2 = Functions.sampled(samples22, length22);
         Edge edge21 = new Edge(fromNodeId2, toNodeId21, route1to2, route2etape, length21, a2);
         Edge edge22 = new Edge(toNodeId21, toNodeId22, route2etape, route2to3, length22, b2);
         List<Edge> edges2 = new ArrayList<>();
@@ -74,8 +74,8 @@ public class MultiRouteTest {
         int toNodeId32 = 35;
         double length31 = 103;
         double length32 = 30;
-        DoubleUnaryOperator a3 = Functions.sampled(samples31, 2);
-        DoubleUnaryOperator b3 = Functions.sampled(samples32, 2);
+        DoubleUnaryOperator a3 = Functions.sampled(samples31, length31);
+        DoubleUnaryOperator b3 = Functions.sampled(samples32, length32);
         Edge edge31 = new Edge(fromNodeId3, toNodeId31, route2to3, route3etape, length31, a3);
         Edge edge32 = new Edge(toNodeId31, toNodeId32, route3etape, route3to4, length32, b3);
         List<Edge> edges3 = new ArrayList<>();
@@ -89,8 +89,8 @@ public class MultiRouteTest {
         int toNodeId42 = 45;
         double length41 = 104;
         double length42 = 40;
-        DoubleUnaryOperator a4 = Functions.sampled(samples41, 2);
-        DoubleUnaryOperator b4 = Functions.sampled(samples42, 2);
+        DoubleUnaryOperator a4 = Functions.sampled(samples41, length41);
+        DoubleUnaryOperator b4 = Functions.sampled(samples42, length42);
         Edge edge41 = new Edge(fromNodeId4, toNodeId41, route3to4, route4etape, length41, a4);
         Edge edge42 = new Edge(toNodeId41, toNodeId42, route4etape, route4to5, length42, b4);
         List<Edge> edges4 = new ArrayList<>();
@@ -104,8 +104,8 @@ public class MultiRouteTest {
         int toNodeId52 = 55;
         double length51 = 105;
         double length52 = 50;
-        DoubleUnaryOperator a5 = Functions.sampled(samples51, 100);
-        DoubleUnaryOperator b5 = Functions.sampled(samples52, 100);
+        DoubleUnaryOperator a5 = Functions.sampled(samples51, length51);
+        DoubleUnaryOperator b5 = Functions.sampled(samples52, length52);
         Edge edge51 = new Edge(fromNodeId5, toNodeId51, route4to5, route5etape, length51, a5);
         Edge edge52 = new Edge(toNodeId51, toNodeId52, route5etape, route5end, length52, b5);
         List<Edge> edges5 = new ArrayList<>();
@@ -165,9 +165,9 @@ public class MultiRouteTest {
         //Tester les élévations
         assertEquals(300, route.elevationAt(0));
         assertEquals(300, route.elevationAt(101));
-        assertEquals(405, route.elevationAt(200));
+        assertEquals(405, route.elevationAt(111));
         assertEquals(400, route.elevationAt(213));
-        //TODO FIX assertEquals(400, route.elevationAt(233));
+        assertEquals(400, route.elevationAt(233));
         assertEquals(fromNodeId1, route.nodeClosestTo(0));
         assertEquals(fromNodeId1, route.nodeClosestTo(50));
         assertEquals(toNodeId52, route.nodeClosestTo(664));
@@ -191,8 +191,8 @@ public class MultiRouteTest {
         int toNodeId12 = 15;
         double length11 = 101;
         double length12 = 10;
-        DoubleUnaryOperator a1 = Functions.sampled(samples11, 100);
-        DoubleUnaryOperator b1 = Functions.sampled(samples12, 100);
+        DoubleUnaryOperator a1 = Functions.sampled(samples11, length11);
+        DoubleUnaryOperator b1 = Functions.sampled(samples12, length12);
         Edge edge11 = new Edge(fromNodeId1, toNodeId11, route1start, route1etape, length11, a1);
         Edge edge12 = new Edge(toNodeId11, toNodeId12, route1etape, route1to2, length12, b1);
         List<Edge> edges1 = new ArrayList<>();
@@ -207,8 +207,8 @@ public class MultiRouteTest {
         int toNodeId22 = 25;
         double length21 = 102;
         double length22 = 20;
-        DoubleUnaryOperator a2 = Functions.sampled(samples21, 100);
-        DoubleUnaryOperator b2 = Functions.sampled(samples22, 100);
+        DoubleUnaryOperator a2 = Functions.sampled(samples21, length21);
+        DoubleUnaryOperator b2 = Functions.sampled(samples22, length22);
         Edge edge21 = new Edge(fromNodeId2, toNodeId21, route1to2, route2etape, length21, a2);
         Edge edge22 = new Edge(toNodeId21, toNodeId22, route2etape, route2to3, length22, b2);
         List<Edge> edges2 = new ArrayList<>();
@@ -222,8 +222,8 @@ public class MultiRouteTest {
         int toNodeId32 = 35;
         double length31 = 103;
         double length32 = 30;
-        DoubleUnaryOperator a3 = Functions.sampled(samples31, 100);
-        DoubleUnaryOperator b3 = Functions.sampled(samples32, 100);
+        DoubleUnaryOperator a3 = Functions.sampled(samples31, length31);
+        DoubleUnaryOperator b3 = Functions.sampled(samples32, length32);
         Edge edge31 = new Edge(fromNodeId3, toNodeId31, route2to3, route3etape, length31, a3);
         Edge edge32 = new Edge(toNodeId31, toNodeId32, route3etape, route3to4, length32, b3);
         List<Edge> edges3 = new ArrayList<>();
@@ -237,8 +237,8 @@ public class MultiRouteTest {
         int toNodeId42 = 45;
         double length41 = 104;
         double length42 = 40;
-        DoubleUnaryOperator a4 = Functions.sampled(samples41, 100);
-        DoubleUnaryOperator b4 = Functions.sampled(samples42, 100);
+        DoubleUnaryOperator a4 = Functions.sampled(samples41, length41);
+        DoubleUnaryOperator b4 = Functions.sampled(samples42, length42);
         Edge edge41 = new Edge(fromNodeId4, toNodeId41, route3to4, route4etape, length41, a4);
         Edge edge42 = new Edge(toNodeId41, toNodeId42, route4etape, route4to5, length42, b4);
         List<Edge> edges4 = new ArrayList<>();
@@ -252,8 +252,8 @@ public class MultiRouteTest {
         int toNodeId52 = 55;
         double length51 = 105;
         double length52 = 50;
-        DoubleUnaryOperator a5 = Functions.sampled(samples51, 100);
-        DoubleUnaryOperator b5 = Functions.sampled(samples52, 100);
+        DoubleUnaryOperator a5 = Functions.sampled(samples51, length51);
+        DoubleUnaryOperator b5 = Functions.sampled(samples52, length52);
         Edge edge51 = new Edge(fromNodeId5, toNodeId51, route4to5, route5etape, length51, a5);
         Edge edge52 = new Edge(toNodeId51, toNodeId52, route5etape, route5end, length52, b5);
         List<Edge> edges5 = new ArrayList<>();
@@ -297,8 +297,8 @@ public class MultiRouteTest {
         int actual3m = multi.indexOfSegmentAt(332.5);
         assertEquals(expected3m, actual3m);
         int expected4m = 3;
-        int actual4m = multi.indexOfSegmentAt(510);
-        //TODO FIX assertEquals(expected4m, actual4m);
+        int actual4m = multi.indexOfSegmentAt(389);
+        assertEquals(expected4m, actual4m);
         int expected5m = 2;
         int actual5m = multi.indexOfSegmentAt(300);
         assertEquals(expected5m, actual5m);
@@ -342,8 +342,8 @@ public class MultiRouteTest {
         int toNodeId12 = 15;
         double length11 = 101;
         double length12 = 10;
-        DoubleUnaryOperator a1 = Functions.sampled(samples11, 100);
-        DoubleUnaryOperator b1 = Functions.sampled(samples12, 100);
+        DoubleUnaryOperator a1 = Functions.sampled(samples11, length11);
+        DoubleUnaryOperator b1 = Functions.sampled(samples12, length12);
         Edge edge11 = new Edge(fromNodeId1, toNodeId11, route1start, route1etape, length11, a1);
         Edge edge12 = new Edge(toNodeId11, toNodeId12, route1etape, route1to2, length12, b1);
         List<Edge> edges1 = new ArrayList<>();
@@ -358,8 +358,8 @@ public class MultiRouteTest {
         int toNodeId22 = 25;
         double length21 = 102;
         double length22 = 20;
-        DoubleUnaryOperator a2 = Functions.sampled(samples21, 100);
-        DoubleUnaryOperator b2 = Functions.sampled(samples22, 100);
+        DoubleUnaryOperator a2 = Functions.sampled(samples21, length21);
+        DoubleUnaryOperator b2 = Functions.sampled(samples22, length22);
         Edge edge21 = new Edge(fromNodeId2, toNodeId21, route1to2, route2etape, length21, a2);
         Edge edge22 = new Edge(toNodeId21, toNodeId22, route2etape, route2to3, length22, b2);
         List<Edge> edges2 = new ArrayList<>();
@@ -373,8 +373,8 @@ public class MultiRouteTest {
         int toNodeId32 = 35;
         double length31 = 103;
         double length32 = 30;
-        DoubleUnaryOperator a3 = Functions.sampled(samples31, 100);
-        DoubleUnaryOperator b3 = Functions.sampled(samples32, 100);
+        DoubleUnaryOperator a3 = Functions.sampled(samples31, length31);
+        DoubleUnaryOperator b3 = Functions.sampled(samples32, length32);
         Edge edge31 = new Edge(fromNodeId3, toNodeId31, route2to3, route3etape, length31, a3);
         Edge edge32 = new Edge(toNodeId31, toNodeId32, route3etape, route3to4, length32, b3);
         List<Edge> edges3 = new ArrayList<>();
@@ -388,8 +388,8 @@ public class MultiRouteTest {
         int toNodeId42 = 45;
         double length41 = 104;
         double length42 = 40;
-        DoubleUnaryOperator a4 = Functions.sampled(samples41, 100);
-        DoubleUnaryOperator b4 = Functions.sampled(samples42, 100);
+        DoubleUnaryOperator a4 = Functions.sampled(samples41, length41);
+        DoubleUnaryOperator b4 = Functions.sampled(samples42, length42);
         Edge edge41 = new Edge(fromNodeId4, toNodeId41, route3to4, route4etape, length41, a4);
         Edge edge42 = new Edge(toNodeId41, toNodeId42, route4etape, route4to5, length42, b4);
         List<Edge> edges4 = new ArrayList<>();
@@ -403,8 +403,8 @@ public class MultiRouteTest {
         int toNodeId52 = 55;
         double length51 = 105;
         double length52 = 50;
-        DoubleUnaryOperator a5 = Functions.sampled(samples51, 100);
-        DoubleUnaryOperator b5 = Functions.sampled(samples52, 100);
+        DoubleUnaryOperator a5 = Functions.sampled(samples51, length51);
+        DoubleUnaryOperator b5 = Functions.sampled(samples52, length52);
         Edge edge51 = new Edge(fromNodeId5, toNodeId51, route4to5, route5etape, length51, a5);
         Edge edge52 = new Edge(toNodeId51, toNodeId52, route5etape, route5end, length52, b5);
         List<Edge> edges5 = new ArrayList<>();
@@ -449,7 +449,7 @@ public class MultiRouteTest {
         assertEquals(expected3m, actual3m);
         int expected4m = 3;
         int actual4m = multi.indexOfSegmentAt(510);
-        //TODO FIX assertEquals(expected4m, actual4m);
+        assertEquals(expected4m, actual4m);
         int expected5m = 2;
         int actual5m = multi.indexOfSegmentAt(300);
         assertEquals(expected5m, actual5m);
