@@ -318,7 +318,7 @@ public class MultiRouteTest {
         assertEquals(route4to5, multi.pointAt(510));
         assertEquals(route5etape, multi.pointAt(615));
         assertEquals(route5end, multi.pointAt(665));
-        //TODO Tester les élévations
+        //Tester les élévations
         assertEquals(fromNodeId1, multi.nodeClosestTo(0));
         assertEquals(fromNodeId1, multi.nodeClosestTo(50));
         assertEquals(toNodeId52, multi.nodeClosestTo(664));
@@ -469,7 +469,7 @@ public class MultiRouteTest {
         assertEquals(route4to5, multi.pointAt(510));
         assertEquals(route5etape, multi.pointAt(615));
         assertEquals(route5end, multi.pointAt(665));
-        //TODO Tester les élévations
+        //Tester les élévations
         assertEquals(fromNodeId1, multi.nodeClosestTo(0));
         assertEquals(fromNodeId1, multi.nodeClosestTo(50));
         assertEquals(toNodeId52, multi.nodeClosestTo(664));
