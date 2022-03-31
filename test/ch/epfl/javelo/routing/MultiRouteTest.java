@@ -43,8 +43,8 @@ public class MultiRouteTest {
         int toNodeId12 = 15;
         double length11 = 101;
         double length12 = 10;
-        DoubleUnaryOperator a1 = Functions.sampled(samples11, 100);
-        DoubleUnaryOperator b1 = Functions.sampled(samples12, 100);
+        DoubleUnaryOperator a1 = Functions.sampled(samples11, 2);
+        DoubleUnaryOperator b1 = Functions.sampled(samples12, 2);
         Edge edge11 = new Edge(fromNodeId1, toNodeId11, route1start, route1etape, length11, a1);
         Edge edge12 = new Edge(toNodeId11, toNodeId12, route1etape, route1to2, length12, b1);
         List<Edge> edges1 = new ArrayList<>();
@@ -59,8 +59,8 @@ public class MultiRouteTest {
         int toNodeId22 = 25;
         double length21 = 102;
         double length22 = 20;
-        DoubleUnaryOperator a2 = Functions.sampled(samples21, 100);
-        DoubleUnaryOperator b2 = Functions.sampled(samples22, 100);
+        DoubleUnaryOperator a2 = Functions.sampled(samples21, 2);
+        DoubleUnaryOperator b2 = Functions.sampled(samples22, 2);
         Edge edge21 = new Edge(fromNodeId2, toNodeId21, route1to2, route2etape, length21, a2);
         Edge edge22 = new Edge(toNodeId21, toNodeId22, route2etape, route2to3, length22, b2);
         List<Edge> edges2 = new ArrayList<>();
@@ -74,8 +74,8 @@ public class MultiRouteTest {
         int toNodeId32 = 35;
         double length31 = 103;
         double length32 = 30;
-        DoubleUnaryOperator a3 = Functions.sampled(samples31, 100);
-        DoubleUnaryOperator b3 = Functions.sampled(samples32, 100);
+        DoubleUnaryOperator a3 = Functions.sampled(samples31, 2);
+        DoubleUnaryOperator b3 = Functions.sampled(samples32, 2);
         Edge edge31 = new Edge(fromNodeId3, toNodeId31, route2to3, route3etape, length31, a3);
         Edge edge32 = new Edge(toNodeId31, toNodeId32, route3etape, route3to4, length32, b3);
         List<Edge> edges3 = new ArrayList<>();
@@ -89,8 +89,8 @@ public class MultiRouteTest {
         int toNodeId42 = 45;
         double length41 = 104;
         double length42 = 40;
-        DoubleUnaryOperator a4 = Functions.sampled(samples41, 100);
-        DoubleUnaryOperator b4 = Functions.sampled(samples42, 100);
+        DoubleUnaryOperator a4 = Functions.sampled(samples41, 2);
+        DoubleUnaryOperator b4 = Functions.sampled(samples42, 2);
         Edge edge41 = new Edge(fromNodeId4, toNodeId41, route3to4, route4etape, length41, a4);
         Edge edge42 = new Edge(toNodeId41, toNodeId42, route4etape, route4to5, length42, b4);
         List<Edge> edges4 = new ArrayList<>();

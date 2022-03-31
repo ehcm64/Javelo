@@ -27,7 +27,7 @@ public final class Functions {
      * Returns a function mapping a set of values between 0 and a maximum value
      *
      * @param samples set of values
-     * @param xMax    maximum step value
+     * @param xMax    maximum value of x
      * @return a function
      */
     public static DoubleUnaryOperator sampled(float[] samples, double xMax) {
