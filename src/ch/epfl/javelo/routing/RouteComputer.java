@@ -87,6 +87,7 @@ public final class RouteComputer {
 
     private List<Integer> getRouteNodes(int[] predecessors, int endNodeId, int startNodeId) {
         List<Integer> routeNodes = new ArrayList<>();
+        routeNodes.add(endNodeId);
         int nodeId = endNodeId;
         while (nodeId != startNodeId) {
             int predecessor = predecessors[nodeId];

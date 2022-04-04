@@ -1,735 +1,333 @@
 package ch.epfl.javelo.routing;
 
-import ch.epfl.javelo.Functions;
 import ch.epfl.javelo.projection.PointCh;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.Collections;
 import java.util.List;
-import java.util.function.DoubleUnaryOperator;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static ch.epfl.test.TestRandomizer.RANDOM_ITERATIONS;
+import static ch.epfl.test.TestRandomizer.newRandom;
+import static org.junit.jupiter.api.Assertions.*;
 
-public class MultiRouteTest {
-    float[] samples11 = {300, 310, 305, 320, 300, 290, 305, 300, 310, 300};
-    float[] samples12 = {300, 310, 320, 340, 350, 365, 385, 400, 410, 405};
-    PointCh route1start = new PointCh(2485000, 1075000);
-    PointCh route1etape = new PointCh(2485100, 1075100);
-    PointCh route1to2 = new PointCh(2485150, 1075150);
-    float[] samples21 = {405, 410, 405, 420, 400, 390, 405, 400, 410, 400};
-    float[] samples22 = {400, 410, 390, 370, 360, 365, 385, 400, 410, 400};
-    PointCh route2etape = new PointCh(2485200, 1075200);
-    PointCh route2to3 = new PointCh(2485250, 1075250);
-    float[] samples31 = {400, 410, 405, 420, 400, 390, 405, 400, 410, 400};
-    float[] samples32 = {400, 410, 390, 380, 360, 365, 355, 340, 325, 320};
-    PointCh route3etape = new PointCh(2485300, 1075300);
-    PointCh route3to4 = new PointCh(2485350, 1075350);
-    float[] samples41 = {320, 310, 305, 320, 300, 290, 305, 300, 310, 300};
-    float[] samples42 = {300, 310, 320, 340, 350, 365, 385, 400, 405, 400};
-    PointCh route4etape = new PointCh(2485400, 1075400);
-    PointCh route4to5 = new PointCh(2485450, 1075450);
-    float[] samples51 = {400, 390, 385, 390, 400, 390, 380, 370, 375, 380};
-    float[] samples52 = {380, 370, 355, 345, 340, 330, 325, 325, 320, 305};
-    PointCh route5etape = new PointCh(2485500, 1075500);
-    PointCh route5end = new PointCh(2485550, 1075550);
+class MultiRouteTest {
+    private static final int ORIGIN_N = 1_200_000;
+    private static final int ORIGIN_E = 2_600_000;
+    private static final double EDGE_LENGTH = 100.25;
 
-    @Test
-    void simpleTestEverything() {
-        ArrayList<Edge> allEdges = new ArrayList<>();
-        ArrayList<PointCh> allPoints = new ArrayList<>();
-        int fromNodeId1 = 0;
-        int toNodeId11 = 10;
-        int toNodeId12 = 15;
-        double length11 = 101;
-        double length12 = 10;
-        DoubleUnaryOperator a1 = Functions.sampled(samples11, length11);
-        DoubleUnaryOperator b1 = Functions.sampled(samples12, length12);
-        Edge edge11 = new Edge(fromNodeId1, toNodeId11, route1start, route1etape, length11, a1);
-        Edge edge12 = new Edge(toNodeId11, toNodeId12, route1etape, route1to2, length12, b1);
-        List<Edge> edges1 = new ArrayList<>();
-        edges1.add(edge11);
-        edges1.add(edge12);
-        SingleRoute route1 = new SingleRoute(edges1);
-        allPoints.add(route1start);
-        allPoints.add(route1etape);
-        allPoints.add(route1to2);
-        int fromNodeId2 = 15;
-        int toNodeId21 = 20;
-        int toNodeId22 = 25;
-        double length21 = 102;
-        double length22 = 20;
-        DoubleUnaryOperator a2 = Functions.sampled(samples21, length21);
-        DoubleUnaryOperator b2 = Functions.sampled(samples22, length22);
-        Edge edge21 = new Edge(fromNodeId2, toNodeId21, route1to2, route2etape, length21, a2);
-        Edge edge22 = new Edge(toNodeId21, toNodeId22, route2etape, route2to3, length22, b2);
-        List<Edge> edges2 = new ArrayList<>();
-        edges2.add(edge21);
-        edges2.add(edge22);
-        SingleRoute route2 = new SingleRoute(edges2);
-        allPoints.add(route2etape);
-        allPoints.add(route2to3);
-        int fromNodeId3 = 25;
-        int toNodeId31 = 30;
-        int toNodeId32 = 35;
-        double length31 = 103;
-        double length32 = 30;
-        DoubleUnaryOperator a3 = Functions.sampled(samples31, length31);
-        DoubleUnaryOperator b3 = Functions.sampled(samples32, length32);
-        Edge edge31 = new Edge(fromNodeId3, toNodeId31, route2to3, route3etape, length31, a3);
-        Edge edge32 = new Edge(toNodeId31, toNodeId32, route3etape, route3to4, length32, b3);
-        List<Edge> edges3 = new ArrayList<>();
-        edges3.add(edge31);
-        edges3.add(edge32);
-        SingleRoute route3 = new SingleRoute(edges3);
-        allPoints.add(route3etape);
-        allPoints.add(route3to4);
-        int fromNodeId4 = 35;
-        int toNodeId41 = 40;
-        int toNodeId42 = 45;
-        double length41 = 104;
-        double length42 = 40;
-        DoubleUnaryOperator a4 = Functions.sampled(samples41, length41);
-        DoubleUnaryOperator b4 = Functions.sampled(samples42, length42);
-        Edge edge41 = new Edge(fromNodeId4, toNodeId41, route3to4, route4etape, length41, a4);
-        Edge edge42 = new Edge(toNodeId41, toNodeId42, route4etape, route4to5, length42, b4);
-        List<Edge> edges4 = new ArrayList<>();
-        edges4.add(edge41);
-        edges4.add(edge42);
-        SingleRoute route4 = new SingleRoute(edges4);
-        allPoints.add(route4etape);
-        allPoints.add(route4to5);
-        int fromNodeId5 = 45;
-        int toNodeId51 = 50;
-        int toNodeId52 = 55;
-        double length51 = 105;
-        double length52 = 50;
-        DoubleUnaryOperator a5 = Functions.sampled(samples51, length51);
-        DoubleUnaryOperator b5 = Functions.sampled(samples52, length52);
-        Edge edge51 = new Edge(fromNodeId5, toNodeId51, route4to5, route5etape, length51, a5);
-        Edge edge52 = new Edge(toNodeId51, toNodeId52, route5etape, route5end, length52, b5);
-        List<Edge> edges5 = new ArrayList<>();
-        edges5.add(edge51);
-        edges5.add(edge52);
-        SingleRoute route5 = new SingleRoute(edges5);
-        allPoints.add(route5etape);
-        allPoints.add(route5end);
-        allEdges.addAll(edges1);
-        allEdges.addAll(edges2);
-        allEdges.addAll(edges3);
-        allEdges.addAll(edges4);
-        allEdges.addAll(edges5);
-        List<Route> routes = new ArrayList<>();
-        routes.add(route1);
-        routes.add(route2);
-        routes.add(route3);
-        routes.add(route4);
-        routes.add(route5);
-        MultiRoute route = new MultiRoute(routes);
-        //only SingleRoutes
-        int expected0 = 0;
-        int actual0 = route.indexOfSegmentAt(-100);
-        assertEquals(expected0, actual0);
-        int expected1 = 0;
-        int actual1 = route.indexOfSegmentAt(0);
-        assertEquals(expected1, actual1);
-        int expected2 = 4;
-        int actual2 = route.indexOfSegmentAt(1000);
-        assertEquals(expected2, actual2);
-        int expected22 = 4;
-        int actual22 = route.indexOfSegmentAt(665);
-        assertEquals(expected22, actual22);
-        int expected3 = 2;
-        int actual3 = route.indexOfSegmentAt(332.5);
-        assertEquals(expected3, actual3);
-        int expected4 = 3;
-        int actual4 = route.indexOfSegmentAt(510);
-        assertEquals(expected4, actual4);
-        //Ok pour 3 et 4
-        int expected5 = 2;
-        int actual5 = route.indexOfSegmentAt(300);
-        assertEquals(expected5, actual5);
-        assertEquals(allEdges, route.edges());
-        assertEquals(allPoints, route.points());
-        assertEquals(route1start, route.pointAt(0));
-        assertEquals(route1etape, route.pointAt(101));
-        assertEquals(route1to2, route.pointAt(111));
-        assertEquals(route2etape, route.pointAt(213));
-        assertEquals(route2to3, route.pointAt(233));
-        assertEquals(route3etape, route.pointAt(336));
-        assertEquals(route3to4, route.pointAt(366));
-        assertEquals(route4etape, route.pointAt(470));
-        assertEquals(route4to5, route.pointAt(510));
-        assertEquals(route5etape, route.pointAt(615));
-        assertEquals(route5end, route.pointAt(665));
-        //Tester les élévations
-        assertEquals(300, route.elevationAt(0));
-        assertEquals(300, route.elevationAt(101));
-        assertEquals(405, route.elevationAt(111));
-        assertEquals(400, route.elevationAt(213));
-        assertEquals(400, route.elevationAt(233));
-        assertEquals(fromNodeId1, route.nodeClosestTo(0));
-        assertEquals(fromNodeId1, route.nodeClosestTo(50));
-        assertEquals(toNodeId52, route.nodeClosestTo(664));
-        assertEquals(toNodeId22, route.nodeClosestTo(234));
-        assertEquals(toNodeId41, route.nodeClosestTo(438));
-        assertEquals(toNodeId52, route.nodeClosestTo(1000));
-        RoutePoint point1 = new RoutePoint(route1start, 0.0, 0.0);
-        assertEquals(point1, route.pointClosestTo(route1start));
-        RoutePoint point2 = new RoutePoint(route2etape, 213, 0);
-        assertEquals(point2, route.pointClosestTo(route2etape));
-        RoutePoint point3 = new RoutePoint(route5end, 665, 10);
-        assertEquals(point3, route.pointClosestTo(new PointCh(2485550, 1075560)));
+    // Sides of triangle used for "sawtooth" edges (shape: /\/\/\…)
+    private static final double TOOTH_EW = 1023;
+    private static final double TOOTH_NS = 64;
+    private static final double TOOTH_LENGTH = 1025;
+    private static final double TOOTH_ELEVATION_GAIN = 100d;
+    private static final double TOOTH_SLOPE = TOOTH_ELEVATION_GAIN / TOOTH_LENGTH;
+
+    private static Edge horizontalEdge1K(int i) {
+        var j = i + 1;
+        var pI = new PointCh(2_600_000 + 1000 * i, 1_200_000);
+        var pJ = new PointCh(2_600_000 + 1000 * j, 1_200_000);
+        return new Edge(i, j, pI, pJ, 1000, x -> 500);
+    }
+
+    private static List<Edge> verticalEdges(int edgesCount) {
+        var edges = new ArrayList<Edge>(edgesCount);
+        for (int i = 0; i < edgesCount; i += 1) {
+            var p1 = new PointCh(ORIGIN_E, ORIGIN_N + i * EDGE_LENGTH);
+            var p2 = new PointCh(ORIGIN_E, ORIGIN_N + (i + 1) * EDGE_LENGTH);
+            edges.add(new Edge(i, i + 1, p1, p2, EDGE_LENGTH, x -> Double.NaN));
+        }
+        return Collections.unmodifiableList(edges);
+    }
+
+    private static List<Edge> sawToothEdges(int edgesCount) {
+        var edges = new ArrayList<Edge>(edgesCount);
+        for (int i = 0; i < edgesCount; i += 1) {
+            var p1 = sawToothPoint(i);
+            var p2 = sawToothPoint(i + 1);
+            var startingElevation = i * TOOTH_ELEVATION_GAIN;
+            edges.add(new Edge(i, i + 1, p1, p2, TOOTH_LENGTH, x -> startingElevation + x * TOOTH_SLOPE));
+        }
+        return Collections.unmodifiableList(edges);
+    }
+
+    private static PointCh sawToothPoint(int i) {
+        return new PointCh(
+                ORIGIN_E + TOOTH_EW * i,
+                ORIGIN_N + ((i & 1) == 0 ? 0 : TOOTH_NS));
     }
 
     @Test
-    void multiMultiRoutesTestEverything() {
-        ArrayList<Edge> allEdges = new ArrayList<>();
-        ArrayList<PointCh> allPoints = new ArrayList<>();
-        int fromNodeId1 = 0;
-        int toNodeId11 = 10;
-        int toNodeId12 = 15;
-        double length11 = 101;
-        double length12 = 10;
-        DoubleUnaryOperator a1 = Functions.sampled(samples11, length11);
-        DoubleUnaryOperator b1 = Functions.sampled(samples12, length12);
-        Edge edge11 = new Edge(fromNodeId1, toNodeId11, route1start, route1etape, length11, a1);
-        Edge edge12 = new Edge(toNodeId11, toNodeId12, route1etape, route1to2, length12, b1);
-        List<Edge> edges1 = new ArrayList<>();
-        edges1.add(edge11);
-        edges1.add(edge12);
-        SingleRoute route1 = new SingleRoute(edges1);
-        allPoints.add(route1start);
-        allPoints.add(route1etape);
-        allPoints.add(route1to2);
-        int fromNodeId2 = 15;
-        int toNodeId21 = 20;
-        int toNodeId22 = 25;
-        double length21 = 102;
-        double length22 = 20;
-        DoubleUnaryOperator a2 = Functions.sampled(samples21, length21);
-        DoubleUnaryOperator b2 = Functions.sampled(samples22, length22);
-        Edge edge21 = new Edge(fromNodeId2, toNodeId21, route1to2, route2etape, length21, a2);
-        Edge edge22 = new Edge(toNodeId21, toNodeId22, route2etape, route2to3, length22, b2);
-        List<Edge> edges2 = new ArrayList<>();
-        edges2.add(edge21);
-        edges2.add(edge22);
-        SingleRoute route2 = new SingleRoute(edges2);
-        allPoints.add(route2etape);
-        allPoints.add(route2to3);
-        int fromNodeId3 = 25;
-        int toNodeId31 = 30;
-        int toNodeId32 = 35;
-        double length31 = 103;
-        double length32 = 30;
-        DoubleUnaryOperator a3 = Functions.sampled(samples31, length31);
-        DoubleUnaryOperator b3 = Functions.sampled(samples32, length32);
-        Edge edge31 = new Edge(fromNodeId3, toNodeId31, route2to3, route3etape, length31, a3);
-        Edge edge32 = new Edge(toNodeId31, toNodeId32, route3etape, route3to4, length32, b3);
-        List<Edge> edges3 = new ArrayList<>();
-        edges3.add(edge31);
-        edges3.add(edge32);
-        SingleRoute route3 = new SingleRoute(edges3);
-        allPoints.add(route3etape);
-        allPoints.add(route3to4);
-        int fromNodeId4 = 35;
-        int toNodeId41 = 40;
-        int toNodeId42 = 45;
-        double length41 = 104;
-        double length42 = 40;
-        DoubleUnaryOperator a4 = Functions.sampled(samples41, length41);
-        DoubleUnaryOperator b4 = Functions.sampled(samples42, length42);
-        Edge edge41 = new Edge(fromNodeId4, toNodeId41, route3to4, route4etape, length41, a4);
-        Edge edge42 = new Edge(toNodeId41, toNodeId42, route4etape, route4to5, length42, b4);
-        List<Edge> edges4 = new ArrayList<>();
-        edges4.add(edge41);
-        edges4.add(edge42);
-        SingleRoute route4 = new SingleRoute(edges4);
-        allPoints.add(route4etape);
-        allPoints.add(route4to5);
-        int fromNodeId5 = 45;
-        int toNodeId51 = 50;
-        int toNodeId52 = 55;
-        double length51 = 105;
-        double length52 = 50;
-        DoubleUnaryOperator a5 = Functions.sampled(samples51, length51);
-        DoubleUnaryOperator b5 = Functions.sampled(samples52, length52);
-        Edge edge51 = new Edge(fromNodeId5, toNodeId51, route4to5, route5etape, length51, a5);
-        Edge edge52 = new Edge(toNodeId51, toNodeId52, route5etape, route5end, length52, b5);
-        List<Edge> edges5 = new ArrayList<>();
-        edges5.add(edge51);
-        edges5.add(edge52);
-        SingleRoute route5 = new SingleRoute(edges5);
-        allPoints.add(route5etape);
-        allPoints.add(route5end);
-        List<Route> routes1 = new ArrayList<>();
-        List<Route> routes2 = new ArrayList<>();
-        List<Route> routes3 = new ArrayList<>();
-        routes1.add(route1);
-        routes1.add(route2);
-        routes2.add(route3);
-        routes2.add(route4);
-        routes3.add(route5);
-        MultiRoute r1 = new MultiRoute(routes1);
-        MultiRoute r2 = new MultiRoute(routes2);
-        MultiRoute r3 = new MultiRoute(routes3);
-        List<Route> routes = new ArrayList<>();
-        routes.add(r1);
-        routes.add(r2);
-        routes.add(r3);
-        allEdges.addAll(edges1);
-        allEdges.addAll(edges2);
-        allEdges.addAll(edges3);
-        allEdges.addAll(edges4);
-        allEdges.addAll(edges5);
-        MultiRoute multi = new MultiRoute(routes);
-        //multiple MultiRoutes
-        int expected0m = 0;
-        int actual0m = multi.indexOfSegmentAt(-100);
-        assertEquals(expected0m, actual0m);
-        int expected1m = 0;
-        int actual1m = multi.indexOfSegmentAt(0);
-        assertEquals(expected1m, actual1m);
-        int expected2m = 4;
-        int actual2m = multi.indexOfSegmentAt(1000);
-        assertEquals(expected2m, actual2m);
-        int expected3m = 2;
-        int actual3m = multi.indexOfSegmentAt(332.5);
-        assertEquals(expected3m, actual3m);
-        int expected4m = 3;
-        int actual4m = multi.indexOfSegmentAt(389);
-        assertEquals(expected4m, actual4m);
-        int expected5m = 2;
-        int actual5m = multi.indexOfSegmentAt(300);
-        assertEquals(expected5m, actual5m);
-        int expected222 = 4;
-        int actual222 = multi.indexOfSegmentAt(665);
-        assertEquals(expected222, actual222);
-        assertEquals(allEdges, multi.edges());
-        assertEquals(allPoints, multi.points());
-        assertEquals(route1start, multi.pointAt(0));
-        assertEquals(route1etape, multi.pointAt(101));
-        assertEquals(route1to2, multi.pointAt(111));
-        assertEquals(route2etape, multi.pointAt(213));
-        assertEquals(route2to3, multi.pointAt(233));
-        assertEquals(route3etape, multi.pointAt(336));
-        assertEquals(route3to4, multi.pointAt(366));
-        assertEquals(route4etape, multi.pointAt(470));
-        assertEquals(route4to5, multi.pointAt(510));
-        assertEquals(route5etape, multi.pointAt(615));
-        assertEquals(route5end, multi.pointAt(665));
-        //Tester les élévations
-        assertEquals(fromNodeId1, multi.nodeClosestTo(0));
-        assertEquals(fromNodeId1, multi.nodeClosestTo(50));
-        assertEquals(toNodeId52, multi.nodeClosestTo(664));
-        assertEquals(toNodeId22, multi.nodeClosestTo(234));
-        assertEquals(toNodeId41, multi.nodeClosestTo(438));
-        assertEquals(toNodeId52, multi.nodeClosestTo(1000));
-        RoutePoint point1 = new RoutePoint(route1start, 0.0, 0.0);
-        assertEquals(point1, multi.pointClosestTo(route1start));
-        RoutePoint point2 = new RoutePoint(route2etape, 213, 0);
-        assertEquals(point2, multi.pointClosestTo(route2etape));
-        RoutePoint point3 = new RoutePoint(route5end, 665, 10);
-        assertEquals(point3, multi.pointClosestTo(new PointCh(2485550, 1075560)));
+    void multiRouteConstructorThrowsOnEmptyEdgeList() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            new MultiRoute(List.of());
+        });
     }
 
     @Test
-    void multiMultiRoutesTestEverything2() {
-        ArrayList<Edge> allEdges = new ArrayList<>();
-        ArrayList<PointCh> allPoints = new ArrayList<>();
-        int fromNodeId1 = 0;
-        int toNodeId11 = 10;
-        int toNodeId12 = 15;
-        double length11 = 101;
-        double length12 = 10;
-        DoubleUnaryOperator a1 = Functions.sampled(samples11, length11);
-        DoubleUnaryOperator b1 = Functions.sampled(samples12, length12);
-        Edge edge11 = new Edge(fromNodeId1, toNodeId11, route1start, route1etape, length11, a1);
-        Edge edge12 = new Edge(toNodeId11, toNodeId12, route1etape, route1to2, length12, b1);
-        List<Edge> edges1 = new ArrayList<>();
-        edges1.add(edge11);
-        edges1.add(edge12);
-        SingleRoute route1 = new SingleRoute(edges1);
-        allPoints.add(route1start);
-        allPoints.add(route1etape);
-        allPoints.add(route1to2);
-        int fromNodeId2 = 15;
-        int toNodeId21 = 20;
-        int toNodeId22 = 25;
-        double length21 = 102;
-        double length22 = 20;
-        DoubleUnaryOperator a2 = Functions.sampled(samples21, length21);
-        DoubleUnaryOperator b2 = Functions.sampled(samples22, length22);
-        Edge edge21 = new Edge(fromNodeId2, toNodeId21, route1to2, route2etape, length21, a2);
-        Edge edge22 = new Edge(toNodeId21, toNodeId22, route2etape, route2to3, length22, b2);
-        List<Edge> edges2 = new ArrayList<>();
-        edges2.add(edge21);
-        edges2.add(edge22);
-        SingleRoute route2 = new SingleRoute(edges2);
-        allPoints.add(route2etape);
-        allPoints.add(route2to3);
-        int fromNodeId3 = 25;
-        int toNodeId31 = 30;
-        int toNodeId32 = 35;
-        double length31 = 103;
-        double length32 = 30;
-        DoubleUnaryOperator a3 = Functions.sampled(samples31, length31);
-        DoubleUnaryOperator b3 = Functions.sampled(samples32, length32);
-        Edge edge31 = new Edge(fromNodeId3, toNodeId31, route2to3, route3etape, length31, a3);
-        Edge edge32 = new Edge(toNodeId31, toNodeId32, route3etape, route3to4, length32, b3);
-        List<Edge> edges3 = new ArrayList<>();
-        edges3.add(edge31);
-        edges3.add(edge32);
-        SingleRoute route3 = new SingleRoute(edges3);
-        allPoints.add(route3etape);
-        allPoints.add(route3to4);
-        int fromNodeId4 = 35;
-        int toNodeId41 = 40;
-        int toNodeId42 = 45;
-        double length41 = 104;
-        double length42 = 40;
-        DoubleUnaryOperator a4 = Functions.sampled(samples41, length41);
-        DoubleUnaryOperator b4 = Functions.sampled(samples42, length42);
-        Edge edge41 = new Edge(fromNodeId4, toNodeId41, route3to4, route4etape, length41, a4);
-        Edge edge42 = new Edge(toNodeId41, toNodeId42, route4etape, route4to5, length42, b4);
-        List<Edge> edges4 = new ArrayList<>();
-        edges4.add(edge41);
-        edges4.add(edge42);
-        SingleRoute route4 = new SingleRoute(edges4);
-        allPoints.add(route4etape);
-        allPoints.add(route4to5);
-        int fromNodeId5 = 45;
-        int toNodeId51 = 50;
-        int toNodeId52 = 55;
-        double length51 = 105;
-        double length52 = 50;
-        DoubleUnaryOperator a5 = Functions.sampled(samples51, length51);
-        DoubleUnaryOperator b5 = Functions.sampled(samples52, length52);
-        Edge edge51 = new Edge(fromNodeId5, toNodeId51, route4to5, route5etape, length51, a5);
-        Edge edge52 = new Edge(toNodeId51, toNodeId52, route5etape, route5end, length52, b5);
-        List<Edge> edges5 = new ArrayList<>();
-        edges5.add(edge51);
-        edges5.add(edge52);
-        SingleRoute route5 = new SingleRoute(edges5);
-        allPoints.add(route5etape);
-        allPoints.add(route5end);
-        List<Route> routes1 = new ArrayList<>();
-        List<Route> routes2 = new ArrayList<>();
-        List<Route> routes3 = new ArrayList<>();
-        routes1.add(route1);
-        routes1.add(route2);
-        routes2.add(route3);
-        routes2.add(route4);
-        routes3.add(route5);
-        MultiRoute r1 = new MultiRoute(routes1);
-        MultiRoute r2 = new MultiRoute(routes2);
-        MultiRoute r3 = new MultiRoute(routes3);
-        List<Route> routes = new ArrayList<>();
-        routes.add(r1);
-        routes.add(r2);
-        routes.add(r3);
-        allEdges.addAll(edges1);
-        allEdges.addAll(edges2);
-        allEdges.addAll(edges3);
-        allEdges.addAll(edges4);
-        allEdges.addAll(edges5);
-        MultiRoute multi = new MultiRoute(routes);
-        //multiple MultiRoutes
-        int expected0m = 0;
-        int actual0m = multi.indexOfSegmentAt(-100);
-        assertEquals(expected0m, actual0m);
-        int expected1m = 0;
-        int actual1m = multi.indexOfSegmentAt(0);
-        assertEquals(expected1m, actual1m);
-        int expected2m = 4;
-        int actual2m = multi.indexOfSegmentAt(1000);
-        assertEquals(expected2m, actual2m);
-        int expected3m = 2;
-        int actual3m = multi.indexOfSegmentAt(332.5);
-        assertEquals(expected3m, actual3m);
-        int expected4m = 3;
-        int actual4m = multi.indexOfSegmentAt(510);
-        assertEquals(expected4m, actual4m);
-        int expected5m = 2;
-        int actual5m = multi.indexOfSegmentAt(300);
-        assertEquals(expected5m, actual5m);
-        int expected222 = 4;
-        int actual222 = multi.indexOfSegmentAt(665);
-        assertEquals(expected222, actual222);
-        assertEquals(allEdges, multi.edges());
-        assertEquals(allPoints, multi.points());
-        assertEquals(route1start, multi.pointAt(0));
-        assertEquals(route1etape, multi.pointAt(101));
-        assertEquals(route1to2, multi.pointAt(111));
-        assertEquals(route2etape, multi.pointAt(213));
-        assertEquals(route2to3, multi.pointAt(233));
-        assertEquals(route3etape, multi.pointAt(336));
-        assertEquals(route3to4, multi.pointAt(366));
-        assertEquals(route4etape, multi.pointAt(470));
-        assertEquals(route4to5, multi.pointAt(510));
-        assertEquals(route5etape, multi.pointAt(615));
-        assertEquals(route5end, multi.pointAt(665));
-        //Tester les élévations
-        assertEquals(fromNodeId1, multi.nodeClosestTo(0));
-        assertEquals(fromNodeId1, multi.nodeClosestTo(50));
-        assertEquals(toNodeId52, multi.nodeClosestTo(664));
-        assertEquals(toNodeId22, multi.nodeClosestTo(234));
-        assertEquals(toNodeId41, multi.nodeClosestTo(438));
-        assertEquals(toNodeId52, multi.nodeClosestTo(1000));
-        RoutePoint point1 = new RoutePoint(route1start, 0.0, 0.0);
-        assertEquals(point1, multi.pointClosestTo(route1start));
-        RoutePoint point2 = new RoutePoint(route2etape, 213, 0);
-        assertEquals(point2, multi.pointClosestTo(route2etape));
-        RoutePoint point3 = new RoutePoint(route5end, 665, 10);
-        assertEquals(point3, multi.pointClosestTo(new PointCh(2485550, 1075560)));
+    void multiRouteIndexOfSegmentAtWorksWithShallowRoutes() {
+        var m = new MultiRoute(List.of(
+                new SingleRoute(List.of(horizontalEdge1K(0))),
+                new SingleRoute(List.of(horizontalEdge1K(1))),
+                new SingleRoute(List.of(horizontalEdge1K(2))),
+                new SingleRoute(List.of(horizontalEdge1K(3))),
+                new SingleRoute(List.of(horizontalEdge1K(4))),
+                new SingleRoute(List.of(horizontalEdge1K(5)))));
+        for (int i = 0; i < 6; i += 1)
+            assertEquals(i, m.indexOfSegmentAt((i + 0.5) * 1000));
+        assertEquals(5, m.indexOfSegmentAt(10000));
     }
 
     @Test
-    void indexOfSegmentAtBis() {
-        Edge e0 = new Edge(0, 1, new PointCh(2520_000, 1220_000), new PointCh(2560_000, 1240_000), 500, null);
-        Edge e1 = new Edge(1, 2, new PointCh(2560_000, 1240_000), new PointCh(2580_000, 1180_000), 500, null);
-        Edge e2 = new Edge(2, 3, new PointCh(2580_000, 1180_000), new PointCh(2600_000, 1140_000), 500, null);
-        Edge e3 = new Edge(3, 4, new PointCh(2_600_000, 1_140_000), new PointCh(2_560_000, 1_240_000), 500, null);
-        Edge e4 = new Edge(4, 5, new PointCh(2560_000, 1240_000), new PointCh(2580_000, 1200_000), 500, null);
-        Edge e5 = new Edge(5, 6, new PointCh(2580_000, 1200_000), new PointCh(2700_000, 1250_000), 500, null);
-        List<Edge> edges0 = new ArrayList<>();
-        edges0.add(e0);
-        edges0.add(e1);
-        List<Edge> edges1 = new ArrayList<>();
-        edges1.add(e2);
-        edges1.add(e3);
-        List<Edge> edges2 = new ArrayList<>();
-        edges2.add(e4);
-        edges2.add(e5);
-        Route sR0 = new SingleRoute(edges0);
-        Route sR1 = new SingleRoute(edges1);
-        Route sR2 = new SingleRoute(edges2);
-        List<Route> routes0 = new ArrayList<>();
-        routes0.add(sR0);
-        routes0.add(sR1);
-        Route mR0 = new MultiRoute(routes0);
-        List<Route> routes = new ArrayList<>();
-        routes.add(mR0);
-        routes.add(sR2);
-        Route mR = new MultiRoute(routes);
-        System.out.println(mR.indexOfSegmentAt(1800));
-        assertEquals(0, mR.indexOfSegmentAt(100));
+    void multiRouteIndexOfSegmentAtWorksWithDeepRoutes() {
+        var m1 = new MultiRoute(List.of(
+                new SingleRoute(List.of(horizontalEdge1K(0))),
+                new SingleRoute(List.of(horizontalEdge1K(1))),
+                new SingleRoute(List.of(horizontalEdge1K(2)))));
+        var m2 = new MultiRoute(List.of(
+                new SingleRoute(List.of(horizontalEdge1K(3))),
+                new MultiRoute(List.of(
+                        new SingleRoute(List.of(horizontalEdge1K(4))),
+                        new SingleRoute(List.of(horizontalEdge1K(5)))))));
+        var m = new MultiRoute(List.of(m1, m2));
+        for (int i = 0; i < 6; i += 1)
+            assertEquals(i, m.indexOfSegmentAt((i + 0.5) * 1000));
+        assertEquals(5, m.indexOfSegmentAt(10000));
     }
 
     @Test
-    void pointsWithoutDoublon() {
-        Edge e0 = new Edge(0, 1, new PointCh(2520_000, 1220_000), new PointCh(2560_000, 1240_000), 500, null);
-        Edge e1 = new Edge(1, 2, new PointCh(2560_000, 1240_000), new PointCh(2580_000, 1180_000), 500, null);
-        Edge e2 = new Edge(2, 3, new PointCh(2580_000, 1180_000), new PointCh(2600_000, 1140_000), 500, null);
-        Edge e3 = new Edge(3, 4, new PointCh(2600_000, 1140_000), new PointCh(2560_000, 1240_000), 500, null);
-        Edge e4 = new Edge(4, 5, new PointCh(2560_000, 1240_000), new PointCh(2580_000, 1200_000), 500, null);
-        Edge e5 = new Edge(5, 6, new PointCh(2580_000, 1200_000), new PointCh(2700_000, 1250_000), 500, null);
-        PointCh p0 = new PointCh(2520_000, 1220_000);
-        PointCh p1 = new PointCh(2560_000, 1240_000);
-        PointCh p2 = new PointCh(2580_000, 1180_000);
-        PointCh p3 = new PointCh(2600_000, 1140_000);
-        PointCh p4 = new PointCh(2560_000, 1240_000);
-        PointCh p5 = new PointCh(2580_000, 1200_000);
-        PointCh p6 = new PointCh(2700_000, 1250_000);
-        List<Edge> edges0 = new ArrayList<>();
-        edges0.add(e0);
-        edges0.add(e1);
-        List<Edge> edges1 = new ArrayList<>();
-        edges1.add(e2);
-        edges1.add(e3);
-        List<Edge> edges2 = new ArrayList<>();
-        edges2.add(e4);
-        edges2.add(e5);
-        Route sR0 = new SingleRoute(edges0);
-        Route sR1 = new SingleRoute(edges1);
-        Route sR2 = new SingleRoute(edges2);
-        List<Route> routes0 = new ArrayList<>();
-        routes0.add(sR0);
-        routes0.add(sR1);
-        Route mR0 = new MultiRoute(routes0);
-        List<Route> routes = new ArrayList<>();
-        routes.add(mR0);
-        routes.add(sR2);
-        Route mR = new MultiRoute(routes);
-        List<PointCh> expectedPoints = new LinkedList<>();
-        expectedPoints.add(p0);
-        expectedPoints.add(p1);
-        expectedPoints.add(p2);
-        expectedPoints.add(p3);
-        expectedPoints.add(p4);
-        expectedPoints.add(p5);
-        expectedPoints.add(p6);
-        System.out.println(mR.points());
-        assertEquals(expectedPoints, mR.points());
+    void multiRouteLengthReturnsTotalLength() {
+        for (int i = 1; i < 10; i += 1) {
+            var routes = new ArrayList<Route>();
+            for (var edge : verticalEdges(i)) routes.add(new SingleRoute(List.of(edge)));
+            var route = new MultiRoute(routes);
+            assertEquals(i * EDGE_LENGTH, route.length());
+        }
     }
 
     @Test
-    void edgesWorksProperly() {
-        Edge e0 = new Edge(0, 1, new PointCh(2520_000, 1220_000), new PointCh(2560_000, 1240_000), 500, null);
-        Edge e1 = new Edge(1, 2, new PointCh(2560_000, 1240_000), new PointCh(2580_000, 1180_000), 500, null);
-        Edge e2 = new Edge(2, 3, new PointCh(2580_000, 1180_000), new PointCh(2600_000, 1140_000), 500, null);
-        Edge e3 = new Edge(3, 4, new PointCh(2600_000, 1140_000), new PointCh(2560_000, 1240_000), 500, null);
-        Edge e4 = new Edge(4, 5, new PointCh(2560_000, 1240_000), new PointCh(2580_000, 1200_000), 500, null);
-        Edge e5 = new Edge(5, 6, new PointCh(2580_000, 1200_000), new PointCh(2700_000, 1250_000), 500, null);
-        List<Edge> edges0 = new ArrayList<>();
-        edges0.add(e0);
-        edges0.add(e1);
-        List<Edge> edges1 = new ArrayList<>();
-        edges1.add(e2);
-        edges1.add(e3);
-        List<Edge> edges2 = new ArrayList<>();
-        edges2.add(e4);
-        edges2.add(e5);
-        Route sR0 = new SingleRoute(edges0);
-        Route sR1 = new SingleRoute(edges1);
-        Route sR2 = new SingleRoute(edges2);
-        List<Route> routes0 = new ArrayList<>();
-        routes0.add(sR0);
-        routes0.add(sR1);
-        Route mR0 = new MultiRoute(routes0);
-        List<Route> routes = new ArrayList<>();
-        routes.add(mR0);
-        routes.add(sR2);
-        List<Edge> expectedEdges = new LinkedList<>();
-        expectedEdges.add(e0);
-        expectedEdges.add(e1);
-        expectedEdges.add(e2);
-        expectedEdges.add(e3);
-        expectedEdges.add(e4);
-        expectedEdges.add(e5);
-        Route mR = new MultiRoute(routes);
-        System.out.println(mR.edges());
-        assertEquals(expectedEdges, mR.edges());
+    void multiRouteRoutesAreCopiedToEnsureImmutability() {
+        var immutableRoutes = List.<Route>of(new SingleRoute(verticalEdges(10)));
+        var mutableRoutes = new ArrayList<>(immutableRoutes);
+        var route = new MultiRoute(mutableRoutes);
+        mutableRoutes.clear();
+        assertNotEquals(0, route.length());
     }
 
     @Test
-    void pointAtWorks() {
-        Edge e0 = new Edge(0, 1, new PointCh(2520_000, 1220_000), new PointCh(2560_000, 1240_000), 500, null);
-        Edge e1 = new Edge(1, 2, new PointCh(2560_000, 1240_000), new PointCh(2580_000, 1180_000), 500, null);
-        Edge e2 = new Edge(2, 3, new PointCh(2580_000, 1180_000), new PointCh(2600_000, 1140_000), 500, null);
-        Edge e3 = new Edge(3, 4, new PointCh(2600_000, 1140_000), new PointCh(2560_000, 1240_000), 500, null);
-        Edge e4 = new Edge(4, 5, new PointCh(2560_000, 1240_000), new PointCh(2580_000, 1200_000), 500, null);
-        Edge e5 = new Edge(5, 6, new PointCh(2580_000, 1200_000), new PointCh(2700_000, 1250_000), 500, null);
-        List<Edge> edges0 = new ArrayList<>();
-        edges0.add(e0);
-        edges0.add(e1);
-        List<Edge> edges1 = new ArrayList<>();
-        edges1.add(e2);
-        edges1.add(e3);
-        List<Edge> edges2 = new ArrayList<>();
-        edges2.add(e4);
-        edges2.add(e5);
-        Route sR0 = new SingleRoute(edges0);
-        Route sR1 = new SingleRoute(edges1);
-        Route sR2 = new SingleRoute(edges2);
-        List<Route> routes0 = new ArrayList<>();
-        routes0.add(sR0);
-        routes0.add(sR1);
-        Route mR0 = new MultiRoute(routes0);
-        List<Route> routes = new ArrayList<>();
-        routes.add(mR0);
-        routes.add(sR2);
-        Route mR = new MultiRoute(routes);
-        System.out.println(mR.pointAt(2000));
+    void multiRouteEdgesAreNotModifiableFromOutside() {
+        var edgesCount = 5;
+        var route = new MultiRoute(List.of(new SingleRoute(verticalEdges(edgesCount))));
+        try {
+            route.edges().clear();
+        } catch (UnsupportedOperationException e) {
+            // Nothing to do (the list of points is not modifiable, which is fine).
+        }
+        assertEquals(edgesCount, route.edges().size());
     }
 
     @Test
-    void nodeClosestToWorks() {
-        Edge e0 = new Edge(0, 1, new PointCh(2520_000, 1220_000), new PointCh(2560_000, 1240_000), 500, null);
-        Edge e1 = new Edge(1, 2, new PointCh(2560_000, 1240_000), new PointCh(2580_000, 1180_000), 500, null);
-        Edge e2 = new Edge(2, 3, new PointCh(2580_000, 1180_000), new PointCh(2600_000, 1140_000), 500, null);
-        Edge e3 = new Edge(3, 4, new PointCh(2600_000, 1140_000), new PointCh(2560_000, 1240_000), 500, null);
-        Edge e4 = new Edge(4, 5, new PointCh(2560_000, 1240_000), new PointCh(2580_000, 1200_000), 500, null);
-        Edge e5 = new Edge(5, 6, new PointCh(2580_000, 1200_000), new PointCh(2700_000, 1250_000), 500, null);
-        List<Edge> edges0 = new ArrayList<>();
-        edges0.add(e0);
-        edges0.add(e1);
-        List<Edge> edges1 = new ArrayList<>();
-        edges1.add(e2);
-        edges1.add(e3);
-        List<Edge> edges2 = new ArrayList<>();
-        edges2.add(e4);
-        edges2.add(e5);
-        Route sR0 = new SingleRoute(edges0);
-        Route sR1 = new SingleRoute(edges1);
-        Route sR2 = new SingleRoute(edges2);
-        List<Route> routes0 = new ArrayList<>();
-        routes0.add(sR0);
-        routes0.add(sR1);
-        Route mR0 = new MultiRoute(routes0);
-        List<Route> routes = new ArrayList<>();
-        routes.add(mR0);
-        routes.add(sR2);
-        Route mR = new MultiRoute(routes);
-        System.out.println(mR.nodeClosestTo(490));
+    void multiRoutePointsAreNotModifiableFromOutside() {
+        var edgesCount = 5;
+        var route = new MultiRoute(List.of(new SingleRoute(verticalEdges(edgesCount))));
+        try {
+            route.points().clear();
+        } catch (UnsupportedOperationException e) {
+            // Nothing to do (the list of points is not modifiable, which is fine).
+        }
+        assertEquals(edgesCount + 1, route.points().size());
     }
 
     @Test
-    void elevationAtWorks() {
-        Edge e3 = new Edge(3, 4, new PointCh(2600_000, 1140_000), new PointCh(2560_000, 1240_000), 500, null);
-        Edge e4 = new Edge(4, 5, new PointCh(2560_000, 1240_000), new PointCh(2580_000, 1200_000), 500, null);
-        Edge e5 = new Edge(5, 6, new PointCh(2580_000, 1200_000), new PointCh(2700_000, 1250_000), 500, null);
-        Edge e0 = new Edge(0, 1, new PointCh(2600_000, 1080_000), new PointCh(2600_100, 1120_000), 2980, Functions.sampled(new float[]{1, 2, 3, 4, 5, 6}, 2980));
-        Edge e1 = new Edge(1, 2, new PointCh(2600_100, 1120_000), new PointCh(2600_150, 1138_000), 3150, Functions.constant(3));
-        Edge e2 = new Edge(2, 3, new PointCh(2600_150, 1138_000), new PointCh(2657_000, 1139_500), 800, Functions.sampled(new float[]{45, 67, 34, 5069, 23, 3.5f, 35, 1, 0}, 150));
-        List<Edge> edges0 = new ArrayList<>();
-        edges0.add(e0);
-        edges0.add(e1);
-        List<Edge> edges1 = new ArrayList<>();
-        edges1.add(e2);
-        edges1.add(e3);
-        List<Edge> edges2 = new ArrayList<>();
-        edges2.add(e4);
-        edges2.add(e5);
-        Route sR0 = new SingleRoute(edges0);
-        Route sR1 = new SingleRoute(edges1);
-        Route sR2 = new SingleRoute(edges2);
-        List<Route> routes0 = new ArrayList<>();
-        routes0.add(sR0);
-        routes0.add(sR1);
-        Route mR0 = new MultiRoute(routes0);
-        List<Route> routes = new ArrayList<>();
-        routes.add(mR0);
-        routes.add(sR2);
-        Route mR = new MultiRoute(routes);
-        System.out.println(mR.elevationAt(1000));
+    void multiRoutePointsAreCorrect() {
+        for (int edgesCount = 1; edgesCount < 10; edgesCount += 1) {
+            var edges = verticalEdges(edgesCount);
+            var routes = new ArrayList<Route>();
+            for (var edge : edges) routes.add(new SingleRoute(List.of(edge)));
+            var route = new MultiRoute(routes);
+            var points = route.points();
+            assertEquals(edgesCount + 1, points.size());
+            assertEquals(edges.get(0).fromPoint(), points.get(0));
+            for (int i = 1; i < points.size(); i += 1)
+                assertEquals(edges.get(i - 1).toPoint(), points.get(i));
+        }
     }
 
     @Test
-    void pointClosestToWorkProp() {
-        Edge e0 = new Edge(0, 1, new PointCh(2520_000, 1220_000), new PointCh(2560_000, 1240_000), 44721.36, Functions.sampled(new float[]{1, 2, 3, 4, 5, 6}, 4));
-        Edge e1 = new Edge(1, 2, new PointCh(2560_000, 1240_000), new PointCh(2580_000, 1180_000), 63245.55, Functions.sampled(new float[]{0, 78, 45, 2}, 2));
-        Edge e2 = new Edge(2, 3, new PointCh(2580_000, 1180_000), new PointCh(2600_000, 1140_000), 44721.36, Functions.sampled(new float[]{45, 67, 34, 5069, 23, 3.5f, 35, 1, 0}, 150));
-        Edge e3 = new Edge(3, 4, new PointCh(2600_000, 1140_000), new PointCh(2640_000, 1140_000), 40000, Functions.sampled(new float[]{45, 67, 34, 5069, 23, 3.5f, 35, 1, 0}, 55));
-        Edge e4 = new Edge(4, 5, new PointCh(2640_000, 1140_000), new PointCh(2760_000, 1200_000), 134164.08, Functions.sampled(new float[]{45, 67, 34, 5069, 23, 3.5f, 35, 1, 0}, 52));
-        List<Edge> edges0 = new ArrayList<>();
-        edges0.add(e0);
-        edges0.add(e1);
-        List<Edge> edges1 = new ArrayList<>();
-        edges1.add(e2);
-        edges1.add(e3);
-        List<Edge> edges2 = new ArrayList<>();
-        edges2.add(e4);
-        Route sR0 = new SingleRoute(edges0);
-        Route sR1 = new SingleRoute(edges1);
-        Route sR2 = new SingleRoute(edges2);
-        List<Route> routes0 = new ArrayList<>();
-        routes0.add(sR0);
-        routes0.add(sR1);
-        Route mR0 = new MultiRoute(routes0);
-        List<Route> routes = new ArrayList<>();
-        routes.add(mR0);
-        routes.add(sR2);
-        Route mR = new MultiRoute(routes);
-        System.out.println(mR.pointClosestTo(new PointCh(2620_000, 1120_000)));
-        //assertEquals(new PointCh(2620_000,1140_000).e(),route.pointClosestTo(new PointCh(2620_000,1120_000)).point().e());
-        //assertEquals(new PointCh(2620_000,1140_000).n(),route.pointClosestTo(new PointCh(2620_000,1120_000)).point().n());
-        //assertEquals(new PointCh(2657_000, 1139_500).e(),route.pointClosestTo(new PointCh(2657_000, 1139_500)).point().e());
-        //assertEquals(new PointCh(2657_000, 1139_500).n(),route.pointClosestTo(new PointCh(2657_000, 1139_500)).point().n());
-        //assertEquals(0,route.pointClosestTo(new PointCh(2657_000, 1139_500)).distanceToReference());
-        //assertEquals(route.length(),route.pointClosestTo(new PointCh(2657_000, 1139_500)).position()
-        //assertEquals(172_688.27,route.pointClosestTo((new PointCh(2620_000,1120_000))).position
-        //assertEquals(new PointCh(2611919.66765,1163529.65799).e(),route.pointClosestTo(new PointCh(2611_919.66765,1163_529.65799)).point().e());
-        //assertEquals(56568.54,route.pointClosestTo((new PointCh(2800_000,1240_000);
+    void multiRoutePointAtWorks() {
+        var edgesCount = 12;
+        var edges = sawToothEdges(edgesCount);
+        var route = new MultiRoute(List.of(
+                new SingleRoute(edges.subList(0, 4)),
+                new SingleRoute(edges.subList(4, 8)),
+                new SingleRoute(edges.subList(8, 12))));
+
+        // Outside the range of the route
+        assertEquals(sawToothPoint(0), route.pointAt(Math.nextDown(0)));
+        assertEquals(sawToothPoint(edgesCount), route.pointAt(Math.nextUp(edgesCount * TOOTH_LENGTH)));
+
+        // Edge endpoints
+        for (int i = 0; i < edgesCount + 1; i += 1)
+            assertEquals(sawToothPoint(i), route.pointAt(i * TOOTH_LENGTH));
+
+        // Points at 1/4, 2/4 and 3/4 of the edges
+        for (int i = 0; i < edgesCount; i += 1) {
+            for (double p = 0.25; p <= 0.75; p += 0.25) {
+                var expectedE = ORIGIN_E + (i + p) * TOOTH_EW;
+                var expectedN = (i & 1) == 0
+                        ? ORIGIN_N + TOOTH_NS * p
+                        : ORIGIN_N + TOOTH_NS * (1 - p);
+                assertEquals(
+                        new PointCh(expectedE, expectedN),
+                        route.pointAt((i + p) * TOOTH_LENGTH));
+            }
+        }
+    }
+
+    @Test
+    void multiRouteElevationAtWorks() {
+        var edgesCount = 12;
+        var edges = sawToothEdges(edgesCount);
+        var route = new MultiRoute(List.of(
+                new SingleRoute(edges.subList(0, 4)),
+                new SingleRoute(edges.subList(4, 8)),
+                new SingleRoute(edges.subList(8, 12))));
+
+        for (int i = 0; i < edgesCount; i += 1) {
+            for (double p = 0; p < 1; p += 0.125) {
+                var pos = (i + p) * TOOTH_LENGTH;
+                var expectedElevation = (i + p) * TOOTH_ELEVATION_GAIN;
+                assertEquals(expectedElevation, route.elevationAt(pos));
+            }
+        }
+        assertEquals(0, route.elevationAt(-1e6));
+        assertEquals(edgesCount * TOOTH_ELEVATION_GAIN, route.elevationAt(+1e6));
+    }
+
+    @Test
+    void multiRouteNodeClosestToWorks() {
+        var edgesCount = 12;
+        var edges = sawToothEdges(edgesCount);
+        var route = new MultiRoute(List.of(
+                new SingleRoute(edges.subList(0, 4)),
+                new SingleRoute(edges.subList(4, 8)),
+                new SingleRoute(edges.subList(8, 12))));
+
+        for (int i = 0; i <= edgesCount; i += 1) {
+            for (double p = -0.25; p <= 0.25; p += 0.25) {
+                var pos = (i + p) * TOOTH_LENGTH;
+                assertEquals(i, route.nodeClosestTo(pos));
+            }
+        }
+    }
+
+    @Test
+    void multiRoutePointClosestToWorksWithFarAwayPoints() {
+        var rng = newRandom();
+
+        var edgesCount = 12;
+        var edges = verticalEdges(edgesCount);
+        var route = new MultiRoute(List.of(
+                new SingleRoute(edges.subList(0, 4)),
+                new SingleRoute(edges.subList(4, 8)),
+                new SingleRoute(edges.subList(8, 12))));
+
+        // Points below the route
+        var origin = new PointCh(ORIGIN_E, ORIGIN_N);
+        for (int i = 0; i < RANDOM_ITERATIONS; i += 1) {
+            var dN = rng.nextDouble(-10_000, -1);
+            var dE = rng.nextDouble(-1000, 1000);
+            var p = new PointCh(ORIGIN_E + dE, ORIGIN_N + dN);
+            var pct = route.pointClosestTo(p);
+            assertEquals(origin, pct.point());
+            assertEquals(0, pct.position());
+            assertEquals(Math.hypot(dE, dN), pct.distanceToReference(), 1e-4);
+        }
+
+        // Points above the route
+        var end = new PointCh(ORIGIN_E, ORIGIN_N + edgesCount * EDGE_LENGTH);
+        for (int i = 0; i < RANDOM_ITERATIONS; i += 1) {
+            var dN = rng.nextDouble(1, 10_000);
+            var dE = rng.nextDouble(-1000, 1000);
+            var p = new PointCh(ORIGIN_E + dE, ORIGIN_N + edgesCount * EDGE_LENGTH + dN);
+            var pct = route.pointClosestTo(p);
+            assertEquals(end, pct.point());
+            assertEquals(edgesCount * EDGE_LENGTH, pct.position());
+            assertEquals(Math.hypot(dE, dN), pct.distanceToReference(), 1e-4);
+        }
+    }
+
+    @Test
+    void multiRoutePointClosestToWorksWithPointsOnRoute() {
+        var rng = newRandom();
+
+        var edgesCount = 12;
+        var edges = verticalEdges(edgesCount);
+        var route = new MultiRoute(List.of(
+                new SingleRoute(edges.subList(0, 4)),
+                new SingleRoute(edges.subList(4, 8)),
+                new SingleRoute(edges.subList(8, 12))));
+
+        for (int i = 0; i < RANDOM_ITERATIONS; i += 1) {
+            var pos = rng.nextDouble(0, route.length());
+            var pt = route.pointAt(pos);
+            var pct = route.pointClosestTo(pt);
+            assertEquals(pt.e(), pct.point().e(), 1e-4);
+            assertEquals(pt.n(), pct.point().n(), 1e-4);
+            assertEquals(pos, pct.position(), 1e-4);
+            assertEquals(0, pct.distanceToReference(), 1e-4);
+        }
+    }
+
+    @Test
+    void multiRoutePointClosestToWorksWithSawtoothPoints() {
+        var edgesCount = 12;
+        var edges = sawToothEdges(edgesCount);
+        var route = new MultiRoute(List.of(
+                new SingleRoute(edges.subList(0, 4)),
+                new SingleRoute(edges.subList(4, 8)),
+                new SingleRoute(edges.subList(8, 12))));
+
+        // Points above the sawtooth
+        for (int i = 1; i <= edgesCount; i += 2) {
+            var p = sawToothPoint(i);
+            var dN = i * 500;
+            var pAbove = new PointCh(p.e(), p.n() + dN);
+            var pct = route.pointClosestTo(pAbove);
+            assertEquals(p, pct.point());
+            assertEquals(i * TOOTH_LENGTH, pct.position());
+            assertEquals(dN, pct.distanceToReference());
+        }
+
+        // Points below the sawtooth
+        for (int i = 0; i <= edgesCount; i += 2) {
+            var p = sawToothPoint(i);
+            var dN = i * 500;
+            var pBelow = new PointCh(p.e(), p.n() - dN);
+            var pct = route.pointClosestTo(pBelow);
+            assertEquals(p, pct.point());
+            assertEquals(i * TOOTH_LENGTH, pct.position());
+            assertEquals(dN, pct.distanceToReference());
+        }
+
+        // Points close to the n/8
+        var dE = TOOTH_NS / 16d;
+        var dN = TOOTH_EW / 16d;
+        for (int i = 0; i < edgesCount; i += 1) {
+            var upwardEdge = (i & 1) == 0;
+            for (double p = 0.125; p <= 0.875; p += 0.125) {
+                var pointE = ORIGIN_E + (i + p) * TOOTH_EW;
+                var pointN = ORIGIN_N + TOOTH_NS * (upwardEdge ? p : (1 - p));
+                var point = new PointCh(pointE, pointN);
+                var position = (i + p) * TOOTH_LENGTH;
+                var reference = new PointCh(
+                        pointE + dE,
+                        pointN + (upwardEdge ? -dN : dN));
+                var pct = route.pointClosestTo(reference);
+                assertEquals(point, pct.point());
+                assertEquals(position, pct.position());
+                assertEquals(Math.hypot(dE, dN), pct.distanceToReference());
+            }
+        }
     }
 }

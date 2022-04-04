@@ -1,6 +1,7 @@
 package ch.epfl.javelo.routing;
 
 import ch.epfl.javelo.Math2;
+import ch.epfl.javelo.Preconditions;
 import ch.epfl.javelo.projection.PointCh;
 
 import java.util.ArrayList;
@@ -20,6 +21,7 @@ public final class MultiRoute implements Route {
      * @param segments the list of segments
      */
     public MultiRoute(List<Route> segments) {
+        Preconditions.checkArgument(segments.size() != 0);
         this.segments = List.copyOf(segments);
     }
 
@@ -30,6 +32,7 @@ public final class MultiRoute implements Route {
         for (Route segment : this.segments) {
             if (positionMinusSegments <= segment.length()) {
                 index += segment.indexOfSegmentAt(positionMinusSegments);
+                break;
             } else {
                 positionMinusSegments -= segment.length();
                 index += segment.indexOfSegmentAt(segment.length()) + 1;
