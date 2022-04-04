@@ -113,7 +113,7 @@ class RouteComputerTest {
         RouteComputer rc = new RouteComputer(g, cf);
         long t0 = System.nanoTime();
         Route r = rc.bestRouteBetween(2046055, 2694240);
-        KmlPrinter.write("test1.kml", r);
+        KmlPrinter.write("test2.kml", r);
         System.out.printf("Itinéraire calculé en %d ms\n",
                 (System.nanoTime() - t0) / 1_000_000);
     }
