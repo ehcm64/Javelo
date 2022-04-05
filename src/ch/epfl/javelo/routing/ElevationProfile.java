@@ -4,6 +4,7 @@ import ch.epfl.javelo.Functions;
 import ch.epfl.javelo.Preconditions;
 
 import java.util.DoubleSummaryStatistics;
+import java.util.function.DoubleUnaryOperator;
 
 /**
  * Represents the elevation profile of an itinerary.
@@ -104,6 +105,9 @@ public class ElevationProfile {
      * @return the elevation at the given position
      */
     public double elevationAt(double position) {
-        return Functions.sampled(this.elevationSamples, this.length).applyAsDouble(position);
+        DoubleUnaryOperator function = Functions.sampled(
+                this.elevationSamples,
+                this.length);
+        return function.applyAsDouble(position);
     }
 }

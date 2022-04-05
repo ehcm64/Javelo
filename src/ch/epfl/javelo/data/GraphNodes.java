@@ -11,7 +11,7 @@ import java.nio.IntBuffer;
  *
  * @author Timo Moebel (345665)
  */
-public record GraphNodes(IntBuffer buffer) {
+record GraphNodes(IntBuffer buffer) {
     private static final int OFFSET_E = 0;
     private static final int OFFSET_N = OFFSET_E + 1;
     private static final int OFFSET_OUT_EDGES = OFFSET_N + 1;
@@ -33,7 +33,8 @@ public record GraphNodes(IntBuffer buffer) {
      * @return the east coordinate of the node
      */
     public double nodeE(int nodeId) {
-        return Q28_4.asDouble(buffer.get(nodeId * NODE_INTS + OFFSET_E));
+        int extracted_e = buffer.get(nodeId * NODE_INTS + OFFSET_E);
+        return Q28_4.asDouble(extracted_e);
     }
 
     /**
@@ -43,7 +44,8 @@ public record GraphNodes(IntBuffer buffer) {
      * @return the north coordinate of the node
      */
     public double nodeN(int nodeId) {
-        return Q28_4.asDouble(buffer.get(nodeId * NODE_INTS + OFFSET_N));
+        int extracted_n = buffer.get(nodeId * NODE_INTS + OFFSET_N);
+        return Q28_4.asDouble(extracted_n);
     }
 
     /**
@@ -53,8 +55,8 @@ public record GraphNodes(IntBuffer buffer) {
      * @return the number of edges
      */
     public int outDegree(int nodeId) {
-        int nbOfEdgesAndFirstEdgeId = buffer.get(nodeId * NODE_INTS + OFFSET_OUT_EDGES);
-        return Bits.extractUnsigned(nbOfEdgesAndFirstEdgeId, 28, 4);
+        int nodeEdgesInfo = buffer.get(nodeId * NODE_INTS + OFFSET_OUT_EDGES);
+        return Bits.extractUnsigned(nodeEdgesInfo, 28, 4);
     }
 
     /**
@@ -65,10 +67,10 @@ public record GraphNodes(IntBuffer buffer) {
      * @return the index of the edge
      */
     public int edgeId(int nodeId, int edgeIndex) {
-        Preconditions.checkArgument(0 <= edgeIndex
+        Preconditions.checkArgument(edgeIndex >= 0
                 && edgeIndex < outDegree(nodeId));
-        int nbOfEdgesAndFirstEdgeId = buffer.get(nodeId * NODE_INTS + OFFSET_OUT_EDGES);
-        int firstEdgeId = Bits.extractUnsigned(nbOfEdgesAndFirstEdgeId, 0, 28);
+        int nodeEdgesInfo = buffer.get(nodeId * NODE_INTS + OFFSET_OUT_EDGES);
+        int firstEdgeId = Bits.extractUnsigned(nodeEdgesInfo, 0, 28);
         return firstEdgeId + edgeIndex;
     }
 }

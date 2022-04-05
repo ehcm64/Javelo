@@ -13,12 +13,18 @@ import java.nio.ShortBuffer;
  *
  * @author Edouard Mignan (345875)
  */
-public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds, ShortBuffer elevations) {
+record GraphEdges(ByteBuffer edgesBuffer,
+                  IntBuffer profileIds,
+                  ShortBuffer elevations) {
+
     private static final int WAY_AND_NODE_ID = 0;
     private static final int LENGTH_OFFSET = WAY_AND_NODE_ID + Integer.BYTES;
-    private static final int HEIGHT_DIFFERENCE_OFFSET = LENGTH_OFFSET + Short.BYTES;
-    private static final int ATTRIBUTES_INDEX_OFFSET = HEIGHT_DIFFERENCE_OFFSET + Short.BYTES;
-    private static final int NEW_EDGE_OFFSET = ATTRIBUTES_INDEX_OFFSET + Short.BYTES;
+    private static final int HEIGHT_DIFFERENCE_OFFSET = LENGTH_OFFSET
+                                                      + Short.BYTES;
+    private static final int ATTRIBUTES_INDEX_OFFSET = HEIGHT_DIFFERENCE_OFFSET
+                                                     + Short.BYTES;
+    private static final int NEW_EDGE_OFFSET = ATTRIBUTES_INDEX_OFFSET
+                                             + Short.BYTES;
 
     private static float[] invertArray(float[] array) {
         float[] invertedList = new float[array.length];
@@ -35,7 +41,8 @@ public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds, ShortBuff
      * @return a boolean : true if the edge is inverted - false otherwise
      */
     public boolean isInverted(int edgeId) {
-        return (edgesBuffer.getInt(edgeId * NEW_EDGE_OFFSET) & (1L << 31)) != 0;
+        int wayAndNodeId = edgesBuffer.getInt(edgeId * NEW_EDGE_OFFSET);
+        return (wayAndNodeId & (1L << 31)) != 0;
     }
 
     /**
@@ -56,11 +63,11 @@ public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds, ShortBuff
      * @return the length of the edge
      */
     public double length(int edgeId) {
-        return Q28_4.asDouble(
-                Short.toUnsignedInt(
-                        edgesBuffer.getShort(
-                                edgeId * NEW_EDGE_OFFSET
-                                        + LENGTH_OFFSET)));
+        short extractedLength = edgesBuffer.getShort(
+                    edgeId
+                        * NEW_EDGE_OFFSET
+                        + LENGTH_OFFSET);
+        return Q28_4.asDouble(Short.toUnsignedInt(extractedLength));
     }
 
     /**
@@ -71,11 +78,11 @@ public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds, ShortBuff
      * @return the net positive elevation gain
      */
     public double elevationGain(int edgeId) {
-        return Q28_4.asDouble(
-                Short.toUnsignedInt(
-                        edgesBuffer.getShort(
-                                edgeId * NEW_EDGE_OFFSET
-                                        + HEIGHT_DIFFERENCE_OFFSET)));
+        short extractedElevation = edgesBuffer.getShort(
+                    edgeId
+                        * NEW_EDGE_OFFSET
+                        + HEIGHT_DIFFERENCE_OFFSET);
+        return Q28_4.asDouble(Short.toUnsignedInt(extractedElevation));
     }
 
     /**
@@ -85,7 +92,8 @@ public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds, ShortBuff
      * @return a boolean : true if the index has a profile - false otherwise
      */
     public boolean hasProfile(int edgeId) {
-        int profileType = Bits.extractUnsigned(profileIds.get(edgeId), 30, 2);
+        int profileInfo = profileIds.get(edgeId);
+        int profileType = Bits.extractUnsigned(profileInfo, 30, 2);
         return profileType != 0;
     }
 
@@ -96,14 +104,14 @@ public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds, ShortBuff
      * @return the array of floats containing the elevation samples
      */
     public float[] profileSamples(int edgeId) {
+        int profileInfo = profileIds.get(edgeId);
         int profileType = Bits.extractUnsigned(
-                profileIds.get(edgeId), 30, 2);
+                profileInfo, 30, 2);
         int firstSampleIndex = Bits.extractUnsigned(
-                profileIds.get(edgeId), 0, 30);
-        int nbOfSamples = 1 + Math2.ceilDiv(
-                edgesBuffer.getShort(
-                        edgeId * NEW_EDGE_OFFSET + LENGTH_OFFSET),
-                Q28_4.ofInt(2));
+                profileInfo, 0, 30);
+        short elevationData = edgesBuffer.getShort(
+                edgeId * NEW_EDGE_OFFSET + LENGTH_OFFSET);
+        int nbOfSamples = 1 + Math2.ceilDiv(elevationData, Q28_4.ofInt(2));
         float[] profileSamples = new float[nbOfSamples];
 
         switch (profileType) {
@@ -117,7 +125,7 @@ public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds, ShortBuff
             case 2:
                 profileSamples[0] = Q28_4.asFloat(elevations.get(firstSampleIndex));
                 for (int i = 1; i < nbOfSamples; i++) {
-                    short differences = elevations.get(firstSampleIndex + ((i + 1) / 2));
+                    short differences = elevations.get(firstSampleIndex + (i + 1) / 2);
                     int sampleDiff = Bits.extractSigned(differences, 8 * (i % 2), 8);
                     profileSamples[i] = profileSamples[i - 1] + Q28_4.asFloat(sampleDiff);
                 }
@@ -125,7 +133,7 @@ public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds, ShortBuff
             case 3:
                 profileSamples[0] = Q28_4.asFloat(elevations.get(firstSampleIndex));
                 for (int i = 1; i < nbOfSamples; i++) {
-                    short differences = elevations.get(firstSampleIndex + ((i + 3) / 4));
+                    short differences = elevations.get(firstSampleIndex + (i + 3) / 4);
                     int sampleDiff;
                     if (i % 4 == 0) { // case where we need to extract fourth 4bit section from short integer.
                         sampleDiff = Bits.extractSigned(differences, 0, 4);
@@ -147,8 +155,10 @@ public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds, ShortBuff
      * @return the index of the attribute set
      */
     public int attributesIndex(int edgeId) {
-        return Short.toUnsignedInt(
-                edgesBuffer.getShort(
-                        edgeId * NEW_EDGE_OFFSET + ATTRIBUTES_INDEX_OFFSET));
+        short extractedAttributes = edgesBuffer.getShort(
+                    edgeId
+                        * NEW_EDGE_OFFSET
+                        + ATTRIBUTES_INDEX_OFFSET);
+        return Short.toUnsignedInt(extractedAttributes);
     }
 }

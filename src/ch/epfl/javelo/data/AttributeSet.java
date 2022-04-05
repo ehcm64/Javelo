@@ -49,7 +49,8 @@ public record AttributeSet(long bits) {
         for (int i = 0; i < Attribute.COUNT; i++) {
             long thisIBit = (this.bits & (1L << i));
             long thatIBit = (that.bits & (1L << i));
-            if ((thisIBit & thatIBit) != 0) return true;
+            if ((thisIBit & thatIBit) != 0)
+                return true;
         }
         return false;
     }

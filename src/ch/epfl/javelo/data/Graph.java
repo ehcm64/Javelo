@@ -33,7 +33,11 @@ public class Graph {
      * @param edges         the edges of the graph
      * @param attributeSets the attribute sets of the edges of the graph
      */
-    public Graph(GraphNodes nodes, GraphSectors sectors, GraphEdges edges, List<AttributeSet> attributeSets) {
+    public Graph(GraphNodes nodes,
+                 GraphSectors sectors,
+                 GraphEdges edges,
+                 List<AttributeSet> attributeSets) {
+
         this.nodes = nodes;
         this.sectors = sectors;
         this.edges = edges;
@@ -182,7 +186,8 @@ public class Graph {
      * @return the attribute set associated to the edge
      */
     public AttributeSet edgeAttributes(int edgeId) {
-        return this.attributeSets.get(this.edges.attributesIndex(edgeId));
+        int attributesIndex = this.edges.attributesIndex(edgeId);
+        return this.attributeSets.get(attributesIndex);
     }
 
     /**

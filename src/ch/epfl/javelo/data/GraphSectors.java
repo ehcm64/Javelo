@@ -12,7 +12,7 @@ import java.util.List;
  *
  * @author Timo Moebel (345665)
  */
-public record GraphSectors(ByteBuffer buffer) {
+record GraphSectors(ByteBuffer buffer) {
     private static final short OFFSET_SHORT = Short.BYTES;
     private static final int OFFSET_INTEGER = Integer.BYTES;
     private static final int OFFSET_SUM = OFFSET_INTEGER + OFFSET_SHORT;
@@ -21,7 +21,6 @@ public record GraphSectors(ByteBuffer buffer) {
      * Represents a sector with 2 nodes (the first and last)
      */
     public record Sector(int startNodeId, int endNodeId) {
-
     }
 
     private static int xToSectorCoords(double e) {
@@ -60,7 +59,10 @@ public record GraphSectors(ByteBuffer buffer) {
                 int index = 128 * y + x;
                 int firstNode = buffer.getInt(index * OFFSET_SUM);
                 int nodesNumber = Short.toUnsignedInt(
-                        buffer().getShort(index * OFFSET_SUM + OFFSET_INTEGER));
+                        buffer().getShort(
+                                    index
+                                        * OFFSET_SUM
+                                        + OFFSET_INTEGER));
                 int lastNode = firstNode + nodesNumber;
                 Sector s = new Sector(firstNode, lastNode);
                 sectors.add(s);
