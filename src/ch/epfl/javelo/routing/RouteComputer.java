@@ -69,13 +69,8 @@ public final class RouteComputer {
                 continue;
             }
             // End node found
-            if (node.nodeId == endNodeId) {
-                List<Integer> routeNodes = getRouteNodes(predecessors,
-                        endNodeId,
-                        startNodeId);
-                List<Edge> edges = getRouteEdges(routeNodes);
-                return new SingleRoute(edges);
-            }
+            if (node.nodeId == endNodeId)
+                return getRoute(predecessors, endNodeId, startNodeId);
             // Exploration of all the nodes' edges
             int nbOfEdges = graph.nodeOutDegree(node.nodeId);
             float pathToNodeLength = distances[node.nodeId];
@@ -90,7 +85,6 @@ public final class RouteComputer {
                                   pathToNodeLength
                                 + this.costFunction.costFactor(node.nodeId, edgeId)
                                 * graph.edgeLength(edgeId));
-
                 if (pathToArrivalNodeLength < distances[arrivalNodeId]) {
                     distances[arrivalNodeId] = pathToArrivalNodeLength;
                     predecessors[arrivalNodeId] = node.nodeId;
@@ -106,42 +100,29 @@ public final class RouteComputer {
         return null;
     }
 
-    private List<Integer> getRouteNodes(int[] predecessors, int endNodeId, int startNodeId) {
-        List<Integer> routeNodes = new ArrayList<>();
-        // get a list of all the route's nodes from the end to the start
-        routeNodes.add(endNodeId);
+    private Route getRoute(int[] predecessors, int endNodeId, int startNodeId) {
+        List<Edge> edges = new ArrayList<>();
+        // Iterate through all the route's nodes from end to start
         int nodeId = endNodeId;
         while (nodeId != startNodeId) {
             int predecessor = predecessors[nodeId];
-            routeNodes.add(predecessor);
-            nodeId = predecessor;
-        }
-        // reverse the list to get the route's nodes in correct order
-        Collections.reverse(routeNodes);
-        return routeNodes;
-    }
-
-    private List<Edge> getRouteEdges(List<Integer> routeNodes) {
-        int nbOfEdges = routeNodes.size() - 1;
-        List<Edge> edges = new ArrayList<>();
-        // iterate through all the route's nodes
-        for (int node = 0; node < nbOfEdges; node++) {
-            int fromNodeId = routeNodes.get(node);
-            int toNodeId = routeNodes.get(node + 1);
-            PointCh fromPoint = graph.nodePoint(fromNodeId);
-            PointCh toPoint = graph.nodePoint(toNodeId);
+            PointCh fromPoint = graph.nodePoint(predecessor);
+            PointCh toPoint = graph.nodePoint(nodeId);
             int edgeId = 0;
             // iterate through all the current node's edges
             // until the one we want is found
-            for (int i = 0; i < graph.nodeOutDegree(fromNodeId); i++) {
-                edgeId = graph.nodeOutEdgeId(fromNodeId, i);
-                if (graph.edgeTargetNodeId(edgeId) == toNodeId)
+            for (int i = 0; i < graph.nodeOutDegree(predecessor); i++) {
+                edgeId = graph.nodeOutEdgeId(predecessor, i);
+                if (graph.edgeTargetNodeId(edgeId) == nodeId)
                     break;
             }
             double length = graph.edgeLength(edgeId);
             DoubleUnaryOperator profile = graph.edgeProfile(edgeId);
-            edges.add(new Edge(fromNodeId, toNodeId, fromPoint, toPoint, length, profile));
+            edges.add(new Edge(predecessor,nodeId, fromPoint, toPoint, length, profile));
+            nodeId = predecessor;
         }
-        return edges;
+        // reverse the list to get the route's edges in correct order
+        Collections.reverse(edges);
+        return new SingleRoute(edges);
     }
 }
