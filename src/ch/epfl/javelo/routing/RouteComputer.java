@@ -52,8 +52,8 @@ public final class RouteComputer {
         }
 
         // Initialization
-        float[] distances = new float[NB_OF_NODES];
-        int[] predecessors = new int[NB_OF_NODES];
+        float[] distances = new float[NB_OF_NODES]; // contains path lengths to each node from start
+        int[] predecessors = new int[NB_OF_NODES]; // contains node's predecessor in route
         PriorityQueue<WeightedNode> exploring = new PriorityQueue<>();
         for (int nodeId = 0; nodeId < graph.nodeCount(); nodeId++) {
             distances[nodeId] = Float.POSITIVE_INFINITY;
@@ -70,7 +70,7 @@ public final class RouteComputer {
             }
             // End node found
             if (node.nodeId == endNodeId)
-                return getRoute(predecessors, endNodeId, startNodeId);
+                return getRoute(predecessors, startNodeId, endNodeId);
             // Exploration of all the nodes' edges
             int nbOfEdges = graph.nodeOutDegree(node.nodeId);
             float pathToNodeLength = distances[node.nodeId];
@@ -100,7 +100,7 @@ public final class RouteComputer {
         return null;
     }
 
-    private Route getRoute(int[] predecessors, int endNodeId, int startNodeId) {
+    private Route getRoute(int[] predecessors, int startNodeId, int endNodeId) {
         List<Edge> edges = new ArrayList<>();
         // Iterate through all the route's nodes from end to start
         int nodeId = endNodeId;
