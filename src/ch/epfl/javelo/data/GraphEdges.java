@@ -13,26 +13,15 @@ import java.nio.ShortBuffer;
  *
  * @author Edouard Mignan (345875)
  */
-record GraphEdges(ByteBuffer edgesBuffer,
-                  IntBuffer profileIds,
-                  ShortBuffer elevations) {
+record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds, ShortBuffer elevations) {
 
-    private static final int WAY_AND_NODE_ID = 0;
-    private static final int LENGTH_OFFSET = WAY_AND_NODE_ID + Integer.BYTES;
+    private static final int LENGTH_OFFSET = Integer.BYTES;
     private static final int HEIGHT_DIFFERENCE_OFFSET = LENGTH_OFFSET
-                                                      + Short.BYTES;
+            + Short.BYTES;
     private static final int ATTRIBUTES_INDEX_OFFSET = HEIGHT_DIFFERENCE_OFFSET
-                                                     + Short.BYTES;
+            + Short.BYTES;
     private static final int NEW_EDGE_OFFSET = ATTRIBUTES_INDEX_OFFSET
-                                             + Short.BYTES;
-
-    private static float[] invertArray(float[] array) {
-        float[] invertedList = new float[array.length];
-        for (int i = 0; i < array.length; i++) {
-            invertedList[i] = array[array.length - 1 - i];
-        }
-        return invertedList;
-    }
+            + Short.BYTES;
 
     /**
      * Checks if an edge is inverted.
@@ -64,9 +53,7 @@ record GraphEdges(ByteBuffer edgesBuffer,
      */
     public double length(int edgeId) {
         short extractedLength = edgesBuffer.getShort(
-                    edgeId
-                        * NEW_EDGE_OFFSET
-                        + LENGTH_OFFSET);
+                edgeId * NEW_EDGE_OFFSET + LENGTH_OFFSET);
         return Q28_4.asDouble(Short.toUnsignedInt(extractedLength));
     }
 
@@ -79,9 +66,7 @@ record GraphEdges(ByteBuffer edgesBuffer,
      */
     public double elevationGain(int edgeId) {
         short extractedElevation = edgesBuffer.getShort(
-                    edgeId
-                        * NEW_EDGE_OFFSET
-                        + HEIGHT_DIFFERENCE_OFFSET);
+                edgeId * NEW_EDGE_OFFSET + HEIGHT_DIFFERENCE_OFFSET);
         return Q28_4.asDouble(Short.toUnsignedInt(extractedElevation));
     }
 
@@ -105,12 +90,11 @@ record GraphEdges(ByteBuffer edgesBuffer,
      */
     public float[] profileSamples(int edgeId) {
         int profileInfo = profileIds.get(edgeId);
-        int profileType = Bits.extractUnsigned(
-                profileInfo, 30, 2);
-        int firstSampleIndex = Bits.extractUnsigned(
-                profileInfo, 0, 30);
-        short elevationData = edgesBuffer.getShort(
-                edgeId * NEW_EDGE_OFFSET + LENGTH_OFFSET);
+        int profileType = Bits.extractUnsigned(profileInfo, 30, 2);
+        int firstSampleIndex = Bits.extractUnsigned(profileInfo, 0, 30);
+        short elevationData = edgesBuffer.getShort(edgeId
+                * NEW_EDGE_OFFSET
+                + LENGTH_OFFSET);
         int nbOfSamples = 1 + Math2.ceilDiv(elevationData, Q28_4.ofInt(2));
         float[] profileSamples = new float[nbOfSamples];
 
@@ -126,7 +110,8 @@ record GraphEdges(ByteBuffer edgesBuffer,
                 profileSamples[0] = Q28_4.asFloat(elevations.get(firstSampleIndex));
                 for (int i = 1; i < nbOfSamples; i++) {
                     short differences = elevations.get(firstSampleIndex + (i + 1) / 2);
-                    int sampleDiff = Bits.extractSigned(differences, 8 * (i % 2), 8);
+                    int byteStart = 8 * (i % 2); // to extract first or second byte
+                    int sampleDiff = Bits.extractSigned(differences, byteStart, 8);
                     profileSamples[i] = profileSamples[i - 1] + Q28_4.asFloat(sampleDiff);
                 }
                 return isInverted(edgeId) ? invertArray(profileSamples) : profileSamples;
@@ -134,12 +119,9 @@ record GraphEdges(ByteBuffer edgesBuffer,
                 profileSamples[0] = Q28_4.asFloat(elevations.get(firstSampleIndex));
                 for (int i = 1; i < nbOfSamples; i++) {
                     short differences = elevations.get(firstSampleIndex + (i + 3) / 4);
-                    int sampleDiff;
-                    if (i % 4 == 0) { // case where we need to extract fourth 4bit section from short integer.
-                        sampleDiff = Bits.extractSigned(differences, 0, 4);
-                    } else { // case where we need to extract 1st, 2nd or 3rd 4bit section from short integer.
-                        sampleDiff = Bits.extractSigned(differences, 16 - (i % 4) * 4, 4);
-                    }
+                    // to extract the correct nibble (4th or 1st, 2nd, 3rd)
+                    int nibbleStart = (i % 4 == 0) ? 0 : (16 - i % 4 * 4);
+                    int sampleDiff = Bits.extractSigned(differences, nibbleStart, 4);
                     profileSamples[i] = profileSamples[i - 1] + Q28_4.asFloat(sampleDiff);
                 }
                 return isInverted(edgeId) ? invertArray(profileSamples) : profileSamples;
@@ -156,9 +138,17 @@ record GraphEdges(ByteBuffer edgesBuffer,
      */
     public int attributesIndex(int edgeId) {
         short extractedAttributes = edgesBuffer.getShort(
-                    edgeId
+                edgeId
                         * NEW_EDGE_OFFSET
                         + ATTRIBUTES_INDEX_OFFSET);
         return Short.toUnsignedInt(extractedAttributes);
+    }
+
+    private static float[] invertArray(float[] array) {
+        float[] invertedList = new float[array.length];
+        for (int i = 0; i < array.length; i++) {
+            invertedList[i] = array[array.length - 1 - i];
+        }
+        return invertedList;
     }
 }

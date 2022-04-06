@@ -113,7 +113,8 @@ public final class SingleRoute implements Route {
         double minDistance = Double.POSITIVE_INFINITY;
         double edgePosition = 0;
         double totalPosition = 0;
-        double positionAlongEdge, testDistance;
+        double positionAlongEdge;
+        double testDistance;
         Edge bestEdge = null;
 
         for (int i = 0; i < this.edges.size(); i++) {
