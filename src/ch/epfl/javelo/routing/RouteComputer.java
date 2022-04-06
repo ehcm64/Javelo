@@ -40,20 +40,26 @@ public final class RouteComputer {
      * @return the best route between the two nodes
      */
     public Route bestRouteBetween(int startNodeId, int endNodeId) {
-        // Initialization
         Preconditions.checkArgument(startNodeId != endNodeId);
+
+        record WeightedNode(int nodeId, float sumDistance)
+                implements Comparable<WeightedNode> {
+
+            @Override
+            public int compareTo(WeightedNode that) {
+                return Float.compare(this.sumDistance, that.sumDistance);
+            }
+        }
+
+        // Initialization
         float[] distances = new float[NB_OF_NODES];
         int[] predecessors = new int[NB_OF_NODES];
         PriorityQueue<WeightedNode> exploring = new PriorityQueue<>();
-
         for (int nodeId = 0; nodeId < graph.nodeCount(); nodeId++) {
             distances[nodeId] = Float.POSITIVE_INFINITY;
         }
         distances[startNodeId] = 0f;
-
-        float startToEndDistance = (float) graph.nodePoint(startNodeId)
-                .distanceTo(graph.nodePoint(endNodeId));
-        exploring.add(new WeightedNode(startNodeId, startToEndDistance));
+        exploring.add(new WeightedNode(startNodeId, 0));
 
         // Node exploration loop
         while (exploring.size() != 0) {
@@ -62,7 +68,6 @@ public final class RouteComputer {
             if (distances[node.nodeId] == Float.NEGATIVE_INFINITY) {
                 continue;
             }
-
             // End node found
             if (node.nodeId == endNodeId) {
                 List<Integer> routeNodes = getRouteNodes(predecessors,
@@ -71,20 +76,18 @@ public final class RouteComputer {
                 List<Edge> edges = getRouteEdges(routeNodes);
                 return new SingleRoute(edges);
             }
-
             // Exploration of all the nodes' edges
             int nbOfEdges = graph.nodeOutDegree(node.nodeId);
             float pathToNodeLength = distances[node.nodeId];
             for (int edgeIndex = 0; edgeIndex < nbOfEdges; edgeIndex++) {
                 int edgeId = graph.nodeOutEdgeId(node.nodeId, edgeIndex);
                 int arrivalNodeId = graph.edgeTargetNodeId(edgeId);
-
                 // if arrival node has already been explored
                 if (distances[arrivalNodeId] == Float.NEGATIVE_INFINITY) {
                     continue;
                 }
                 float pathToArrivalNodeLength = (float) (
-                        pathToNodeLength
+                                  pathToNodeLength
                                 + this.costFunction.costFactor(node.nodeId, edgeId)
                                 * graph.edgeLength(edgeId));
 
@@ -140,14 +143,5 @@ public final class RouteComputer {
             edges.add(new Edge(fromNodeId, toNodeId, fromPoint, toPoint, length, profile));
         }
         return edges;
-    }
-
-    record WeightedNode(int nodeId, float sumDistance)
-            implements Comparable<WeightedNode> {
-
-        @Override
-        public int compareTo(WeightedNode that) {
-            return Float.compare(this.sumDistance, that.sumDistance);
-        }
     }
 }
