@@ -64,9 +64,8 @@ public final class RouteComputer {
         while (exploring.size() != 0) {
             WeightedNode node = exploring.remove();
             // if node has already been explored
-            if (distances[node.nodeId] == Float.NEGATIVE_INFINITY) {
+            if (distances[node.nodeId] == Float.NEGATIVE_INFINITY)
                 continue;
-            }
             // End node found
             if (node.nodeId == endNodeId)
                 return getRoute(predecessors, startNodeId, endNodeId);
@@ -79,7 +78,6 @@ public final class RouteComputer {
                 // if arrival node has already been explored
                 if (distances[arrivalNodeId] == Float.NEGATIVE_INFINITY)
                     continue;
-
                 float pathToArrivalNodeLength = (float) (
                                   pathToNodeLength
                                 + this.costFunction.costFactor(node.nodeId, edgeId)

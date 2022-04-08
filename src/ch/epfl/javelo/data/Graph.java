@@ -65,22 +65,29 @@ public class Graph {
         List<AttributeSet> attributeSets;
 
         try (FileChannel nodesChannel = FileChannel.open(nodesPath)) {
-            nodesBuffer = nodesChannel.map(FileChannel.MapMode.READ_ONLY, 0, nodesChannel.size()).asIntBuffer();
+            nodesBuffer = nodesChannel.map(FileChannel.MapMode.READ_ONLY,
+                    0, nodesChannel.size()).asIntBuffer();
         }
         try (FileChannel sectorsChannel = FileChannel.open(sectorsPath)) {
-            sectorsBuffer = sectorsChannel.map(FileChannel.MapMode.READ_ONLY, 0, sectorsChannel.size()).asReadOnlyBuffer();
+            sectorsBuffer = sectorsChannel.map(FileChannel.MapMode.READ_ONLY,
+                    0, sectorsChannel.size()).asReadOnlyBuffer();
         }
         try (FileChannel edgesChannel = FileChannel.open(edgesPath)) {
-            edgesBuffer = edgesChannel.map(FileChannel.MapMode.READ_ONLY, 0, edgesChannel.size()).asReadOnlyBuffer();
+            edgesBuffer = edgesChannel.map(FileChannel.MapMode.READ_ONLY,
+                    0, edgesChannel.size()).asReadOnlyBuffer();
         }
         try (FileChannel profilesChannel = FileChannel.open(profile_idsPath)) {
-            profilesBuffer = profilesChannel.map(FileChannel.MapMode.READ_ONLY, 0, profilesChannel.size()).asIntBuffer();
+            profilesBuffer = profilesChannel.map(FileChannel.MapMode.READ_ONLY,
+                    0, profilesChannel.size()).asIntBuffer();
         }
         try (FileChannel elevationsChannel = FileChannel.open(elevationsPath)) {
-            elevationsBuffer = elevationsChannel.map(FileChannel.MapMode.READ_ONLY, 0, elevationsChannel.size()).asShortBuffer();
+            elevationsBuffer = elevationsChannel.map(FileChannel.MapMode.READ_ONLY,
+                    0, elevationsChannel.size()).asShortBuffer();
         }
         try (FileChannel attributesChannel = FileChannel.open(attributesPath)) {
-            LongBuffer attributeSetsBuffer = attributesChannel.map(FileChannel.MapMode.READ_ONLY, 0, attributesChannel.size()).asLongBuffer();
+            LongBuffer attributeSetsBuffer = attributesChannel.map(FileChannel.MapMode.READ_ONLY,
+                    0, attributesChannel.size()).asLongBuffer();
+
             attributeSets = new ArrayList<>();
             for (int i = 0; i < attributeSetsBuffer.capacity(); i++) {
                 attributeSets.add(new AttributeSet(attributeSetsBuffer.get(i)));
