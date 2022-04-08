@@ -12,7 +12,7 @@ import java.util.List;
  *
  * @author Timo Moebel (345665)
  */
-record GraphSectors(ByteBuffer buffer) {
+public record GraphSectors(ByteBuffer buffer) {
     private static final short OFFSET_SHORT = Short.BYTES;
     private static final int OFFSET_INTEGER = Integer.BYTES;
     private static final int OFFSET_SUM = OFFSET_INTEGER + OFFSET_SHORT;
@@ -60,7 +60,7 @@ record GraphSectors(ByteBuffer buffer) {
                 int firstNode = buffer.getInt(index * OFFSET_SUM);
                 int nodesNumber = Short.toUnsignedInt(
                         buffer().getShort(
-                                    index
+                                index
                                         * OFFSET_SUM
                                         + OFFSET_INTEGER));
                 int lastNode = firstNode + nodesNumber;

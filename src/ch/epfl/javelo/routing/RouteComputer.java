@@ -50,7 +50,6 @@ public final class RouteComputer {
                 return Float.compare(this.sumDistance, that.sumDistance);
             }
         }
-
         // Initialization
         float[] distances = new float[NB_OF_NODES]; // contains path lengths to each node from start
         int[] predecessors = new int[NB_OF_NODES]; // contains node's predecessor in route
@@ -66,7 +65,6 @@ public final class RouteComputer {
             WeightedNode node = exploring.remove();
             // if node has already been explored
             if (distances[node.nodeId] == Float.NEGATIVE_INFINITY) {
-                System.out.println(node.nodeId);
                 continue;
             }
             // End node found
@@ -79,9 +77,9 @@ public final class RouteComputer {
                 int edgeId = graph.nodeOutEdgeId(node.nodeId, edgeIndex);
                 int arrivalNodeId = graph.edgeTargetNodeId(edgeId);
                 // if arrival node has already been explored
-                if (distances[arrivalNodeId] == Float.NEGATIVE_INFINITY) {
+                if (distances[arrivalNodeId] == Float.NEGATIVE_INFINITY)
                     continue;
-                }
+
                 float pathToArrivalNodeLength = (float) (
                                   pathToNodeLength
                                 + this.costFunction.costFactor(node.nodeId, edgeId)

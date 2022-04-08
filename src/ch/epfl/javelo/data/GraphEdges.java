@@ -13,7 +13,8 @@ import java.nio.ShortBuffer;
  *
  * @author Edouard Mignan (345875)
  */
-record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds, ShortBuffer elevations) {
+public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds,
+                         ShortBuffer elevations) {
 
     private static final int LENGTH_OFFSET = Integer.BYTES;
     private static final int HEIGHT_DIFFERENCE_OFFSET = LENGTH_OFFSET
