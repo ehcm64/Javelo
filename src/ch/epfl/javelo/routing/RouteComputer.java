@@ -66,6 +66,7 @@ public final class RouteComputer {
             WeightedNode node = exploring.remove();
             // if node has already been explored
             if (distances[node.nodeId] == Float.NEGATIVE_INFINITY) {
+                System.out.println(node.nodeId);
                 continue;
             }
             // End node found
