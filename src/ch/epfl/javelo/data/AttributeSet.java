@@ -46,13 +46,7 @@ public record AttributeSet(long bits) {
      * @return true iff the intersection of the receiver set (this) with the one passed as argument (that) is not empty
      */
     public boolean intersects(AttributeSet that) {
-        for (int i = 0; i < Attribute.COUNT; i++) {
-            long thisIBit = (this.bits & (1L << i));
-            long thatIBit = (that.bits & (1L << i));
-            if ((thisIBit & thatIBit) != 0)
-                return true;
-        }
-        return false;
+        return (this.bits & that.bits) != 0;
     }
 
     @Override
