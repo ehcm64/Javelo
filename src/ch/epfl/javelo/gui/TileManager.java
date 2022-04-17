@@ -19,7 +19,6 @@ public final class TileManager {
     public TileManager(Path cachePath, String tileServerName) {
         this.memoryCache = new LinkedHashMap<>(100, 0.75F, true) {
             private static final int MAX_ENTRIES = 100;
-
             protected boolean removeEldestEntry(Map.Entry<TileId, Image> eldest) {
                 return size() > MAX_ENTRIES;
             }
@@ -44,7 +43,7 @@ public final class TileManager {
                 return new Image(input);
             }
         }
-        URL url = new URL(this.tileServerName + zlString + xString + yString + ".png");
+        URL url = new URL("http://" + this.tileServerName + zlString + xString + yString + ".png");
         URLConnection connection = url.openConnection();
         connection.setRequestProperty("User-Agent", "JaVelo");
         try (InputStream i = new BufferedInputStream(connection.getInputStream())) {

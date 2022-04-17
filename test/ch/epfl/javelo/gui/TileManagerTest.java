@@ -10,14 +10,16 @@ import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class TileManagerTest extends Application {
+public class TileManagerTest extends Application {
 
-    public static void main(String[] args) { launch(args); }
+    public static void main(String[] args) {
+        Application.launch(args);
+    }
 
     @Override
     public void start(Stage primaryStage) throws Exception {
         TileManager tm = new TileManager(
-                Path.of("."), "tile.openstreetmap.org");
+                Path.of("/home/edouardmignan/IdeaProjects/Javelo/cache"), "tile.openstreetmap.org");
         Image tileImage = tm.imageForTileAt(
                 new TileManager.TileId(19, 271725, 185422));
         Platform.exit();
