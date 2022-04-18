@@ -64,12 +64,8 @@ public final class TileManager {
     record TileId(int zoomLevel, int xIndex, int yIndex) {
 
         public static boolean isValid(int zoomLevel, int xIndex, int yIndex) {
-            PointWebMercator point = PointWebMercator.of(zoomLevel, xIndex, yIndex);
-            return (0 <= point.x() && point.x() <= 1)
-                    &&
-                    (0 <= point.y() && point.y() <= 1)
-                    &&
-                    zoomLevel <= 20;
+            //TODO
+            return true;
         }
     }
 }
