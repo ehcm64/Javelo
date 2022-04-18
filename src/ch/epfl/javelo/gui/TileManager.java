@@ -19,6 +19,7 @@ public final class TileManager {
     public TileManager(Path cachePath, String tileServerName) {
         this.memoryCache = new LinkedHashMap<>(100, 0.75F, true) {
             private static final int MAX_ENTRIES = 100;
+
             protected boolean removeEldestEntry(Map.Entry<TileId, Image> eldest) {
                 return size() > MAX_ENTRIES;
             }
@@ -32,27 +33,27 @@ public final class TileManager {
             throw new IllegalArgumentException();
         if (memoryCache.containsKey(tileId))
             return memoryCache.get(tileId);
-        String zlString = "/" + tileId.zoomLevel;
-        String xString = "/" + tileId.xIndex;
-        String yString = "/" + tileId.yIndex;
-        Path zlDir = Path.of(cachePath.toString(), "/" + zlString);
-        Path xDir = Path.of(zlDir.toString(), "/" + xString);
-        Path filePath = Path.of(xDir.toString(), "/" + yString + ".png");
+        String zlString = Integer.toString(tileId.zoomLevel);
+        String xString = Integer.toString(tileId.xIndex);
+        String yFileString = tileId.yIndex + ".png";
+        Path zlDir = cachePath.resolve(zlString);
+        Path xDir = zlDir.resolve(xString);
+        Path filePath = xDir.resolve(yFileString);
         if (Files.exists(filePath)) {
-            try (InputStream input = new FileInputStream(filePath.toFile())) {
+            try (InputStream input = new BufferedInputStream(new FileInputStream(filePath.toFile()))) {
+                System.out.println("OUI");
                 return new Image(input);
             }
         }
-        URL url = new URL("http://" + this.tileServerName + zlString + xString + yString + ".png");
+        URL url = new URL("https://" + this.tileServerName + "/" + zlString + "/" + xString + "/" + yFileString);
         URLConnection connection = url.openConnection();
         connection.setRequestProperty("User-Agent", "JaVelo");
         try (InputStream i = new BufferedInputStream(connection.getInputStream())) {
-            Files.createDirectory(cachePath);
             Files.createDirectories(xDir);
             Files.createFile(filePath);
             try (OutputStream outputStream = new FileOutputStream(filePath.toFile())) {
                 i.transferTo(outputStream);
-                try (InputStream j = new FileInputStream(filePath.toFile())) {
+                try (InputStream j = new BufferedInputStream(new FileInputStream(filePath.toFile()))) {
                     Image tileImage = new Image(j);
                     memoryCache.put(tileId, tileImage);
                     return tileImage;
@@ -67,7 +68,9 @@ public final class TileManager {
             PointWebMercator point = PointWebMercator.of(zoomLevel, xIndex, yIndex);
             return (0 <= point.x() && point.x() <= 1)
                     &&
-                    (0 <= point.y() && point.y() <= 1);
+                    (0 <= point.y() && point.y() <= 1)
+                    &&
+                    zoomLevel <= 20;
         }
     }
 }

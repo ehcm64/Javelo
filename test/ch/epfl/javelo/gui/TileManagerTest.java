@@ -19,7 +19,7 @@ public class TileManagerTest extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         TileManager tm = new TileManager(
-                Path.of("/home/edouardmignan/IdeaProjects/Javelo/cache"), "tile.openstreetmap.org");
+                Path.of(".").resolve("cache"), "tile.openstreetmap.org");
         Image tileImage = tm.imageForTileAt(
                 new TileManager.TileId(19, 271725, 185422));
         Platform.exit();
