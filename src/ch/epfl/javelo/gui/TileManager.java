@@ -41,7 +41,6 @@ public final class TileManager {
         Path filePath = xDir.resolve(yFileString);
         if (Files.exists(filePath)) {
             try (InputStream input = new BufferedInputStream(new FileInputStream(filePath.toFile()))) {
-                System.out.println("OUI");
                 return new Image(input);
             }
         }
