@@ -54,7 +54,10 @@ public final class TileManager {
                 i.transferTo(outputStream);
                 try (InputStream j = new BufferedInputStream(new FileInputStream(filePath.toFile()))) {
                     Image tileImage = new Image(j);
-                    memoryCache.put(tileId, tileImage);
+                    if (memoryCache.size() == 100) {
+                        memoryCache.remove(memoryCache.keySet().iterator().next());
+                        memoryCache.put(tileId, tileImage);
+                    }
                     return tileImage;
                 }
             }
