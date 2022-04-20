@@ -17,13 +17,7 @@ public final class TileManager {
     private final String tileServerName;
 
     public TileManager(Path cachePath, String tileServerName) {
-        this.memoryCache = new LinkedHashMap<>(100, 0.75F, true) {
-            private static final int MAX_ENTRIES = 100;
-
-            protected boolean removeEldestEntry(Map.Entry<TileId, Image> eldest) {
-                return size() > MAX_ENTRIES;
-            }
-        };
+        this.memoryCache = new LinkedHashMap<>(100, 0.75F, true);
         this.cachePath = cachePath;
         this.tileServerName = tileServerName;
     }
