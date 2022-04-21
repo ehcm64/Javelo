@@ -34,7 +34,8 @@ public final class TileManager {
         Path xDir = zlDir.resolve(xString);
         Path filePath = xDir.resolve(yFileString);
         if (Files.exists(filePath)) {
-            try (InputStream input = new BufferedInputStream(new FileInputStream(filePath.toFile()))) {
+            int BUFFER_SIZE = 64 * 1024; // 64kB
+            try (InputStream input = new BufferedInputStream(new FileInputStream(filePath.toFile()), BUFFER_SIZE)) {
                 return new Image(input);
             }
         }
@@ -46,23 +47,21 @@ public final class TileManager {
             Files.createFile(filePath);
             try (OutputStream outputStream = new FileOutputStream(filePath.toFile())) {
                 i.transferTo(outputStream);
-                try (InputStream j = new BufferedInputStream(new FileInputStream(filePath.toFile()))) {
-                    Image tileImage = new Image(j);
-                    if (memoryCache.size() == 100) {
-                        memoryCache.remove(memoryCache.keySet().iterator().next());
-                        memoryCache.put(tileId, tileImage);
-                    }
-                    return tileImage;
-                }
             }
+            Image tileImage = new Image(i);
+            if (memoryCache.size() == 100) {
+                memoryCache.remove(memoryCache.keySet().iterator().next());
+                memoryCache.put(tileId, tileImage);
+            }
+            return tileImage;
         }
     }
 
-    record TileId(int zoomLevel, int xIndex, int yIndex) {
+record TileId(int zoomLevel, int xIndex, int yIndex) {
 
-        public static boolean isValid(int zoomLevel, int xIndex, int yIndex) {
-            //TODO
-            return true;
-        }
+    public static boolean isValid(int zoomLevel, int xIndex, int yIndex) {
+        //TODO
+        return true;
     }
+}
 }
