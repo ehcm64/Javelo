@@ -1,5 +1,6 @@
 package ch.epfl.javelo.gui;
 
+import ch.epfl.javelo.Preconditions;
 import ch.epfl.javelo.projection.PointWebMercator;
 import javafx.scene.image.Image;
 
@@ -15,41 +16,46 @@ public final class TileManager {
     private LinkedHashMap<TileId, Image> memoryCache;
     private final Path cachePath;
     private final String tileServerName;
+    private final int CACHE_SIZE = 100;
 
     public TileManager(Path cachePath, String tileServerName) {
-        this.memoryCache = new LinkedHashMap<>(100, 0.75F, true);
+        this.memoryCache = new LinkedHashMap<>(CACHE_SIZE, 0.75F, true);
         this.cachePath = cachePath;
         this.tileServerName = tileServerName;
     }
 
     public Image imageForTileAt(TileId tileId) throws IOException {
-        if (!TileId.isValid(tileId.zoomLevel, tileId.xIndex, tileId.yIndex))
-            throw new IllegalArgumentException();
+        Preconditions.checkArgument(
+                TileId.isValid(tileId.zoomLevel, tileId.xIndex, tileId.yIndex));
+
         if (memoryCache.containsKey(tileId))
             return memoryCache.get(tileId);
         String zlString = Integer.toString(tileId.zoomLevel);
         String xString = Integer.toString(tileId.xIndex);
         String yFileString = tileId.yIndex + ".png";
-        Path zlDir = cachePath.resolve(zlString);
-        Path xDir = zlDir.resolve(xString);
-        Path filePath = xDir.resolve(yFileString);
+        Path xDirectory = cachePath.resolve(zlString).resolve(xString);
+        Path filePath = xDirectory.resolve(yFileString);
         if (Files.exists(filePath)) {
-            int BUFFER_SIZE = 64 * 1024; // 64kB
-            try (InputStream input = new BufferedInputStream(new FileInputStream(filePath.toFile()), BUFFER_SIZE)) {
+            try (InputStream input =
+                         new BufferedInputStream(
+                                 new FileInputStream(
+                                         filePath.toFile()))) {
                 return new Image(input);
             }
         }
-        URL url = new URL("https://" + this.tileServerName + "/" + zlString + "/" + xString + "/" + yFileString);
+
+        String urlFile = "/" + zlString + "/" + xString + "/" + yFileString;
+        URL url = new URL("https", this.tileServerName, urlFile);
         URLConnection connection = url.openConnection();
         connection.setRequestProperty("User-Agent", "JaVelo");
         try (InputStream i = new BufferedInputStream(connection.getInputStream())) {
-            Files.createDirectories(xDir);
+            Files.createDirectories(xDirectory);
             Files.createFile(filePath);
             try (OutputStream outputStream = new FileOutputStream(filePath.toFile())) {
                 i.transferTo(outputStream);
             }
             Image tileImage = new Image(i);
-            if (memoryCache.size() == 100) {
+            if (memoryCache.size() == CACHE_SIZE) {
                 memoryCache.remove(memoryCache.keySet().iterator().next());
                 memoryCache.put(tileId, tileImage);
             }
@@ -57,11 +63,12 @@ public final class TileManager {
         }
     }
 
-record TileId(int zoomLevel, int xIndex, int yIndex) {
+    record TileId(int zoomLevel, int xIndex, int yIndex) {
 
-    public static boolean isValid(int zoomLevel, int xIndex, int yIndex) {
-        //TODO
-        return true;
+        public static boolean isValid(int zoomLevel, int xIndex, int yIndex) {
+            return zoomLevel <= 20
+                    && 0 <= xIndex && xIndex < Math.scalb(1, zoomLevel)
+                    && 0 <= yIndex && yIndex < Math.scalb(1, zoomLevel);
+        }
     }
-}
 }

@@ -67,8 +67,10 @@ public class GpxGenerator {
             }
 
             Element routePoint = doc.createElement("rtept");
-            routePoint.setAttribute("lat", Double.toString(Math.toDegrees(point.lat())));
-            routePoint.setAttribute("lon", Double.toString(Math.toDegrees(point.lon())));
+            routePoint.setAttribute("lat", Double.toString(
+                                                 Math.toDegrees(point.lat())));
+            routePoint.setAttribute("lon", Double.toString(
+                                                 Math.toDegrees(point.lon())));
 
             Element elevation = doc.createElement("ele");
             elevation.setTextContent(Double.toString(altitude));
@@ -79,8 +81,9 @@ public class GpxGenerator {
         return doc;
     }
 
-    public static void writeGpx(String fileName, Route itinerary, ElevationProfile profile)
-            throws IOException {
+    public static void writeGpx(String fileName,
+                                Route itinerary,
+                                ElevationProfile profile) throws IOException {
 
         Document doc = createGpx(itinerary, profile);
         Writer w = new FileWriter(fileName);
