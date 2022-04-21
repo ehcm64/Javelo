@@ -30,11 +30,14 @@ public final class TileManager {
 
         if (memoryCache.containsKey(tileId))
             return memoryCache.get(tileId);
+
         String zlString = Integer.toString(tileId.zoomLevel);
         String xString = Integer.toString(tileId.xIndex);
         String yFileString = tileId.yIndex + ".png";
+
         Path xDirectory = cachePath.resolve(zlString).resolve(xString);
         Path filePath = xDirectory.resolve(yFileString);
+
         if (Files.exists(filePath)) {
             try (InputStream input =
                          new BufferedInputStream(
@@ -48,13 +51,19 @@ public final class TileManager {
         URL url = new URL("https", this.tileServerName, urlFile);
         URLConnection connection = url.openConnection();
         connection.setRequestProperty("User-Agent", "JaVelo");
+
         try (InputStream i = new BufferedInputStream(connection.getInputStream())) {
             Files.createDirectories(xDirectory);
             Files.createFile(filePath);
+
+            i.mark(32 * 1024); // 32kB read limit >>>> ~ 6kB image size
+            Image tileImage = new Image(i);
+            i.reset();
+
             try (OutputStream outputStream = new FileOutputStream(filePath.toFile())) {
                 i.transferTo(outputStream);
             }
-            Image tileImage = new Image(i);
+
             if (memoryCache.size() == CACHE_SIZE) {
                 memoryCache.remove(memoryCache.keySet().iterator().next());
                 memoryCache.put(tileId, tileImage);
