@@ -1,7 +1,6 @@
 package ch.epfl.javelo.gui;
 
 import ch.epfl.javelo.Preconditions;
-import ch.epfl.javelo.projection.PointWebMercator;
 import javafx.scene.image.Image;
 
 import java.io.*;
@@ -10,7 +9,6 @@ import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
-import java.util.Map;
 
 public final class TileManager {
     private LinkedHashMap<TileId, Image> memoryCache;
@@ -56,7 +54,7 @@ public final class TileManager {
             Files.createDirectories(xDirectory);
             Files.createFile(filePath);
 
-            i.mark(32 * 1024); // 32kB read limit >>>> ~ 6kB image size
+            i.mark(128 * 1024); // 32kB read limit >>>> ~ 6kB image size
             Image tileImage = new Image(i);
             i.reset();
 
