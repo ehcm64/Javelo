@@ -5,13 +5,12 @@ import javafx.beans.property.ObjectProperty;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.layout.Pane;
-import javafx.scene.paint.Color;
 
 import java.io.IOException;
 
 public final class BaseMapManager {
-    private TileManager tm;
-    private WaypointsManager wpm;
+    private final TileManager tm;
+    private final WaypointsManager wpm;
     private ObjectProperty<MapViewParameters> mvp;
     private boolean redrawNeeded;
     private Canvas canvas;

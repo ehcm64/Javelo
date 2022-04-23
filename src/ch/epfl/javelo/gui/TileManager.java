@@ -54,7 +54,7 @@ public final class TileManager {
             Files.createDirectories(xDirectory);
             Files.createFile(filePath);
 
-            i.mark(128 * 1024); // 32kB read limit >>>> ~ 6kB image size
+            i.mark(128 * 1024); // 128kB read limit >> image size
             Image tileImage = new Image(i);
             i.reset();
 
