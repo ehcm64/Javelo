@@ -4,9 +4,9 @@ import ch.epfl.javelo.Math2;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.geometry.Point2D;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 
 import java.io.IOException;
@@ -18,7 +18,7 @@ public final class BaseMapManager {
     private boolean redrawNeeded;
     private Canvas canvas;
     private Pane pane;
-    private ObjectProperty<MouseEvent> mouse;
+    private ObjectProperty<Point2D> mouseAnchor;
 
     public BaseMapManager(TileManager tm,
                           WaypointsManager wpm,
@@ -30,20 +30,13 @@ public final class BaseMapManager {
         this.pane = new Pane();
         this.canvas = new Canvas();
         this.redrawNeeded = true;
-        this.mouse = new SimpleObjectProperty<>();
+        this.mouseAnchor = new SimpleObjectProperty<>();
 
         pane.getChildren().add(canvas);
-        canvas.widthProperty().bind(pane.widthProperty());
-        canvas.heightProperty().bind(pane.heightProperty());
 
-        canvas.sceneProperty().addListener((p, oldS, newS) -> {
-            assert oldS == null;
-            newS.addPreLayoutPulseListener(this::redrawIfNeeded);
-        });
-
+        addBinds();
+        addListeners();
         addHandlers();
-
-
     }
 
     public Pane pane() {
@@ -64,13 +57,14 @@ public final class BaseMapManager {
         int yTopLeftTileId = (int) Math.floor(yTopLeft / 256);
 
         int xBottomRightTileId = (int) Math.floor((xTopLeft + pane.getWidth()) / 256);
-        int yBottomRightTileId = (int) Math.floor((yTopLeft + pane.getHeight()) / 256 );
+        int yBottomRightTileId = (int) Math.floor((yTopLeft + pane.getHeight()) / 256);
 
         for (int x = xTopLeftTileId; x <= xBottomRightTileId; x++) {
             for (int y = yTopLeftTileId; y <= yBottomRightTileId; y++) {
                 TileManager.TileId tileId = new TileManager.TileId(zl, x, y);
                 try {
-                    gc.drawImage(tm.imageForTileAt(tileId),
+                    gc.drawImage(
+                            tm.imageForTileAt(tileId),
                             x * 256 - xTopLeft,
                             y * 256 - yTopLeft);
                 } catch (IOException e) {
@@ -78,7 +72,6 @@ public final class BaseMapManager {
                 }
             }
         }
-        redrawOnNextPulse();
     }
 
     private void redrawOnNextPulse() {
@@ -88,23 +81,37 @@ public final class BaseMapManager {
 
     private void addHandlers() {
 
-        pane.setOnMousePressed(e -> mouse.set(e));
+        pane.setOnMousePressed(e -> mouseAnchor.set(new Point2D(e.getX(), e.getY())));
 
         pane.setOnMouseDragged(e -> {
 
-            mvp.set(mvp.get().withMinXY(mvp.get().xTopLeft() - (e.getX() - mouse.get().getX()),
-                    mvp.get().yTopLeft() - (e.getY() - mouse.get().getY())));
-            mouse.set(e);
+            if (!e.isStillSincePress()) {
+                double xTopLeft = mvp.get().xTopLeft();
+                double yTopLeft = mvp.get().yTopLeft();
+
+                Point2D topLeft = new Point2D(xTopLeft, yTopLeft);
+                Point2D eXY = new Point2D(e.getX(), e.getY());
+                Point2D newTopLeft =
+                        topLeft
+                        .add(mouseAnchor.get())
+                        .subtract(eXY);
+                mvp.set(mvp.get().withMinXY(newTopLeft.getX(), newTopLeft.getY()));
+                mouseAnchor.set(eXY);
+            }
         });
-        pane.setOnMouseReleased(e -> mouse.set(e));
 
         pane.setOnScroll(e -> {
             int zoomLevel = mvp.get().zoomLevel();
             int zoomDiff = (int) Math.round(e.getDeltaY() / 25);
-            int newZoomLevel = Math2.clamp(8, mvp.get().zoomLevel() + zoomDiff, 19);
+            int newZoomLevel = Math2.clamp(
+                    8,
+                    mvp.get().zoomLevel() + zoomDiff,
+                    19);
 
-            double newMouseX = Math.scalb(e.getX() + mvp.get().xTopLeft(), -zoomLevel + newZoomLevel);
-            double newMouseY = Math.scalb(e.getY() + mvp.get().yTopLeft(), -zoomLevel + newZoomLevel);
+            double newMouseX = Math.scalb(e.getX() + mvp.get().xTopLeft(),
+                                          -zoomLevel + newZoomLevel);
+            double newMouseY = Math.scalb(e.getY() + mvp.get().yTopLeft(),
+                                          -zoomLevel + newZoomLevel);
 
             double newXTopLeft = newMouseX - e.getX();
             double newYTopLeft = newMouseY - e.getY();
@@ -116,7 +123,18 @@ public final class BaseMapManager {
     }
 
     private void addListeners() {
+        this.mvp.addListener((p, o, n) -> redrawOnNextPulse());
+        pane.widthProperty().addListener((p, o, n) -> redrawOnNextPulse());
+        pane.heightProperty().addListener((p, o, n) -> redrawOnNextPulse());
 
-        //mvp.addListener();
+        canvas.sceneProperty().addListener((p, oldS, newS) -> {
+            assert oldS == null;
+            newS.addPreLayoutPulseListener(this::redrawIfNeeded);
+        });
+    }
+
+    private void addBinds() {
+        canvas.widthProperty().bind(pane.widthProperty());
+        canvas.heightProperty().bind(pane.heightProperty());
     }
 }
