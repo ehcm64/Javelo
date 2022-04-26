@@ -9,6 +9,7 @@ import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
+import java.util.Map;
 
 public final class TileManager {
     private LinkedHashMap<TileId, Image> memoryCache;
@@ -17,7 +18,12 @@ public final class TileManager {
     private final int CACHE_SIZE = 100;
 
     public TileManager(Path cachePath, String tileServerName) {
-        this.memoryCache = new LinkedHashMap<>(CACHE_SIZE, 0.75F, true);
+        this.memoryCache = new LinkedHashMap<>(CACHE_SIZE, 0.75F, true) {
+            @Override
+            protected boolean removeEldestEntry(Map.Entry eldest) {
+                return size() > CACHE_SIZE;
+            }
+        };
         this.cachePath = cachePath;
         this.tileServerName = tileServerName;
     }
@@ -41,7 +47,9 @@ public final class TileManager {
                          new BufferedInputStream(
                                  new FileInputStream(
                                          filePath.toFile()))) {
-                return new Image(input);
+                Image image = new Image(input);
+                memoryCache.put(tileId, image);
+                return image;
             }
         }
 
@@ -62,10 +70,7 @@ public final class TileManager {
                 i.transferTo(outputStream);
             }
 
-            if (memoryCache.size() == CACHE_SIZE) {
-                memoryCache.remove(memoryCache.keySet().iterator().next());
-                memoryCache.put(tileId, tileImage);
-            }
+            memoryCache.put(tileId, tileImage);
             return tileImage;
         }
     }
