@@ -63,8 +63,8 @@ public final class BaseMapManager {
         int xTopLeftTileId = (int) Math.floor(xTopLeft / 256);
         int yTopLeftTileId = (int) Math.floor(yTopLeft / 256);
 
-        int xBottomRightTileId = (int) Math.floor((xTopLeft + canvas.getWidth()) / 256);
-        int yBottomRightTileId = (int) Math.floor((yTopLeft + canvas.getHeight()) / 256);
+        int xBottomRightTileId = (int) Math.floor((xTopLeft + pane.getWidth()) / 256);
+        int yBottomRightTileId = (int) Math.floor((yTopLeft + pane.getHeight()) / 256 );
 
         for (int x = xTopLeftTileId; x <= xBottomRightTileId; x++) {
             for (int y = yTopLeftTileId; y <= yBottomRightTileId; y++) {
@@ -113,5 +113,10 @@ public final class BaseMapManager {
                     newXTopLeft,
                     newYTopLeft));
         });
+    }
+
+    private void addListeners() {
+
+        //mvp.addListener();
     }
 }
