@@ -62,11 +62,8 @@ public record Edge(int fromNodeId, int toNodeId, PointCh fromPoint, PointCh toPo
         double bX = toPoint.e();
         double bY = toPoint.n();
 
-        double diffX = bX - aX;
-        double diffY = bY - aY;
-
-        double pX = aX + diffX * (position / this.length);
-        double pY = aY + diffY * (position / this.length);
+        double pX = Math2.interpolate(aX, bX, position / length);
+        double pY = Math2.interpolate(aY, bY, position / length);
 
         return new PointCh(pX, pY);
     }

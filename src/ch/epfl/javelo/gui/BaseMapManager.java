@@ -123,7 +123,7 @@ public final class BaseMapManager {
     }
 
     private void addListeners() {
-        this.mvp.addListener((p, o, n) -> redrawOnNextPulse());
+        mvp.addListener((p, o, n) -> redrawOnNextPulse());
         pane.widthProperty().addListener((p, o, n) -> redrawOnNextPulse());
         pane.heightProperty().addListener((p, o, n) -> redrawOnNextPulse());
 

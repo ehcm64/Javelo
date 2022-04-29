@@ -6,6 +6,7 @@ package ch.epfl.javelo;
  * @author Edouard Mignan (345875)
  */
 public final class Q28_4 {
+    private static final int SHIFT_DISTANCE = 4;
 
     private Q28_4() {
     }
@@ -16,7 +17,7 @@ public final class Q28_4 {
      * @return the vector in Q28.4 notation
      */
     public static int ofInt(int i) {
-        return i << 4;
+        return i << SHIFT_DISTANCE;
     }
 
     /**
@@ -25,7 +26,7 @@ public final class Q28_4 {
      * @return the vector as double
      */
     public static double asDouble(int q28_4) {
-        return Math.scalb((double) q28_4, -4);
+        return Math.scalb((double) q28_4, -SHIFT_DISTANCE);
     }
 
     /**
@@ -34,6 +35,6 @@ public final class Q28_4 {
      * @return the vector as float
      */
     public static float asFloat(int q28_4) {
-        return Math.scalb((float) q28_4, -4);
+        return Math.scalb((float) q28_4, -SHIFT_DISTANCE);
     }
 }

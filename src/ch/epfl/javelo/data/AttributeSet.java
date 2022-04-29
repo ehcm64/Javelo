@@ -11,9 +11,8 @@ import java.util.StringJoiner;
 public record AttributeSet(long bits) {
 
     public AttributeSet {
-        boolean notNegative = (bits & (1L << Long.SIZE - 1)) == 0;
-        boolean noIllegalAttribute = bits < (1L << (Attribute.COUNT));
-        Preconditions.checkArgument(noIllegalAttribute && notNegative);
+        long mask = (1L << Long.SIZE - 1) >> Long.SIZE - Attribute.COUNT - 1;
+        Preconditions.checkArgument((bits & mask) == 0);
     }
 
     /**
@@ -37,7 +36,7 @@ public record AttributeSet(long bits) {
      */
     public boolean contains(Attribute attribute) {
         long mask = 1L << attribute.ordinal();
-        return (this.bits & mask) != 0;
+        return (bits & mask) != 0;
     }
 
     /**
@@ -46,15 +45,14 @@ public record AttributeSet(long bits) {
      * @return true iff the intersection of the receiver set (this) with the one passed as argument (that) is not empty
      */
     public boolean intersects(AttributeSet that) {
-        return (this.bits & that.bits) != 0;
+        return (bits & that.bits) != 0;
     }
 
     @Override
     public String toString() {
         StringJoiner joiner = new StringJoiner(",", "{", "}");
-        for (int i = 0; i < Attribute.COUNT; i++) {
-            long mask = 1L << i;
-            if ((this.bits & mask) != 0) joiner.add(Attribute.ALL.get(i).keyValue());
+        for (Attribute attribute : Attribute.ALL) {
+            if (contains(attribute)) joiner.add(attribute.keyValue());
         }
         return joiner.toString();
     }

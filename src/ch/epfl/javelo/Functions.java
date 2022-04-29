@@ -36,10 +36,10 @@ public final class Functions {
     }
 
     private static final class Constant implements DoubleUnaryOperator {
-        double constant;
+        private final double constant;
 
         private Constant(double c) {
-            this.constant = c;
+            constant = c;
         }
 
         /**
@@ -50,22 +50,20 @@ public final class Functions {
          */
         @Override
         public double applyAsDouble(double x) {
-            return this.constant;
+            return constant;
         }
     }
 
     private static final class Sampled implements DoubleUnaryOperator {
-        float[] samples;
-        double xMax;
-        int LAST_INDEX;
-        int NB_OF_STEPS;
+        private final float[] samples;
+        private final double xMax;
+        private final int NB_OF_STEPS;
 
         private Sampled(float[] samples, double xMax) {
             this.samples = new float[samples.length];
             System.arraycopy(samples, 0, this.samples, 0, samples.length);
             this.xMax = xMax;
-            LAST_INDEX = this.samples.length - 1;
-            NB_OF_STEPS = this.samples.length - 1;
+            NB_OF_STEPS = samples.length - 1;
         }
 
         /**
@@ -77,19 +75,16 @@ public final class Functions {
         @Override
         public double applyAsDouble(double x) {
             if (x <= 0)
-                return this.samples[0];
+                return samples[0];
             if (x >= xMax) {
-                return this.samples[LAST_INDEX];
+                return samples[NB_OF_STEPS];
             } else {
                 double step = xMax / NB_OF_STEPS;
-                int i = 1;
-                while (x >= i * step) {
-                    i++;
-                }
-                double newX = (x / step) - i + 1;
+                int i = (int) (x / step);
+                double newX = (x / step) - i;
                 return Math2.interpolate(
-                        this.samples[i - 1],
-                        this.samples[i],
+                        samples[i],
+                        samples[i + 1],
                         newX);
             }
         }

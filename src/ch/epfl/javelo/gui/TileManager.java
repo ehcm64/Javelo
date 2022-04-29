@@ -18,7 +18,7 @@ public final class TileManager {
     private final int CACHE_SIZE = 100;
 
     public TileManager(Path cachePath, String tileServerName) {
-        this.memoryCache = new LinkedHashMap<>(CACHE_SIZE, 0.75F, true) {
+        memoryCache = new LinkedHashMap<>(CACHE_SIZE, 0.75F, true) {
             @Override
             protected boolean removeEldestEntry(Map.Entry eldest) {
                 return size() > CACHE_SIZE;
@@ -54,7 +54,7 @@ public final class TileManager {
         }
 
         String urlFile = "/" + zlString + "/" + xString + "/" + yFileString;
-        URL url = new URL("https", this.tileServerName, urlFile);
+        URL url = new URL("https", tileServerName, urlFile);
         URLConnection connection = url.openConnection();
         connection.setRequestProperty("User-Agent", "JaVelo");
 

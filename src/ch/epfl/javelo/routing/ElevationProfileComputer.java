@@ -26,69 +26,65 @@ public final class ElevationProfileComputer {
         Preconditions.checkArgument(maxStepLength > 0);
 
         int nbOfSamples = (int) Math.ceil(route.length() / maxStepLength) + 1;
-        float stepLength = (float) (route.length() / (nbOfSamples - 1));
+        double stepLength = route.length() / (nbOfSamples - 1);
         float[] elevationSamples = new float[nbOfSamples];
-        double alongEdgePosition = 0;
-        int samplesIndex = 0;
 
         // get all elevations (even if they are NaN) from all edges at fixed step length
-        for (int edgeIndex = 0; edgeIndex < route.edges().size(); edgeIndex++) {
-            Edge edge = route.edges().get(edgeIndex);
-            if (edgeIndex != 0)
-                alongEdgePosition -= route.edges().get(edgeIndex - 1).length();
-            while (alongEdgePosition <= edge.length()) {
-                elevationSamples[samplesIndex] = (float) edge.elevationAt(alongEdgePosition);
-                samplesIndex++;
-                alongEdgePosition += stepLength;
-            }
+        for (int i = 0; i < nbOfSamples; i++) {
+            double position = i * stepLength;
+            elevationSamples[i] = (float) route.elevationAt(position);
         }
 
-        int LastIndex = elevationSamples.length - 1;
+        int lastIndex = elevationSamples.length - 1;
         float firstSample = elevationSamples[0];
-        float lastSample = elevationSamples[LastIndex];
+        float lastSample = elevationSamples[lastIndex];
+        int firstRealIndex = 0;
+        int lastRealIndex = 0;
 
         // replace NaN in head and tail of array by closest real elevations
         if (Float.isNaN(firstSample) && containsRealValue(elevationSamples)) {
-            int nextRealIndex = nextRealIndex(elevationSamples, 0);
+            firstRealIndex = nextRealIndex(elevationSamples, 0);
             Arrays.fill(elevationSamples,
                     0,
-                    nextRealIndex,
-                    elevationSamples[nextRealIndex]);
+                    firstRealIndex,
+                    elevationSamples[firstRealIndex]);
         }
         if (Float.isNaN(lastSample) && containsRealValue(elevationSamples)) {
-            int previousRealIndex = previousRealIndex(elevationSamples, LastIndex);
+            lastRealIndex = previousRealIndex(elevationSamples, lastIndex);
             Arrays.fill(elevationSamples,
-                    previousRealIndex + 1,
-                    LastIndex + 1,
-                    elevationSamples[previousRealIndex]);
+                    lastRealIndex + 1,
+                    lastIndex + 1,
+                    elevationSamples[lastRealIndex]);
         }
         if (!containsRealValue(elevationSamples)) {
-            Arrays.fill(elevationSamples, 0, LastIndex + 1, 0);
+            Arrays.fill(elevationSamples, 0, lastIndex + 1, 0);
+            return new ElevationProfile(route.length(), elevationSamples);
         }
 
         // replace NaN holes in array by interpolation from the closest real values
-        while (containsNaN(elevationSamples)) {
-            int NaNIndex = firstNaNIndex(elevationSamples);
+        int NaNIndex = firstNaNIndex(elevationSamples, firstRealIndex, lastRealIndex);
+        while (NaNIndex != 0) {
             int nextRealValueIndex = nextRealIndex(elevationSamples, NaNIndex);
             double distance = (nextRealValueIndex - NaNIndex + 1);
             elevationSamples[NaNIndex] = (float) Math2.interpolate(
                     elevationSamples[NaNIndex - 1],
                     elevationSamples[nextRealValueIndex],
                     1 / distance);
+            NaNIndex = firstNaNIndex(elevationSamples, NaNIndex, lastRealIndex);
         }
         return new ElevationProfile(route.length(), elevationSamples);
     }
 
-    private static int nextRealIndex(float[] samples, int index) {
-        int i = index;
+    private static int nextRealIndex(float[] samples, int start) {
+        int i = start;
         while (Float.isNaN(samples[i])) {
             i++;
         }
         return i;
     }
 
-    private static int previousRealIndex(float[] samples, int index) {
-        int i = index;
+    private static int previousRealIndex(float[] samples, int start) {
+        int i = start;
         while (Float.isNaN(samples[i])) {
             i--;
         }
@@ -102,15 +98,10 @@ public final class ElevationProfileComputer {
         return false;
     }
 
-    private static boolean containsNaN(float[] samples) {
-        for (float sample : samples) {
-            if (Float.isNaN(sample)) return true;
-        }
-        return false;
-    }
-
-    private static int firstNaNIndex(float[] samples) {
-        for (int i = 0; i < samples.length; i++) {
+    private static int firstNaNIndex(float[] samples, int startIndex, int endIndex) {
+        Preconditions.checkArgument(startIndex < samples.length
+                && endIndex < samples.length);
+        for (int i = startIndex; i < samples.length; i++) {
             if (Float.isNaN(samples[i])) return i;
         }
         return 0;

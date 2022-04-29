@@ -24,6 +24,13 @@ public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds,
     private static final int NEW_EDGE_OFFSET = ATTRIBUTES_INDEX_OFFSET
             + Short.BYTES;
 
+    private static final int PROFILE_TYPE_START = 30;
+    private static final int PROFILE_TYPE_LENGTH = 2;
+    private static final int PROFILE_INFO_START = 0;
+    private static final int PROFILE_INFO_LENGTH = 30;
+
+    private static final int NIBBLE_SIZE = 4;
+
     /**
      * Checks if an edge is inverted.
      *
@@ -32,7 +39,7 @@ public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds,
      */
     public boolean isInverted(int edgeId) {
         int wayAndNodeId = edgesBuffer.getInt(edgeId * NEW_EDGE_OFFSET);
-        return (wayAndNodeId & (1L << 31)) != 0;
+        return wayAndNodeId < 0;
     }
 
     /**
@@ -79,7 +86,9 @@ public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds,
      */
     public boolean hasProfile(int edgeId) {
         int profileInfo = profileIds.get(edgeId);
-        int profileType = Bits.extractUnsigned(profileInfo, 30, 2);
+        int profileType = Bits.extractUnsigned(profileInfo,
+                PROFILE_TYPE_START,
+                PROFILE_TYPE_LENGTH);
         return profileType != 0;
     }
 
@@ -91,8 +100,14 @@ public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds,
      */
     public float[] profileSamples(int edgeId) {
         int profileInfo = profileIds.get(edgeId);
-        int profileType = Bits.extractUnsigned(profileInfo, 30, 2);
-        int firstSampleIndex = Bits.extractUnsigned(profileInfo, 0, 30);
+        int profileType = Bits.extractUnsigned(
+                profileInfo,
+                PROFILE_TYPE_START,
+                PROFILE_TYPE_LENGTH);
+        int firstSampleIndex = Bits.extractUnsigned(
+                profileInfo,
+                PROFILE_INFO_START,
+                PROFILE_INFO_LENGTH);
         short elevationData = edgesBuffer.getShort(edgeId
                 * NEW_EDGE_OFFSET
                 + LENGTH_OFFSET);
@@ -108,24 +123,9 @@ public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds,
                 }
                 return isInverted(edgeId) ? invertArray(profileSamples) : profileSamples;
             case 2:
-                profileSamples[0] = Q28_4.asFloat(elevations.get(firstSampleIndex));
-                for (int i = 1; i < nbOfSamples; i++) {
-                    short differences = elevations.get(firstSampleIndex + (i + 1) / 2);
-                    int byteStart = 8 * (i % 2); // to extract first or second byte
-                    int sampleDiff = Bits.extractSigned(differences, byteStart, 8);
-                    profileSamples[i] = profileSamples[i - 1] + Q28_4.asFloat(sampleDiff);
-                }
-                return isInverted(edgeId) ? invertArray(profileSamples) : profileSamples;
+                return getProfileSamples(2, nbOfSamples, firstSampleIndex, edgeId);
             case 3:
-                profileSamples[0] = Q28_4.asFloat(elevations.get(firstSampleIndex));
-                for (int i = 1; i < nbOfSamples; i++) {
-                    short differences = elevations.get(firstSampleIndex + (i + 3) / 4);
-                    // to extract the correct nibble (4th or 1st, 2nd, 3rd)
-                    int nibbleStart = (i % 4 == 0) ? 0 : (16 - i % 4 * 4);
-                    int sampleDiff = Bits.extractSigned(differences, nibbleStart, 4);
-                    profileSamples[i] = profileSamples[i - 1] + Q28_4.asFloat(sampleDiff);
-                }
-                return isInverted(edgeId) ? invertArray(profileSamples) : profileSamples;
+                return getProfileSamples(3, nbOfSamples, firstSampleIndex, edgeId);
             default:
                 return new float[0];
         }
@@ -151,5 +151,28 @@ public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds,
             invertedList[i] = array[array.length - 1 - i];
         }
         return invertedList;
+    }
+
+    private float[] getProfileSamples(int type, int nbOfSamples, int firstSampleIndex, int edgeId) {
+        float[] profileSamples = new float[nbOfSamples];
+
+        profileSamples[0] = Q28_4.asFloat(elevations.get(firstSampleIndex));
+        short differences = 0;
+        int start = 0;
+        int length = type == 2 ? Byte.SIZE : NIBBLE_SIZE;
+
+        for (int i = 1; i < nbOfSamples; i++) {
+            if (type == 2) {
+                differences = elevations.get(firstSampleIndex + (i + 1) / 2);
+                start = Byte.SIZE * (i % 2); // to extract first or second byte
+            } else if (type == 3) {
+                differences = elevations.get(firstSampleIndex + (i + 3) / NIBBLE_SIZE);
+                // to extract the correct nibble (4th or 1st, 2nd, 3rd
+                start = (i % NIBBLE_SIZE == 0) ? 0 : (Short.SIZE - i % NIBBLE_SIZE * NIBBLE_SIZE);
+            }
+            int sampleDiff = Bits.extractSigned(differences, start, length);
+            profileSamples[i] = profileSamples[i - 1] + Q28_4.asFloat(sampleDiff);
+        }
+        return isInverted(edgeId) ? invertArray(profileSamples) : profileSamples;
     }
 }

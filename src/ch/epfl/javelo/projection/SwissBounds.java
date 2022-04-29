@@ -7,6 +7,8 @@ package ch.epfl.javelo.projection;
  */
 public final class SwissBounds {
 
+    private SwissBounds() {}
+
     /**
      * Smallest east coordinate of Switzerland.
      */

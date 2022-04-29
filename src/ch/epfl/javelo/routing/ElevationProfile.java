@@ -11,10 +11,14 @@ import java.util.function.DoubleUnaryOperator;
  *
  * @author Edouard Mignan (345875)
  */
-public class ElevationProfile {
+public final class ElevationProfile {
     private final double length;
     private final float[] elevationSamples;
-    private final DoubleSummaryStatistics samplesStatistics;
+
+    private final double minElevation;
+    private final double maxElevation;
+    private final double totalAscent;
+    private final double totalDescent;
 
     /**
      * Creates an elevation profile.
@@ -30,10 +34,15 @@ public class ElevationProfile {
         System.arraycopy(elevationSamples, 0,
                 this.elevationSamples, 0,
                 elevationSamples.length);
-        this.samplesStatistics = new DoubleSummaryStatistics();
+        DoubleSummaryStatistics samplesStatistics = new DoubleSummaryStatistics();
         for (float elevation : this.elevationSamples) {
-            this.samplesStatistics.accept(elevation);
+            samplesStatistics.accept(elevation);
         }
+
+        minElevation = samplesStatistics.getMin();
+        maxElevation = samplesStatistics.getMax();
+        totalDescent = computeTotalDescent();
+        totalAscent = computeTotalAscent();
     }
 
     /**
@@ -42,7 +51,7 @@ public class ElevationProfile {
      * @return the length of the elevation profile
      */
     public double length() {
-        return this.length;
+        return length;
     }
 
     /**
@@ -51,7 +60,7 @@ public class ElevationProfile {
      * @return the smallest altitude in the array of elevations
      */
     public double minElevation() {
-        return this.samplesStatistics.getMin();
+        return minElevation;
     }
 
     /**
@@ -60,7 +69,7 @@ public class ElevationProfile {
      * @return the greatest altitude in the array of elevations
      */
     public double maxElevation() {
-        return this.samplesStatistics.getMax();
+        return maxElevation;
     }
 
     /**
@@ -70,13 +79,6 @@ public class ElevationProfile {
      * @return the total ascent of the elevation profile
      */
     public double totalAscent() {
-        double totalAscent = 0;
-        for (int i = 1; i < this.elevationSamples.length; i++) {
-            double firstElevation = this.elevationSamples[i - 1];
-            double secondElevation = this.elevationSamples[i];
-            double delta = secondElevation - firstElevation;
-            if (delta > 0) totalAscent += delta;
-        }
         return totalAscent;
     }
 
@@ -87,13 +89,6 @@ public class ElevationProfile {
      * @return the total descent of the elevation profile
      */
     public double totalDescent() {
-        double totalDescent = 0;
-        for (int i = 1; i < this.elevationSamples.length; i++) {
-            double firstElevation = this.elevationSamples[i - 1];
-            double secondElevation = this.elevationSamples[i];
-            double delta = secondElevation - firstElevation;
-            if (delta < 0) totalDescent -= delta;
-        }
         return totalDescent;
     }
 
@@ -106,8 +101,30 @@ public class ElevationProfile {
      */
     public double elevationAt(double position) {
         DoubleUnaryOperator function = Functions.sampled(
-                this.elevationSamples,
-                this.length);
+                elevationSamples,
+                length);
         return function.applyAsDouble(position);
+    }
+
+    private double computeTotalAscent() {
+        double totalAscent = 0;
+        for (int i = 1; i < elevationSamples.length; i++) {
+            double firstElevation = elevationSamples[i - 1];
+            double secondElevation = elevationSamples[i];
+            double delta = secondElevation - firstElevation;
+            if (delta > 0) totalAscent += delta;
+        }
+        return totalAscent;
+    }
+
+    private double computeTotalDescent() {
+        double totalDescent = 0;
+        for (int i = 1; i < elevationSamples.length; i++) {
+            double firstElevation = elevationSamples[i - 1];
+            double secondElevation = elevationSamples[i];
+            double delta = secondElevation - firstElevation;
+            if (delta < 0) totalDescent -= delta;
+        }
+        return totalDescent;
     }
 }

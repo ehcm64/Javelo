@@ -20,6 +20,9 @@ public final class RouteComputer {
     private final CostFunction costFunction;
     private final int NB_OF_NODES;
 
+    private static final float NOT_EXPLORED = Float.POSITIVE_INFINITY;
+    private static final float ALREADY_EXPLORED = Float.NEGATIVE_INFINITY;
+
     /**
      * Creates a route planner from the given graph and cost function.
      *
@@ -55,7 +58,7 @@ public final class RouteComputer {
         int[] predecessors = new int[NB_OF_NODES]; // contains node's predecessor in route
         PriorityQueue<WeightedNode> exploring = new PriorityQueue<>();
         for (int nodeId = 0; nodeId < graph.nodeCount(); nodeId++) {
-            distances[nodeId] = Float.POSITIVE_INFINITY;
+            distances[nodeId] = NOT_EXPLORED;
         }
         distances[startNodeId] = 0f;
         exploring.add(new WeightedNode(startNodeId, 0));
@@ -64,7 +67,7 @@ public final class RouteComputer {
         while (exploring.size() != 0) {
             WeightedNode node = exploring.remove();
             // if node has already been explored
-            if (distances[node.nodeId] == Float.NEGATIVE_INFINITY)
+            if (distances[node.nodeId] == ALREADY_EXPLORED)
                 continue;
             // End node found
             if (node.nodeId == endNodeId)
@@ -76,11 +79,11 @@ public final class RouteComputer {
                 int edgeId = graph.nodeOutEdgeId(node.nodeId, edgeIndex);
                 int arrivalNodeId = graph.edgeTargetNodeId(edgeId);
                 // if arrival node has already been explored
-                if (distances[arrivalNodeId] == Float.NEGATIVE_INFINITY)
+                if (distances[arrivalNodeId] == ALREADY_EXPLORED)
                     continue;
                 float pathToArrivalNodeLength = (float) (
                                   pathToNodeLength
-                                + this.costFunction.costFactor(node.nodeId, edgeId)
+                                + costFunction.costFactor(node.nodeId, edgeId)
                                 * graph.edgeLength(edgeId));
                 if (pathToArrivalNodeLength < distances[arrivalNodeId]) {
                     distances[arrivalNodeId] = pathToArrivalNodeLength;
@@ -92,7 +95,7 @@ public final class RouteComputer {
                 }
             }
             // mark node as explored
-            distances[node.nodeId] = Float.NEGATIVE_INFINITY;
+            distances[node.nodeId] = ALREADY_EXPLORED;
         }
         return null;
     }

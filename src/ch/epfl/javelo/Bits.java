@@ -20,12 +20,12 @@ public final class Bits {
      * @throws IllegalArgumentException if length of extraction is greater than 32-bits or null
      */
     public static int extractSigned(int value, int start, int length) {
-        Preconditions.checkArgument(start + length - 1 <= 31
+        Preconditions.checkArgument(start + length - 1 <= Integer.SIZE - 1
                 && start >= 0
                 && length >= 1);
 
-        value = value << (32 - (start + length));
-        value = value >> (32 - length);
+        value = value << (Integer.SIZE - (start + length));
+        value = value >> (Integer.SIZE - length);
         return value;
     }
 
@@ -39,13 +39,13 @@ public final class Bits {
      * @return value interpreted as a not signed value
      */
     public static int extractUnsigned(int value, int start, int length) {
-        Preconditions.checkArgument(start + length - 1 <= 31
+        Preconditions.checkArgument(start + length - 1 <= Integer.SIZE - 1
                 && start >= 0
                 && length >= 1
-                && length != 32);
+                && length != Integer.SIZE);
 
-        value = value << (32 - (start + length));
-        value = value >>> (32 - length);
+        value = value << (Integer.SIZE - (start + length));
+        value = value >>> (Integer.SIZE - length);
         return value;
     }
 }

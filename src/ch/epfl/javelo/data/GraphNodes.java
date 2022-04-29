@@ -17,6 +17,11 @@ public record GraphNodes(IntBuffer buffer) {
     private static final int OFFSET_OUT_EDGES = OFFSET_N + 1;
     private static final int NODE_INTS = OFFSET_OUT_EDGES + 1;
 
+    private static final int OUT_DEGREE_START = 28;
+    private static final int OUT_DEGREE_LENGTH = 4;
+    private static final int FIRST_EDGE_ID_START = 0;
+    private static final int FIRST_EDGE_ID_LENGTH = 28;
+
     /**
      * Returns the number of nodes in the graph.
      *
@@ -56,7 +61,10 @@ public record GraphNodes(IntBuffer buffer) {
      */
     public int outDegree(int nodeId) {
         int nodeEdgesInfo = buffer.get(nodeId * NODE_INTS + OFFSET_OUT_EDGES);
-        return Bits.extractUnsigned(nodeEdgesInfo, 28, 4);
+        return Bits.extractUnsigned(
+                nodeEdgesInfo,
+                OUT_DEGREE_START,
+                OUT_DEGREE_LENGTH);
     }
 
     /**
@@ -70,7 +78,10 @@ public record GraphNodes(IntBuffer buffer) {
         Preconditions.checkArgument(edgeIndex >= 0
                 && edgeIndex < outDegree(nodeId));
         int nodeEdgesInfo = buffer.get(nodeId * NODE_INTS + OFFSET_OUT_EDGES);
-        int firstEdgeId = Bits.extractUnsigned(nodeEdgesInfo, 0, 28);
+        int firstEdgeId = Bits.extractUnsigned(
+                nodeEdgesInfo,
+                FIRST_EDGE_ID_START,
+                FIRST_EDGE_ID_LENGTH);
         return firstEdgeId + edgeIndex;
     }
 }

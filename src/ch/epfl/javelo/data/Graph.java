@@ -19,7 +19,7 @@ import java.util.function.DoubleUnaryOperator;
  *
  * @author Edouard Mignan (345875)
  */
-public class Graph {
+public final class Graph {
     private final GraphNodes nodes;
     private final GraphSectors sectors;
     private final GraphEdges edges;
@@ -44,6 +44,13 @@ public class Graph {
         this.attributeSets = List.copyOf(attributeSets);
     }
 
+    private static ByteBuffer getBuffer(Path basePath) throws IOException {
+        try (FileChannel channel = FileChannel.open(basePath)) {
+            return channel.map(FileChannel.MapMode.READ_ONLY,
+                    0, channel.size()).asReadOnlyBuffer();
+        }
+    }
+
     /**
      * Creates a JaVelo Graph from provided files containing nodes, sectors, edges, profileIds, elevations and attributes.
      *
@@ -59,40 +66,19 @@ public class Graph {
         Path sectorsPath = basePath.resolve("sectors.bin");
         Path attributesPath = basePath.resolve("attributes.bin");
 
-        IntBuffer nodesBuffer, profilesBuffer;
-        ByteBuffer edgesBuffer, sectorsBuffer;
-        ShortBuffer elevationsBuffer;
-        List<AttributeSet> attributeSets;
+        IntBuffer nodesBuffer = getBuffer(nodesPath).asIntBuffer();
+        IntBuffer profilesBuffer = getBuffer(profile_idsPath).asIntBuffer();
+        ByteBuffer edgesBuffer = getBuffer(edgesPath).asReadOnlyBuffer();
+        ByteBuffer sectorsBuffer = getBuffer(sectorsPath).asReadOnlyBuffer();
+        ShortBuffer elevationsBuffer = getBuffer(elevationsPath).asShortBuffer();
+        LongBuffer attributeSetsBuffer = getBuffer(attributesPath).asLongBuffer();
 
-        try (FileChannel nodesChannel = FileChannel.open(nodesPath)) {
-            nodesBuffer = nodesChannel.map(FileChannel.MapMode.READ_ONLY,
-                    0, nodesChannel.size()).asIntBuffer();
-        }
-        try (FileChannel sectorsChannel = FileChannel.open(sectorsPath)) {
-            sectorsBuffer = sectorsChannel.map(FileChannel.MapMode.READ_ONLY,
-                    0, sectorsChannel.size()).asReadOnlyBuffer();
-        }
-        try (FileChannel edgesChannel = FileChannel.open(edgesPath)) {
-            edgesBuffer = edgesChannel.map(FileChannel.MapMode.READ_ONLY,
-                    0, edgesChannel.size()).asReadOnlyBuffer();
-        }
-        try (FileChannel profilesChannel = FileChannel.open(profile_idsPath)) {
-            profilesBuffer = profilesChannel.map(FileChannel.MapMode.READ_ONLY,
-                    0, profilesChannel.size()).asIntBuffer();
-        }
-        try (FileChannel elevationsChannel = FileChannel.open(elevationsPath)) {
-            elevationsBuffer = elevationsChannel.map(FileChannel.MapMode.READ_ONLY,
-                    0, elevationsChannel.size()).asShortBuffer();
-        }
-        try (FileChannel attributesChannel = FileChannel.open(attributesPath)) {
-            LongBuffer attributeSetsBuffer = attributesChannel.map(FileChannel.MapMode.READ_ONLY,
-                    0, attributesChannel.size()).asLongBuffer();
+        List<AttributeSet> attributeSets = new ArrayList<>(attributeSetsBuffer.capacity());
 
-            attributeSets = new ArrayList<>();
-            for (int i = 0; i < attributeSetsBuffer.capacity(); i++) {
-                attributeSets.add(new AttributeSet(attributeSetsBuffer.get(i)));
-            }
+        for (int i = 0; i < attributeSetsBuffer.capacity(); i++) {
+            attributeSets.add(new AttributeSet(attributeSetsBuffer.get(i)));
         }
+
         GraphNodes nodes = new GraphNodes(nodesBuffer);
         GraphSectors sectors = new GraphSectors(sectorsBuffer);
         GraphEdges edges = new GraphEdges(edgesBuffer, profilesBuffer, elevationsBuffer);
@@ -106,7 +92,7 @@ public class Graph {
      * @return the number of nodes
      */
     public int nodeCount() {
-        return this.nodes.count();
+        return nodes.count();
     }
 
     /**
@@ -116,7 +102,7 @@ public class Graph {
      * @return the point associated to the node
      */
     public PointCh nodePoint(int nodeId) {
-        return new PointCh(this.nodes.nodeE(nodeId), this.nodes.nodeN(nodeId));
+        return new PointCh(nodes.nodeE(nodeId), nodes.nodeN(nodeId));
     }
 
     /**
@@ -126,7 +112,7 @@ public class Graph {
      * @return the number of edges
      */
     public int nodeOutDegree(int nodeId) {
-        return this.nodes.outDegree(nodeId);
+        return nodes.outDegree(nodeId);
     }
 
     /**
@@ -137,7 +123,7 @@ public class Graph {
      * @return the index of the edge
      */
     public int nodeOutEdgeId(int nodeId, int edgeIndex) {
-        return this.nodes.edgeId(nodeId, edgeIndex);
+        return nodes.edgeId(nodeId, edgeIndex);
     }
 
     /**
@@ -148,18 +134,16 @@ public class Graph {
      * @return the index of the closest node, or -1 if there is no node
      */
     public int nodeClosestTo(PointCh point, double searchDistance) {
-        PointCh comparisonPoint = new PointCh(point.e() - searchDistance, point.n());
-        int closestAcceptableNodeId = -1;
+        double smallestDistanceYet = searchDistance * searchDistance;
+        int closestAcceptableNodeId = -1; // invalid node ID if there is no closest node.
         List<GraphSectors.Sector> sectorsInArea = sectors.sectorsInArea(point, searchDistance);
         for (GraphSectors.Sector sector : sectorsInArea) {
             for (int nodeId = sector.startNodeId(); nodeId < sector.endNodeId(); nodeId++) {
-                PointCh nodePoint = new PointCh(
-                        this.nodes.nodeE(nodeId),
-                        this.nodes.nodeN(nodeId));
-                if (point.squaredDistanceTo(nodePoint)
-                        <= point.squaredDistanceTo(comparisonPoint)) {
+                PointCh nodePoint = nodePoint(nodeId);
+                double testDistance = point.squaredDistanceTo(nodePoint);
+                if (testDistance <= smallestDistanceYet) {
                     closestAcceptableNodeId = nodeId;
-                    comparisonPoint = nodePoint;
+                    smallestDistanceYet = testDistance;
                 }
             }
         }
@@ -173,7 +157,7 @@ public class Graph {
      * @return the index of the target node
      */
     public int edgeTargetNodeId(int edgeId) {
-        return this.edges.targetNodeId(edgeId);
+        return edges.targetNodeId(edgeId);
     }
 
     /**
@@ -183,7 +167,7 @@ public class Graph {
      * @return a boolean : true if the edge is inverted - false otherwise
      */
     public boolean edgeIsInverted(int edgeId) {
-        return this.edges.isInverted(edgeId);
+        return edges.isInverted(edgeId);
     }
 
     /**
@@ -193,8 +177,8 @@ public class Graph {
      * @return the attribute set associated to the edge
      */
     public AttributeSet edgeAttributes(int edgeId) {
-        int attributesIndex = this.edges.attributesIndex(edgeId);
-        return this.attributeSets.get(attributesIndex);
+        int attributesIndex = edges.attributesIndex(edgeId);
+        return attributeSets.get(attributesIndex);
     }
 
     /**
@@ -204,7 +188,7 @@ public class Graph {
      * @return the length of the edge
      */
     public double edgeLength(int edgeId) {
-        return this.edges.length(edgeId);
+        return edges.length(edgeId);
     }
 
     /**
@@ -214,7 +198,7 @@ public class Graph {
      * @return the elevation gain of the edge
      */
     public double edgeElevationGain(int edgeId) {
-        return this.edges.elevationGain(edgeId);
+        return edges.elevationGain(edgeId);
     }
 
     /**
@@ -224,12 +208,10 @@ public class Graph {
      * @return the elevation profile
      */
     public DoubleUnaryOperator edgeProfile(int edgeId) {
-        double length = this.edges.length(edgeId);
-        boolean hasProfile = this.edges.hasProfile(edgeId);
-        if (hasProfile) {
-            float[] profileSamples = this.edges.profileSamples(edgeId);
-            return Functions.sampled(profileSamples, length);
-        }
-        return Functions.constant(Double.NaN);
+        double length = edges.length(edgeId);
+        boolean hasProfile = edges.hasProfile(edgeId);
+        float[] profileSamples = edges.profileSamples(edgeId);
+        return hasProfile ? Functions.sampled(profileSamples, length)
+                : Functions.constant(Double.NaN);
     }
 }

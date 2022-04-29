@@ -1,5 +1,6 @@
 package ch.epfl.javelo.data;
 
+import ch.epfl.javelo.Math2;
 import ch.epfl.javelo.projection.PointCh;
 import ch.epfl.javelo.projection.SwissBounds;
 
@@ -17,6 +18,8 @@ public record GraphSectors(ByteBuffer buffer) {
     private static final int OFFSET_INTEGER = Integer.BYTES;
     private static final int OFFSET_SUM = OFFSET_INTEGER + OFFSET_SHORT;
 
+    private static final int NB_OF_SECTORS_PER_SIDE = 128;
+
     /**
      * Represents a sector with 2 nodes (the first and last)
      */
@@ -24,15 +27,15 @@ public record GraphSectors(ByteBuffer buffer) {
     }
 
     private static int xToSectorCoords(double e) {
-        double x = 128 / SwissBounds.WIDTH * e
-                - 128 * SwissBounds.MIN_E / SwissBounds.WIDTH;
+        double x = NB_OF_SECTORS_PER_SIDE / SwissBounds.WIDTH * e
+                - NB_OF_SECTORS_PER_SIDE * SwissBounds.MIN_E / SwissBounds.WIDTH;
         return (int) x;
 
     }
 
     private static int yToSectorCoords(double n) {
-        double y = 128 / SwissBounds.HEIGHT * n
-                - 128 * SwissBounds.MIN_N / SwissBounds.HEIGHT;
+        double y = NB_OF_SECTORS_PER_SIDE / SwissBounds.HEIGHT * n
+                - NB_OF_SECTORS_PER_SIDE * SwissBounds.MIN_N / SwissBounds.HEIGHT;
         return (int) y;
 
     }
@@ -47,16 +50,22 @@ public record GraphSectors(ByteBuffer buffer) {
     public List<Sector> sectorsInArea(PointCh center, double distance) {
         List<Sector> sectors = new ArrayList<>();
 
-        int eMin = xToSectorCoords(center.e() - distance);
-        int eMax = xToSectorCoords(center.e() + distance);
-        int nMin = yToSectorCoords(center.n() - distance);
-        int nMax = yToSectorCoords(center.n() + distance);
+        int eMin = xToSectorCoords(Math2.clamp(
+                SwissBounds.MIN_E + 1, center.e() - distance, SwissBounds.MAX_E - 1));
+
+        int eMax = xToSectorCoords(Math2.clamp(
+                SwissBounds.MIN_E + 1, center.e() + distance, SwissBounds.MAX_E - 1));
+
+        int nMin = yToSectorCoords(Math2.clamp(
+                SwissBounds.MIN_N + 1, center.n() - distance, SwissBounds.MAX_N - 1));
+
+        int nMax = yToSectorCoords(Math2.clamp(
+                SwissBounds.MIN_N + 1, center.n() + distance, SwissBounds.MAX_N - 1));
+
 
         for (int y = nMin; y <= nMax; y++) {
             for (int x = eMin; x <= eMax; x++) {
-                if (y < 0 || x < 0 || y > 127 || x > 127)
-                    continue;
-                int index = 128 * y + x;
+                int index = NB_OF_SECTORS_PER_SIDE * y + x;
                 int firstNode = buffer.getInt(index * OFFSET_SUM);
                 int nodesNumber = Short.toUnsignedInt(
                         buffer().getShort(

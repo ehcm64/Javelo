@@ -8,9 +8,10 @@ import ch.epfl.javelo.Preconditions;
  */
 
 public record PointWebMercator(double x, double y) {
+    private static final int TILE_LENGTH = 8; // Tile length is 2^8 pixels.
 
     public PointWebMercator {
-        Preconditions.checkArgument(x <= 1 && x >= 0 && y <= 1 && y >= 0);
+        Preconditions.checkArgument(0 <= x && x <= 1 && 0 <= y && y <= 1);
     }
 
     /**
@@ -21,8 +22,8 @@ public record PointWebMercator(double x, double y) {
      * @return the same point (PointWebMercator) cancelling zoom
      */
     public static PointWebMercator of(int zoomLevel, double x, double y) {
-        double xUnzoomed = Math.scalb(x, -8 - zoomLevel);
-        double yUnzoomed = Math.scalb(y, -8 - zoomLevel);
+        double xUnzoomed = Math.scalb(x, -TILE_LENGTH - zoomLevel);
+        double yUnzoomed = Math.scalb(y, -TILE_LENGTH - zoomLevel);
         return new PointWebMercator(xUnzoomed, yUnzoomed);
     }
 
@@ -44,7 +45,7 @@ public record PointWebMercator(double x, double y) {
      * @return longitude corresponding to the x coordinate
      */
     public double lon() {
-        return WebMercator.lon(this.x);
+        return WebMercator.lon(x);
     }
 
     /**
@@ -52,26 +53,26 @@ public record PointWebMercator(double x, double y) {
      * @return latitude corresponding to the y coordinate
      */
     public double lat() {
-        return WebMercator.lat(this.y);
+        return WebMercator.lat(y);
     }
 
     /**
      * Zooms the x value at a certain level
-     * @param zoomLevel
+     * @param zoomLevel the zoom level
      * @return zooms x value at a certain level
      */
     public double xAtZoomLevel(int zoomLevel) {
-        return Math.scalb(this.x, 8 + zoomLevel);
+        return Math.scalb(x, TILE_LENGTH + zoomLevel);
     }
 
     /**
      * Zooms the y value at a certain level
-     * @param zoomLevel
+     * @param zoomLevel the zoom level
      * @return zooms y value at a certain level
      */
 
     public double yAtZoomLevel(int zoomLevel) {
-        return Math.scalb(this.y, 8 + zoomLevel);
+        return Math.scalb(y, TILE_LENGTH + zoomLevel);
     }
 
     /**
@@ -81,6 +82,6 @@ public record PointWebMercator(double x, double y) {
     public PointCh toPointCh() {
         double n = Ch1903.n(lon(), lat());
         double e = Ch1903.e(lon(), lat());
-        return new PointCh(e, n);
+        return SwissBounds.containsEN(e, n) ? new PointCh(e, n) : null;
     }
 }

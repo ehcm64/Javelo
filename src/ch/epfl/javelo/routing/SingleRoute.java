@@ -6,6 +6,7 @@ import ch.epfl.javelo.projection.PointCh;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -19,130 +20,169 @@ public final class SingleRoute implements Route {
     private final double[] nodePositions;
     private final Edge FIRST_EDGE;
 
+    private final List<PointCh> points;
+
     /**
      * Creates a single route from a given list of edges.
      *
      * @param edges the list of edges
      */
     public SingleRoute(List<Edge> edges) {
-        Preconditions.checkArgument(edges.size() != 0);
+        Preconditions.checkArgument(!edges.isEmpty());
         this.edges = List.copyOf(edges);
         this.nodePositions = getNodePositions();
         this.FIRST_EDGE = this.edges.get(0);
+
+        List<PointCh> pointsList = new ArrayList<>();
+        pointsList.add(FIRST_EDGE.fromPoint());
+        for (Edge edge : this.edges) {
+            pointsList.add(edge.toPoint());
+        }
+
+        points = List.copyOf(pointsList);
     }
 
+    /**
+     * Returns the index of the segment at the given position.
+     *
+     * @param position the position
+     * @return the index of the segment
+     */
     @Override
     public int indexOfSegmentAt(double position) {
         return 0;
     }
 
+    /**
+     * Returns the length of the itinerary in meters.
+     *
+     * @return the length of the itinerary in meters
+     */
     @Override
     public double length() {
-        double totalLength = 0;
-        for (Edge edge : this.edges) {
-            totalLength += edge.length();
-        }
-        return totalLength;
+        return nodePositions[nodePositions.length - 1];
     }
 
+    /**
+     * Returns the entirety of edges in the itinerary.
+     *
+     * @return the list of edges
+     */
     @Override
     public List<Edge> edges() {
-        return this.edges;
+        return edges;
     }
 
+    /**
+     * Returns all the points located at the extremities of the edges
+     * of the itinerary.
+     *
+     * @return the list of points
+     */
     @Override
     public List<PointCh> points() {
-        List<PointCh> points = new ArrayList<>();
-        points.add(FIRST_EDGE.fromPoint());
-        for (Edge edge : this.edges) {
-            points.add(edge.toPoint());
-        }
         return points;
     }
 
+    /**
+     * Returns the point in swiss coordinates at the given position in the itinerary.
+     *
+     * @param position the position of the point
+     * @return the point in swiss coordinates
+     */
     @Override
     public PointCh pointAt(double position) {
-        double clamp = Math2.clamp(0, position, this.length());
-        int index = Arrays.binarySearch(this.nodePositions, clamp);
+        double clamp = Math2.clamp(0, position, length());
+        int index = Arrays.binarySearch(nodePositions, clamp);
         if (index == 0)
             return FIRST_EDGE.fromPoint();
         if (index > 0) {
-            return this.edges.get(index - 1).toPoint();
+            return edges.get(index - 1).toPoint();
         } else {
             int indexOfNode = -index - 2;
-            double positionAlongEdge = clamp - this.nodePositions[indexOfNode];
-            return this.edges.get(indexOfNode).pointAt(positionAlongEdge);
+            double positionAlongEdge = clamp - nodePositions[indexOfNode];
+            return edges.get(indexOfNode).pointAt(positionAlongEdge);
         }
     }
 
+    /**
+     * Returns the altitude of the point at the given position on the itinerary.
+     *
+     * @param position the position of the point
+     * @return the elevation
+     */
     @Override
     public double elevationAt(double position) {
-        double clamp = Math2.clamp(0, position, this.length());
-        int index = Arrays.binarySearch(this.nodePositions, clamp);
+        double clamp = Math2.clamp(0, position, length());
+        int index = Arrays.binarySearch(nodePositions, clamp);
         if (index == 0)
             return FIRST_EDGE.elevationAt(0);
         if (index > 0) {
-            Edge edge = this.edges.get(index - 1);
+            Edge edge = edges.get(index - 1);
             return edge.elevationAt(edge.length());
         } else {
             int indexOfNode = -index - 2;
-            double positionAlongEdge = position - this.nodePositions[indexOfNode];
-            return this.edges.get(indexOfNode).elevationAt(positionAlongEdge);
+            double positionAlongEdge = position - nodePositions[indexOfNode];
+            return edges.get(indexOfNode).elevationAt(positionAlongEdge);
         }
     }
 
+    /**
+     * Returns the index of the node that belongs to the itinerary which is closest to the given position.
+     *
+     * @param position the position
+     * @return the index of the node
+     */
     @Override
     public int nodeClosestTo(double position) {
-        double clamp = Math2.clamp(0, position, this.length());
+        double clamp = Math2.clamp(0, position, length());
         int index = Arrays.binarySearch(nodePositions, clamp);
         if (index == 0)
             return FIRST_EDGE.fromNodeId();
         if (index > 0) {
-            return this.edges.get(index - 1).toNodeId();
+            return edges.get(index - 1).toNodeId();
         } else {
             int indexOfNode = -index - 2;
             double positionAlongEdge = position - nodePositions[indexOfNode];
-            double ratio = positionAlongEdge / this.edges.get(indexOfNode).length();
-            return ratio <= 0.5 ? this.edges.get(indexOfNode).fromNodeId()
-                    : this.edges.get(indexOfNode).toNodeId();
+            double ratio = positionAlongEdge / edges.get(indexOfNode).length();
+            return ratio <= 0.5 ? edges.get(indexOfNode).fromNodeId()
+                    : edges.get(indexOfNode).toNodeId();
         }
     }
 
+    /**
+     * Returns the point in the itinerary which is closest to the given reference point.
+     *
+     * @param point the reference point
+     * @return the closest point in the itinerary
+     */
     @Override
     public RoutePoint pointClosestTo(PointCh point) {
-        double minDistance = Double.POSITIVE_INFINITY;
-        double edgePosition = 0;
-        double totalPosition = 0;
+        double absolutePosition;
         double positionAlongEdge;
         double testDistance;
-        Edge bestEdge = null;
+        RoutePoint closestPoint = RoutePoint.NONE;
 
-        for (int i = 0; i < this.edges.size(); i++) {
-            Edge edge = this.edges.get(i);
+        for (int i = 0; i < edges.size(); i++) {
+            Edge edge = edges.get(i);
             positionAlongEdge = Math2.clamp(0,
                     edge.positionClosestTo(point),
                     edge.length());
-            testDistance = point.squaredDistanceTo(
-                    edge.pointAt(positionAlongEdge));
-            if (testDistance < minDistance) {
-                bestEdge = edge;
-                minDistance = testDistance;
-                edgePosition = positionAlongEdge;
-                totalPosition = this.nodePositions[i] + positionAlongEdge;
-            }
+            PointCh testPoint = edge.pointAt(positionAlongEdge);
+            testDistance = point.distanceTo(testPoint);
+            absolutePosition = nodePositions[i] + positionAlongEdge;
+            closestPoint = closestPoint.min(testPoint, absolutePosition, testDistance);
         }
-        return new RoutePoint(bestEdge.pointAt(edgePosition),
-                totalPosition,
-                Math.sqrt(minDistance));
+        return closestPoint;
     }
 
     private double[] getNodePositions() {
         double totalLength = 0;
-        double[] nodePositions = new double[this.edges.size() + 1];
+        double[] nodePositions = new double[edges.size() + 1];
         nodePositions[0] = totalLength;
 
         for (int i = 1; i < nodePositions.length; i++) {
-            totalLength += this.edges.get(i - 1).length();
+            totalLength += edges.get(i - 1).length();
             nodePositions[i] = totalLength;
         }
         return nodePositions;
