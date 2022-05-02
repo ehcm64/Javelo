@@ -102,10 +102,11 @@ public final class BaseMapManager {
 
         pane.setOnScroll(e -> {
             int zoomLevel = mvp.get().zoomLevel();
-            int zoomDiff = (int) Math.round(e.getDeltaY() / 25);
+            int zoomDiff = (int) Math.round(
+                    Math2.clamp(-1, e.getDeltaY(), 1));
             int newZoomLevel = Math2.clamp(
                     8,
-                    mvp.get().zoomLevel() + zoomDiff,
+                    zoomLevel + zoomDiff,
                     19);
 
             double newMouseX = Math.scalb(e.getX() + mvp.get().xTopLeft(),
