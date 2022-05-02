@@ -147,8 +147,9 @@ public record GraphEdges(ByteBuffer edgesBuffer, IntBuffer profileIds,
 
     private static float[] invertArray(float[] array) {
         float[] invertedList = new float[array.length];
-        for (int i = 0; i < array.length; i++) {
+        for (int i = 0; i < array.length / 2 + 1; i++) {
             invertedList[i] = array[array.length - 1 - i];
+            invertedList[array.length - 1 - i] = array[i];
         }
         return invertedList;
     }
