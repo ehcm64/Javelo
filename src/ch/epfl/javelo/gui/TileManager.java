@@ -53,7 +53,7 @@ public final class TileManager {
             }
         }
 
-        String urlFile = "/" + zlString + "/" + xString + "/" + yFileString;
+        String urlFile = zlString + "/" + xString + "/" + yFileString;
         URL url = new URL("https", tileServerName, urlFile);
         URLConnection connection = url.openConnection();
         connection.setRequestProperty("User-Agent", "JaVelo");

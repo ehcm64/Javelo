@@ -55,18 +55,9 @@ public class GpxGenerator {
 
         double position = 0;
         for (int i = 0; i < itinerary.points().size(); i++) {
-            PointCh point;
-            double altitude;
-
-            if (i == 0) {
-                point = itinerary.points().get(0);
-                altitude = profile.elevationAt(0);
-            } else {
-                point = itinerary.points().get(i);
-                Edge edge = itinerary.edges().get(i - 1);
-                position += edge.length();
-                altitude = profile.elevationAt(position);
-            }
+            PointCh point = itinerary.points().get(i);
+            position += i == 0 ? 0 : itinerary.edges().get(i - 1).length();
+            double altitude = profile.elevationAt(position);
 
             Element routePoint = doc.createElement("rtept");
             routePoint.setAttribute("lat", Double.toString(

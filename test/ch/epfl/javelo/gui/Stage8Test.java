@@ -46,8 +46,8 @@ public final class Stage8Test extends Application {
                         mapViewParametersP);
 
         StackPane mainPane =
-                new StackPane(baseMapManager.pane()
-                        //,waypointsManager.pane()//
+                new StackPane(baseMapManager.pane(),
+                        waypointsManager.pane()
                         );
         mainPane.getStylesheets().add("map.css");
         primaryStage.setMinWidth(600);
