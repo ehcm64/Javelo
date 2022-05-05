@@ -3,9 +3,6 @@ package ch.epfl.javelo.gui;
 import ch.epfl.javelo.data.Graph;
 import ch.epfl.javelo.projection.PointCh;
 import ch.epfl.javelo.projection.PointWebMercator;
-import ch.epfl.javelo.projection.SwissBounds;
-import ch.epfl.javelo.projection.WebMercator;
-import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 
@@ -17,8 +14,6 @@ import javafx.scene.Group;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.SVGPath;
 
-
-import javax.imageio.event.IIOWriteWarningListener;
 import java.util.ArrayList;
 
 import java.util.List;
@@ -26,6 +21,10 @@ import java.util.function.Consumer;
 
 public final class WaypointsManager {
     private static final double SEARCH_DISTANCE = 500;
+    private static final String outsideContent =
+            "M-8-20C-5-14-2-7 0 0 2-7 5-14 8-20 20-40-20-40-8-20";
+    private static final String insideContent = "M0-23A1 1 0 000-29 1 1 0 000-23";
+
 
     private final Graph graph;
     private ObjectProperty<MapViewParameters> mvp;
@@ -67,9 +66,9 @@ public final class WaypointsManager {
             Waypoint w = wayPoints.get(i);
             Group point = new Group();
             SVGPath outside = new SVGPath();
-            outside.setContent("M-8-20C-5-14-2-7 0 0 2-7 5-14 8-20 20-40-20-40-8-20");
+            outside.setContent(outsideContent);
             SVGPath inside = new SVGPath();
-            inside.setContent("M0-23A1 1 0 000-29 1 1 0 000-23");
+            inside.setContent(insideContent);
             outside.getStyleClass().add("pin_outside");
             inside.getStyleClass().add("pin_inside");
             point.getStyleClass().add("pin");
@@ -147,9 +146,11 @@ public final class WaypointsManager {
             addHandlers();
             addEvents();
         });
-        mvp.addListener((p, o, n) -> addHandlers());
+        mvp.addListener((p, o, n) -> {
+            addHandlers();
+            addEvents();
+        });
     }
-
 
     public void addWaypoint(double x, double y) {
         Waypoint w = createWaypoint(x, y);
