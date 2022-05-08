@@ -53,7 +53,6 @@ public final class BaseMapManager {
         redrawNeeded = false;
 
         GraphicsContext gc = canvas.getGraphicsContext2D();
-
         MapViewParameters mvp = mapViewParameters.get();
 
         int zl = mvp.zoomLevel();
@@ -113,10 +112,9 @@ public final class BaseMapManager {
 
                 Point2D topLeft = new Point2D(xTopLeft, yTopLeft);
                 Point2D eXY = new Point2D(e.getX(), e.getY());
-                Point2D newTopLeft =
-                        topLeft
-                                .add(mouseAnchor.get())
-                                .subtract(eXY);
+                Point2D newTopLeft = topLeft.add(mouseAnchor.get())
+                                            .subtract(eXY);
+
                 mapViewParameters.set(
                         mvp.withMinXY(newTopLeft.getX(), newTopLeft.getY()));
                 mouseAnchor.set(eXY);
