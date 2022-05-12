@@ -120,7 +120,9 @@ public final class RouteManager {
 
     private void replaceRouteAndCircle() {
         pane.getChildren().clear();
+        routeLine.setId("route");
         pane.getChildren().add(routeLine);
+        positionCircle.setId("highlight");
         pane.getChildren().add(positionCircle);
     }
 }
