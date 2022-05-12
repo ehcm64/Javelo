@@ -39,7 +39,7 @@ public final class WaypointsManager {
 
         this.graph = graph;
         this.mvp = mapViewParameters;
-        this.wayPoints = FXCollections.observableArrayList(wayPoints);
+        this.wayPoints = wayPoints;
         this.error = error;
         this.pane = new Pane();
         this.groups = new ArrayList<>();

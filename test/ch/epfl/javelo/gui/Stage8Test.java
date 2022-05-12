@@ -2,8 +2,12 @@ package ch.epfl.javelo.gui;
 
 import ch.epfl.javelo.data.Graph;
 import ch.epfl.javelo.projection.PointCh;
+import ch.epfl.javelo.routing.CityBikeCF;
+import ch.epfl.javelo.routing.RouteComputer;
 import javafx.application.Application;
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -29,26 +33,29 @@ public final class Stage8Test extends Application {
                 new MapViewParameters(12, 543200, 370650);
         ObjectProperty<MapViewParameters> mapViewParametersP =
                 new SimpleObjectProperty<>(mapViewParameters);
-        ObservableList<Waypoint> waypoints =
-                FXCollections.observableArrayList(
-                        new Waypoint(new PointCh(2532697, 1152350), 159049),
-                        new Waypoint(new PointCh(2538659, 1154350), 117669));
         Consumer<String> errorConsumer = new ErrorConsumer();
+
+        RouteBean routeBean = new RouteBean(new RouteComputer(graph, new CityBikeCF(graph)));
+        routeBean.setHighlightedPosition(new SimpleDoubleProperty(1000));
 
         WaypointsManager waypointsManager =
                 new WaypointsManager(graph,
                         mapViewParametersP,
-                        waypoints,
+                        routeBean.waypointsObservableList(),
                         errorConsumer);
+
         BaseMapManager baseMapManager =
                 new BaseMapManager(tileManager,
                         waypointsManager,
                         mapViewParametersP);
 
+        RouteManager routeManager = new RouteManager(routeBean, mapViewParametersP, errorConsumer);
+
         StackPane mainPane =
                 new StackPane(baseMapManager.pane(),
-                        waypointsManager.pane()
-                        );
+                        waypointsManager.pane(),
+                        routeManager.pane());
+
         mainPane.getStylesheets().add("map.css");
         primaryStage.setMinWidth(600);
         primaryStage.setMinHeight(300);

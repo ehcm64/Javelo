@@ -26,7 +26,11 @@ public final class RouteBean {
     private static final int CACHE_SIZE = 10;
 
     public RouteBean(RouteComputer routeComputer) {
+
+        this.elevationProfile = new SimpleObjectProperty<ElevationProfile>();
+        this.route = new SimpleObjectProperty<Route>();
         this.routeComputer = routeComputer;
+
         waypoints = FXCollections.observableArrayList();
         memoryCache = new LinkedHashMap<>(CACHE_SIZE, 0.75F, true) {
             @Override
@@ -37,7 +41,8 @@ public final class RouteBean {
 
         waypoints.addListener((ListChangeListener<? super Waypoint>) e -> buildRoute());
 
-        route.addListener((p, o, n) -> buildElevationProfile());
+        if (route != null)
+            route.addListener((p, o, n) -> buildElevationProfile());
     }
 
     private void buildElevationProfile() {
