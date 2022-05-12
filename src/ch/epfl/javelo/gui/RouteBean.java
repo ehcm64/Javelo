@@ -40,10 +40,6 @@ public final class RouteBean {
         route.addListener((p, o, n) -> buildElevationProfile());
     }
 
-    public void addWaypoint(Waypoint w) {
-        boolean b = waypoints.contains(w) ? waypoints.remove(w) : waypoints.add(w);
-    }
-
     private void buildElevationProfile() {
         if (route.get() == null) {
             elevationProfile.set(null);
@@ -91,16 +87,20 @@ public final class RouteBean {
         highlightedPosition = newHighlightedPosition;
     }
 
-    public void setWaypoints(List<Waypoint> waypoints) {
-        this.waypoints = FXCollections.observableArrayList(waypoints);
-    }
-
     public DoubleProperty highlightedPositionProperty() {
         return highlightedPosition;
     }
 
     public double highlightedPosition() {
         return highlightedPosition.doubleValue();
+    }
+
+    public void setWaypoints(List<Waypoint> waypoints) {
+        this.waypoints = FXCollections.observableArrayList(waypoints);
+    }
+
+    public ObservableList<Waypoint> waypointsObservableList() {
+        return waypoints;
     }
 
     public ReadOnlyObjectProperty<ElevationProfile> getElevationProfile() {
