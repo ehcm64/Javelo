@@ -107,16 +107,15 @@ public final class BaseMapManager {
             if (!e.isStillSincePress()) {
 
                 MapViewParameters mvp = mapViewParameters.get();
-                double xTopLeft = mvp.xTopLeft();
-                double yTopLeft = mvp.yTopLeft();
 
-                Point2D topLeft = new Point2D(xTopLeft, yTopLeft);
+                Point2D topLeft = mvp.topLeft();
                 Point2D eXY = new Point2D(e.getX(), e.getY());
                 Point2D newTopLeft = topLeft.add(mouseAnchor.get())
                                             .subtract(eXY);
 
                 mapViewParameters.set(
-                        mvp.withMinXY(newTopLeft.getX(), newTopLeft.getY()));
+                        mvp.withMinXY(newTopLeft.getX(),
+                                      newTopLeft.getY()));
                 mouseAnchor.set(eXY);
             }
         });

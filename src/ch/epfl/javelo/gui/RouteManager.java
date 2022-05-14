@@ -12,12 +12,12 @@ import javafx.scene.shape.Polyline;
 import java.util.function.Consumer;
 
 public final class RouteManager {
-    private Pane pane;
-    private RouteBean routeBean;
-    private ReadOnlyProperty<MapViewParameters> mapViewParameters;
-    private Consumer<String> errorConsumer;
-    private Polyline routeLine;
-    private Circle positionCircle;
+    private final Pane pane;
+    private final RouteBean routeBean;
+    private final ReadOnlyProperty<MapViewParameters> mapViewParameters;
+    private final Consumer<String> errorConsumer;
+    private final Polyline routeLine;
+    private final Circle positionCircle;
 
     public RouteManager(RouteBean routeBean,
                         ReadOnlyProperty<MapViewParameters> mapViewParameters,
@@ -87,8 +87,7 @@ public final class RouteManager {
             double x = mvp.xTopLeft() + mouse.getX();
             double y = mvp.yTopLeft() + mouse.getY();
 
-            PointCh point = PointWebMercator.of(mvp.zoomLevel(), x, y).toPointCh();
-
+            PointCh point = mvp.pointAt(x, y).toPointCh();
             int circleNode = route.nodeClosestTo(hPosition);
 
             for (int i = 1; i < routeBean.waypointsObservableList().size(); i++) {
@@ -96,7 +95,7 @@ public final class RouteManager {
                 if (circleNode == w.closestNodeId()) {
                     errorConsumer.accept("Un point de passage est déja présent à cet endroit !");
                     break;
-                } else if (routeBean.getRoute().get().pointClosestTo(w.position()).position() > routeBean.highlightedPosition()) {
+                } else if (route.pointClosestTo(w.position()).position() > hPosition) {
                     Waypoint circleWaypoint = new Waypoint(point, circleNode);
                     routeBean.waypointsObservableList().add(i, circleWaypoint);
                     break;
@@ -115,11 +114,8 @@ public final class RouteManager {
         routeLine.getPoints().clear();
         for (PointCh point : route.points()) {
             PointWebMercator pwm = PointWebMercator.ofPointCh(point);
-            double x = pwm.xAtZoomLevel(mvp.zoomLevel());
-            double y = pwm.yAtZoomLevel(mvp.zoomLevel());
-
-            routeLine.getPoints().add(x - mvp.xTopLeft());
-            routeLine.getPoints().add(y - mvp.yTopLeft());
+            routeLine.getPoints().add(mvp.viewX(pwm));
+            routeLine.getPoints().add(mvp.viewY(pwm));
         }
         routeLine.setVisible(true);
     }
@@ -134,10 +130,8 @@ public final class RouteManager {
         double hPosition = routeBean.highlightedPosition();
         PointCh point = route.pointAt(hPosition);
         PointWebMercator pwm = PointWebMercator.ofPointCh(point);
-        double x = pwm.xAtZoomLevel(mvp.zoomLevel());
-        double y = pwm.yAtZoomLevel(mvp.zoomLevel());
-        positionCircle.setLayoutX(x - mvp.xTopLeft());
-        positionCircle.setLayoutY(y - mvp.yTopLeft());
+        positionCircle.setLayoutX(mvp.viewX(pwm));
+        positionCircle.setLayoutY(mvp.viewY(pwm));
 
         positionCircle.setVisible(true);
     }

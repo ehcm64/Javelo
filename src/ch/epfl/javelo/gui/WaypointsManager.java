@@ -25,11 +25,11 @@ public final class WaypointsManager {
 
 
     private final Graph graph;
-    private ObjectProperty<MapViewParameters> mapViewParameters;
-    private ObservableList<Waypoint> wayPoints;
-    private Consumer<String> error;
+    private final ObjectProperty<MapViewParameters> mapViewParameters;
+    private final ObservableList<Waypoint> wayPoints;
+    private final Consumer<String> error;
     private final Pane pane;
-    private List<Group> groups;
+    private final List<Group> groups;
 
     public WaypointsManager(Graph graph,
                             ObjectProperty<MapViewParameters> mapViewParameters,
@@ -141,7 +141,9 @@ public final class WaypointsManager {
     private boolean waypointCanExist(double x, double y) {
         MapViewParameters mvp = mapViewParameters.get();
         PointCh point = mvp.pointAt(x, y).toPointCh();
-        int nodeId = graph.nodeClosestTo(point, SEARCH_DISTANCE);
+        int nodeId = -1;
+        if (point != null)
+            nodeId = graph.nodeClosestTo(point, SEARCH_DISTANCE);
 
         return nodeId != -1;
     }
