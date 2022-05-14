@@ -19,9 +19,17 @@ import java.util.function.Consumer;
 public final class WaypointsManager {
 
     private static final double SEARCH_DISTANCE = 500;
-    private static final String outsideContent =
+    private static final String OUTSIDE_CONTENT_SVG =
             "M-8-20C-5-14-2-7 0 0 2-7 5-14 8-20 20-40-20-40-8-20";
-    private static final String insideContent = "M0-23A1 1 0 000-29 1 1 0 000-23";
+    private static final String INSIDE_CONTENT_SVG =
+            "M0-23A1 1 0 000-29 1 1 0 000-23";
+    private static final String OUTSIDE_PIN_CSS = "pin_outside";
+    private static final String INSIDE_PIN_CSS = "pin_inside";
+    private static final String PIN_CSS = "pin";
+    private static final String FIRST_WAYPOINT_CSS = "first";
+    private static final String MIDDLE_WAYPOINT_CSS = "middle";
+    private static final String LAST_WAYPOINT_CSS = "last";
+    private static final String ERROR_STRING = "Aucune route à proximité !";
 
 
     private final Graph graph;
@@ -57,7 +65,7 @@ public final class WaypointsManager {
             Waypoint w = waypointFromXAndY(x, y);
             wayPoints.add(w);
         } else {
-            error.accept("Aucune route à proximité !");
+            error.accept(ERROR_STRING);
         }
     }
 
@@ -82,7 +90,7 @@ public final class WaypointsManager {
                     } else {
                         Waypoint w = wayPoints.get(indexOfg);
                         positionGroup(g, w);
-                        error.accept("Aucune route à proximité !");
+                        error.accept(ERROR_STRING);
                     }
                 }
             });
@@ -113,28 +121,27 @@ public final class WaypointsManager {
     private Group createGroup(Waypoint w) {
 
         SVGPath outside = new SVGPath();
-        outside.setContent(outsideContent);
-        outside.getStyleClass().add("pin_outside");
+        outside.setContent(OUTSIDE_CONTENT_SVG);
+        outside.getStyleClass().add(OUTSIDE_PIN_CSS);
         SVGPath inside = new SVGPath();
-        inside.setContent(insideContent);
-        inside.getStyleClass().add("pin_inside");
+        inside.setContent(INSIDE_CONTENT_SVG);
+        inside.getStyleClass().add(INSIDE_PIN_CSS);
 
         Group g = new Group();
         g.getChildren().add(outside);
         g.getChildren().add(inside);
+        g.getStyleClass().add(PIN_CSS);
 
-        g.getStyleClass().add("pin");
         int indexOfw = wayPoints.indexOf(w);
+
         if (indexOfw == 0) {
-            g.getStyleClass().add("first");
+            g.getStyleClass().add(FIRST_WAYPOINT_CSS);
         } else if (indexOfw == wayPoints.size() - 1) {
-            g.getStyleClass().add("last");
+            g.getStyleClass().add(LAST_WAYPOINT_CSS);
         } else {
-            g.getStyleClass().add("middle");
+            g.getStyleClass().add(MIDDLE_WAYPOINT_CSS);
         }
-
         positionGroup(g, w);
-
         return g;
     }
 
