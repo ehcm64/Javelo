@@ -23,15 +23,16 @@ public final class RouteBean {
     private Map<Pair<Integer, Integer>, Route> memoryCache;
 
     private static final int MAX_STEP_LENGTH = 5;
-    private static final int CACHE_SIZE = 10;
+    private static final int CACHE_SIZE = 50;
 
     public RouteBean(RouteComputer routeComputer) {
 
-        this.elevationProfile = new SimpleObjectProperty<ElevationProfile>();
-        this.route = new SimpleObjectProperty<Route>();
+        this.elevationProfile = new SimpleObjectProperty<>();
+        this.route = new SimpleObjectProperty<>();
         this.routeComputer = routeComputer;
 
         waypoints = FXCollections.observableArrayList();
+
         memoryCache = new LinkedHashMap<>(CACHE_SIZE, 0.75F, true) {
             @Override
             protected boolean removeEldestEntry(Map.Entry eldest) {
@@ -41,8 +42,7 @@ public final class RouteBean {
 
         waypoints.addListener((ListChangeListener<? super Waypoint>) e -> buildRoute());
 
-        if (route != null)
-            route.addListener((p, o, n) -> buildElevationProfile());
+        route.addListener((p, o, n) -> buildElevationProfile());
     }
 
     private void buildElevationProfile() {
@@ -72,6 +72,7 @@ public final class RouteBean {
                         break;
                     }
                 }
+
                 if (needToCalculateRoute) {
                     Route singleRoute = routeComputer.bestRouteBetween(startNodeId, endNodeId);
                     if (singleRoute == null) {

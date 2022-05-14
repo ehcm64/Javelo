@@ -15,11 +15,11 @@ import java.io.IOException;
 public final class BaseMapManager {
     private final TileManager tm;
     private final WaypointsManager wpm;
-    private ObjectProperty<MapViewParameters> mapViewParameters;
+    private final ObjectProperty<MapViewParameters> mapViewParameters;
     private boolean redrawNeeded;
-    private Canvas canvas;
-    private Pane pane;
-    private ObjectProperty<Point2D> mouseAnchor;
+    private final Canvas canvas;
+    private final Pane pane;
+    private final ObjectProperty<Point2D> mouseAnchor;
 
     private static final int LOWEST_ZOOM_LEVEL = 8;
     private static final int HIGHEST_ZOOM_LEVEL = 19;
@@ -120,9 +120,6 @@ public final class BaseMapManager {
                 mouseAnchor.set(eXY);
             }
         });
-
-        pane.setOnMouseReleased(e -> mouseAnchor.set(
-                new Point2D(e.getX(), e.getY())));
 
         pane.setOnScroll(e -> {
 

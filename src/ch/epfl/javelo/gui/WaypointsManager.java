@@ -5,7 +5,6 @@ import ch.epfl.javelo.projection.PointCh;
 import ch.epfl.javelo.projection.PointWebMercator;
 import javafx.beans.property.ObjectProperty;
 
-import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.scene.Group;
@@ -26,7 +25,7 @@ public final class WaypointsManager {
 
 
     private final Graph graph;
-    private ObjectProperty<MapViewParameters> mvp;
+    private ObjectProperty<MapViewParameters> mapViewParameters;
     private ObservableList<Waypoint> wayPoints;
     private Consumer<String> error;
     private final Pane pane;
@@ -38,14 +37,13 @@ public final class WaypointsManager {
                             Consumer<String> error) {
 
         this.graph = graph;
-        this.mvp = mapViewParameters;
+        this.mapViewParameters = mapViewParameters;
         this.wayPoints = wayPoints;
         this.error = error;
         this.pane = new Pane();
         this.groups = new ArrayList<>();
 
         pane.setPickOnBounds(false);
-        addHandlers();
         addListeners();
     }
 
@@ -53,120 +51,115 @@ public final class WaypointsManager {
         return pane;
     }
 
-    private void createGroup(Waypoint w) {
-        Group point = new Group();
-        SVGPath outside = new SVGPath();
-        outside.setContent(outsideContent);
-        SVGPath inside = new SVGPath();
-        inside.setContent(insideContent);
-        outside.getStyleClass().add("pin_outside");
-        inside.getStyleClass().add("pin_inside");
-        point.getStyleClass().add("pin");
-        point.getChildren().add(outside);
-        point.getChildren().add(inside);
-        groups.add(point);
-        setPosition(w, point);
-    }
+    public void addWaypoint(double x, double y) {
 
-    private void setStyleClass() {
-        for (int i = 0; i < groups.size(); i++) {
-            Group g = groups.get(i);
-            if (g.getStyleClass().size() >= 2)
-                g.getStyleClass().remove(g.getStyleClass().size() - 1);
-            if (i == 0) {
-                g.getStyleClass().add("first");
-            } else if (i == groups.size() - 1) {
-                g.getStyleClass().add("last");
-            } else {
-                g.getStyleClass().add("middle");
-            }
+        if (waypointCanExist(x, y)) {
+            Waypoint w = waypointFromXAndY(x, y);
+            wayPoints.add(w);
+        } else {
+            error.accept("Aucune route à proximité !");
         }
-        addEvents();
     }
 
     private void addHandlers() {
-        wayPoints.forEach(this::createGroup);
-        setStyleClass();
-    }
+        for (Group g : groups) {
+            int indexOfg = groups.indexOf(g);
 
-    private void addEvents() {
-
-        for (int i = 0; i < groups.size(); i++) {
-            Waypoint w = wayPoints.get(i);
-            Group g = groups.get(i);
-
-            int finalI = i; // necessary for lambda to work
-
-            g.setOnMouseReleased(e -> {
-                if (e.isStillSincePress()) {
-                    groups.remove(g);
-                    wayPoints.remove(w);
-                } else {
-                    Waypoint newW = createWaypoint(e.getSceneX(), e.getSceneY());
-                    if (newW != null)
-                        wayPoints.set(finalI, newW);
-                    else {
-                        setAllPos();
-                    }
+            g.setOnMouseDragged(e -> {
+                if (!e.isStillSincePress()) {
+                    g.setLayoutX(e.getSceneX());
+                    g.setLayoutY(e.getSceneY());
                 }
             });
 
-            g.setOnMouseDragged(e -> {
-                g.setLayoutX(e.getSceneX());
-                g.setLayoutY(e.getSceneY());
+            g.setOnMouseReleased(e -> {
+                if (e.isStillSincePress()) {
+                    wayPoints.remove(indexOfg);
+                } else {
+                    if (waypointCanExist(e.getSceneX(), e.getSceneY())) {
+                        wayPoints.set(indexOfg,
+                                waypointFromXAndY(e.getSceneX(), e.getSceneY()));
+                    } else {
+                        Waypoint w = wayPoints.get(indexOfg);
+                        positionGroup(g, w);
+                        error.accept("Aucune route à proximité !");
+                    }
+                }
             });
         }
     }
 
-    private void setPosition(Waypoint w, Group point) {
-        PointWebMercator pwm = PointWebMercator.ofPointCh(w.position());
-        double x = mvp.get().viewX(pwm);
-        double y = mvp.get().viewY(pwm);
-        point.setLayoutX(x);
-        point.setLayoutY(y);
-        if (!pane.getChildren().contains(point))
-            pane.getChildren().add(point);
-    }
-
-    private void setAllPos() {
-        for (int i = 0; i < wayPoints.size(); i++) {
-            Waypoint w = wayPoints.get(i);
-            Group g = groups.get(i);
-            setPosition(w, g);
-        }
-        pane.getChildren().setAll(groups);
-    }
-
     private void addListeners() {
-        wayPoints.addListener((ListChangeListener<? super Waypoint>) e -> {
-
-            if (wayPoints.size() > groups.size()) {
-                createGroup(wayPoints.get(wayPoints.size() - 1));
+        mapViewParameters.addListener((p, o, n) -> {
+            for (Group g : groups) {
+                int indexOfg = groups.indexOf(g);
+                Waypoint w = wayPoints.get(indexOfg);
+                positionGroup(g, w);
             }
-            setAllPos();
-            setStyleClass();
         });
 
-        mvp.addListener((p, o, n) -> setAllPos());
+        wayPoints.addListener((ListChangeListener<? super Waypoint>) e -> {
+            groups.clear();
+            pane.getChildren().clear();
+            for (Waypoint w : wayPoints) {
+                Group g = createGroup(w);
+                groups.add(g);
+                pane.getChildren().add(g);
+            }
+            addHandlers();
+        });
     }
 
-    private Waypoint createWaypoint(double x, double y) {
-        try {
-            PointWebMercator pwmFromMousePos = mvp.get().pointAt(x, y);
-            PointCh pCh = pwmFromMousePos.toPointCh();
-            int closestNode = graph.nodeClosestTo(pCh, SEARCH_DISTANCE);
-            if (closestNode == -1)
-                throw new IllegalArgumentException();
-            return new Waypoint(pCh, closestNode);
-        } catch (Exception e) {
-            error.accept("Aucune route à proximité !");
+    private Group createGroup(Waypoint w) {
+
+        SVGPath outside = new SVGPath();
+        outside.setContent(outsideContent);
+        outside.getStyleClass().add("pin_outside");
+        SVGPath inside = new SVGPath();
+        inside.setContent(insideContent);
+        inside.getStyleClass().add("pin_inside");
+
+        Group g = new Group();
+        g.getChildren().add(outside);
+        g.getChildren().add(inside);
+
+        g.getStyleClass().add("pin");
+        int indexOfw = wayPoints.indexOf(w);
+        if (indexOfw == 0) {
+            g.getStyleClass().add("first");
+        } else if (indexOfw == wayPoints.size() - 1) {
+            g.getStyleClass().add("last");
+        } else {
+            g.getStyleClass().add("middle");
         }
-        return null;
+
+        positionGroup(g, w);
+
+        return g;
     }
 
-    public void addWaypoint(double x, double y) {
-        Waypoint w = createWaypoint(x, y);
-        if (w != null)
-            wayPoints.add(createWaypoint(x, y));
+    private boolean waypointCanExist(double x, double y) {
+        MapViewParameters mvp = mapViewParameters.get();
+        PointCh point = mvp.pointAt(x, y).toPointCh();
+        int nodeId = graph.nodeClosestTo(point, SEARCH_DISTANCE);
+
+        return nodeId != -1;
+    }
+
+    private Waypoint waypointFromXAndY(double x, double y) {
+        MapViewParameters mvp = mapViewParameters.get();
+        PointCh point = mvp.pointAt(x, y).toPointCh();
+        int nodeId = graph.nodeClosestTo(point, SEARCH_DISTANCE);
+        return new Waypoint(point, nodeId);
+    }
+
+    private void positionGroup(Group g, Waypoint w) {
+        MapViewParameters mvp = mapViewParameters.get();
+        PointWebMercator pwm = PointWebMercator.ofPointCh(w.position());
+        double x = pwm.xAtZoomLevel(mvp.zoomLevel()) - mvp.xTopLeft();
+        double y = pwm.yAtZoomLevel(mvp.zoomLevel()) - mvp.yTopLeft();
+
+        g.setLayoutX(x);
+        g.setLayoutY(y);
     }
 }
