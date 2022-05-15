@@ -15,12 +15,12 @@ import java.util.Map;
 
 public final class RouteBean {
 
-    private ObservableList<Waypoint> waypoints;
-    private ObjectProperty<Route> route;
-    private ObjectProperty<ElevationProfile> elevationProfile;
+    private final ObservableList<Waypoint> waypoints;
+    private final ObjectProperty<Route> route;
+    private final ObjectProperty<ElevationProfile> elevationProfile;
     private DoubleProperty highlightedPosition;
-    private RouteComputer routeComputer;
-    private Map<Pair<Integer, Integer>, Route> memoryCache;
+    private final RouteComputer routeComputer;
+    private final Map<Pair<Integer, Integer>, Route> memoryCache;
 
     private static final int MAX_STEP_LENGTH = 5;
     private static final int CACHE_SIZE = 50;
@@ -99,10 +99,6 @@ public final class RouteBean {
 
     public double highlightedPosition() {
         return highlightedPosition.doubleValue();
-    }
-
-    public void setWaypoints(List<Waypoint> waypoints) {
-        this.waypoints = FXCollections.observableArrayList(waypoints);
     }
 
     public ObservableList<Waypoint> waypointsObservableList() {

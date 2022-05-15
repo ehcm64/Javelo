@@ -29,7 +29,7 @@ public final class WaypointsManager {
     private static final String FIRST_WAYPOINT_CSS = "first";
     private static final String MIDDLE_WAYPOINT_CSS = "middle";
     private static final String LAST_WAYPOINT_CSS = "last";
-    private static final String ERROR_STRING = "Aucune route à proximité !";
+    private static final String NO_ROAD_WARNING = "Aucune route à proximité !";
 
 
     private final Graph graph;
@@ -65,7 +65,7 @@ public final class WaypointsManager {
             Waypoint w = waypointFromXAndY(x, y);
             wayPoints.add(w);
         } else {
-            error.accept(ERROR_STRING);
+            error.accept(NO_ROAD_WARNING);
         }
     }
 
@@ -90,7 +90,7 @@ public final class WaypointsManager {
                     } else {
                         Waypoint w = wayPoints.get(indexOfg);
                         positionGroup(g, w);
-                        error.accept(ERROR_STRING);
+                        error.accept(NO_ROAD_WARNING);
                     }
                 }
             });

@@ -19,6 +19,11 @@ public final class RouteManager {
     private final Polyline routeLine;
     private final Circle positionCircle;
 
+    private static final String ROUTE_ID = "route";
+    private static final String HIGHLIGHT_ID = "highlight";
+    private static final String WAYPOINT_ALREADY_EXISTS_WARNING =
+            "Un point de passage est déja présent à cet endroit !";
+
     public RouteManager(RouteBean routeBean,
                         ReadOnlyProperty<MapViewParameters> mapViewParameters,
                         Consumer<String> errorConsumer) {
@@ -31,11 +36,11 @@ public final class RouteManager {
         pane.setPickOnBounds(false);
 
         routeLine = new Polyline();
-        routeLine.setId("route");
+        routeLine.setId(ROUTE_ID);
 
         positionCircle = new Circle(5);
         positionCircle.setVisible(false);
-        positionCircle.setId("highlight");
+        positionCircle.setId(HIGHLIGHT_ID);
 
         pane.getChildren().add(routeLine);
         pane.getChildren().add(positionCircle);
@@ -93,7 +98,7 @@ public final class RouteManager {
             for (int i = 1; i < routeBean.waypointsObservableList().size(); i++) {
                 Waypoint w = routeBean.waypointsObservableList().get(i);
                 if (circleNode == w.closestNodeId()) {
-                    errorConsumer.accept("Un point de passage est déja présent à cet endroit !");
+                    errorConsumer.accept(WAYPOINT_ALREADY_EXISTS_WARNING);
                     break;
                 } else if (route.pointClosestTo(w.position()).position() > hPosition) {
                     Waypoint circleWaypoint = new Waypoint(point, circleNode);
