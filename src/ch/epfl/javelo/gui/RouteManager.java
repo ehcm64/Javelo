@@ -89,10 +89,8 @@ public final class RouteManager {
             double hPosition = routeBean.highlightedPosition();
             MapViewParameters mvp = mapViewParameters.getValue();
             Point2D mouse = positionCircle.localToParent(e.getX(), e.getY());
-            double x = mvp.xTopLeft() + mouse.getX();
-            double y = mvp.yTopLeft() + mouse.getY();
 
-            PointCh point = mvp.pointAt(x, y).toPointCh();
+            PointCh point = mvp.pointAt(mouse.getX(), mouse.getY()).toPointCh();
             int circleNode = route.nodeClosestTo(hPosition);
 
             for (int i = 1; i < routeBean.waypointsObservableList().size(); i++) {
@@ -117,6 +115,8 @@ public final class RouteManager {
         }
         MapViewParameters mvp = mapViewParameters.getValue();
         routeLine.getPoints().clear();
+        routeLine.setLayoutX(0);
+        routeLine.setLayoutY(0);
         for (PointCh point : route.points()) {
             PointWebMercator pwm = PointWebMercator.ofPointCh(point);
             routeLine.getPoints().add(mvp.viewX(pwm));
