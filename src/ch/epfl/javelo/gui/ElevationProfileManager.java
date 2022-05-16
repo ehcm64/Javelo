@@ -10,13 +10,13 @@ import javafx.scene.Group;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Line;
 import javafx.scene.shape.Path;
 import javafx.scene.shape.Polygon;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
-import javafx.scene.transform.Affine;
-import javafx.scene.transform.NonInvertibleTransformException;
-import javafx.scene.transform.Transform;
+import javafx.scene.transform.*;
 
 public final class ElevationProfileManager {
     private final ReadOnlyObjectProperty<ElevationProfile> profileProperty;
@@ -35,11 +35,15 @@ public final class ElevationProfileManager {
     private final Line line;
     private final Text text;
 
-    private final Insets insets = new Insets(10, 10, 20, 40);
+    private static final Insets insets = new Insets(10, 10, 20, 40);
+    private static final int[] POS_STEPS =
+            {1000, 2000, 5000, 10_000, 25_000, 50_000, 100_000};
+    private static final int[] ELE_STEPS =
+            {5, 10, 20, 25, 50, 100, 200, 250, 500, 1_000};
 
 
     public ElevationProfileManager(ReadOnlyObjectProperty<ElevationProfile> profileProperty,
-                                   ReadOnlyDoubleProperty positionProperty) throws NonInvertibleTransformException {
+                                   ReadOnlyDoubleProperty positionProperty) {
 
         this.profileProperty = profileProperty;
         this.positionProperty = positionProperty;
@@ -51,9 +55,9 @@ public final class ElevationProfileManager {
 
         borderPane = new BorderPane();
         pane = new Pane();
-        vBox = new VBox();
         path = new Path();
-        path.setId("grid");
+
+
         group = new Group();
         Text textFirst = new Text("gjgj");
         textFirst.getStyleClass().addAll("grid_label", "horizontal");
@@ -65,26 +69,20 @@ public final class ElevationProfileManager {
         polygon.setId("profile");
         line = new Line();
         pane.getChildren().addAll(path, group, polygon, line);
-        text = new Text("jkjksjf");
-        vBox.getChildren().add(text);
-        vBox.setId("profile_data");
+
         borderPane.setCenter(pane);
-        borderPane.setBottom(vBox);
+
+        vBox = new VBox();
+        text = new Text();
+        createBottomText();
+
         borderPane.getStylesheets().add("elevation_profile.css");
 
         profileRectangleProperty = new SimpleObjectProperty<>();
-        profileRectangleProperty.set(new Rectangle2D(10, 10 , 0, 0));
+        profileRectangleProperty.set(new Rectangle2D(10, 10, 0, 0));
         addListeners();
 
-        Affine screenToWorld = new Affine();
-        ElevationProfile ep = profileProperty.get();
-        Rectangle2D rect = profileRectangleProperty.get();
-        screenToWorld.prependTranslation(-rect.getMinX(), -rect.getMinY());
-        screenToWorld.prependScale(ep.length() / rect.getWidth(), ep.maxElevation() - ep.minElevation() / rect.getHeight());
-        screenToWorld.prependTranslation(0, ep.minElevation());
-        screenToWorldProperty.set(screenToWorld);
-        worldToScreenProperty.set(screenToWorld.createInverse());
-
+        createTransforms();
         graphProfile();
 
     }
@@ -108,6 +106,11 @@ public final class ElevationProfileManager {
             graphProfile();
         });
 
+        profileRectangleProperty.addListener((p, o, n) -> {
+            createTransforms();
+            graphProfile();
+        });
+
     }
 
     private void graphProfile() {
@@ -118,8 +121,11 @@ public final class ElevationProfileManager {
         polygon.getPoints().clear();
         polygon.getPoints().addAll(rect.getMinX(), rect.getMaxY());
         for (double i = 0; i < ep.length(); i += step) {
-            Point2D point = worldToScreen.transform(new Point2D(i, ep.elevationAt(i)));
-            polygon.getPoints().addAll(point.getX(), point.getY());
+            Point2D worldPoint = new Point2D(i, ep.elevationAt(i));
+            Point2D screenPoint = worldToScreen.transform(worldPoint);
+            polygon.getPoints().addAll(
+                    screenPoint.getX(),
+                    screenPoint.getY());
         }
         polygon.getPoints().addAll(rect.getMaxX(), rect.getMaxY());
     }
@@ -141,4 +147,46 @@ public final class ElevationProfileManager {
         profileRectangleProperty.set(rect);
     }
 
+    private void createTransforms() {
+        Affine screenToWorld = new Affine();
+        ElevationProfile ep = profileProperty.get();
+        Rectangle2D rect = profileRectangleProperty.get();
+        double elevationDelta = ep.maxElevation() - ep.minElevation();
+        screenToWorld.prependTranslation(-rect.getMinX(), -rect.getMaxY());
+        screenToWorld.prependScale(
+                ep.length() / rect.getWidth(),
+                -elevationDelta / rect.getHeight());
+        screenToWorld.prependTranslation(0, ep.minElevation());
+        screenToWorldProperty.set(screenToWorld);
+        try {
+            Affine worldToScreen = screenToWorld.createInverse();
+            worldToScreenProperty.set(worldToScreen);
+        } catch (NonInvertibleTransformException ignored) {
+        }
+    }
+
+    private void createBottomText() {
+        ElevationProfile ep = profileProperty.get();
+        text.setText(String.format("Longueur : %.1f km" +
+                        "     Montée : %.0f m" +
+                        "     Descente : %.0f m" +
+                        "     Altitude : de %.0f m à %.0f m",
+                ep.length(),
+                ep.totalAscent(),
+                ep.totalDescent(),
+                ep.minElevation(),
+                ep.maxElevation()));
+        vBox.getChildren().add(text);
+        vBox.setId("profile_data");
+        borderPane.setBottom(vBox);
+    }
+
+    private void createGrid() {
+        path.setId("grid");
+
+    }
+
+    private void setEtiquettes() {
+
+    }
 }
