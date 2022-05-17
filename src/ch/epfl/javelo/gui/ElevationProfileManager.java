@@ -2,16 +2,18 @@ package ch.epfl.javelo.gui;
 
 import ch.epfl.javelo.Math2;
 import ch.epfl.javelo.routing.ElevationProfile;
-import com.sun.javafx.geom.Vec2d;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.*;
 import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
 import javafx.geometry.Rectangle2D;
+import javafx.geometry.VPos;
 import javafx.scene.Group;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.shape.*;
+import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.transform.*;
 
@@ -42,6 +44,7 @@ public final class ElevationProfileManager {
             {5, 10, 20, 25, 50, 100, 200, 250, 500, 1_000};
     private static final int MIN_VERTICAL_OFFSET = 50;
     private static final int MIN_HORIZONTAL_OFFSET = 25;
+    private static final Font FONT = Font.font("Avenir", 10);
 
 
     public ElevationProfileManager(ReadOnlyObjectProperty<ElevationProfile> profileProperty,
@@ -56,37 +59,32 @@ public final class ElevationProfileManager {
 
 
         borderPane = new BorderPane();
-        pane = new Pane();
-        path = new Path();
-
-
-        group = new Group();
-        Text textFirst = new Text("gjgj");
-        textFirst.getStyleClass().addAll("grid_label", "horizontal");
-        Text textLast = new Text("gdfknjknwkj");
-        textLast.getStyleClass().addAll("grid_label", "vertical");
-        group.getChildren().addAll(textFirst, textLast);
-        //TODO Texts of Group
-        polygon = new Polygon();
-        polygon.setId("profile");
-        line = new Line();
-        pane.getChildren().addAll(group, polygon, path, line);
-
-        borderPane.setCenter(pane);
 
         vBox = new VBox();
         text = new Text();
+
+        pane = new Pane();
+        path = new Path();
+        path.setId("grid");
+        group = new Group();
+        polygon = new Polygon();
+        polygon.setId("profile");
+        line = new Line();
+
+        pane.getChildren().addAll(group, polygon, path, line);
+
+        line.layoutXProperty().bind(
+                Bindings.createDoubleBinding(
+                        positionProperty::doubleValue,
+                        positionProperty));
+
+        borderPane.setCenter(pane);
         createBottomText();
 
         borderPane.getStylesheets().add("elevation_profile.css");
 
         profileRectangleProperty = new SimpleObjectProperty<>();
-        profileRectangleProperty.set(new Rectangle2D(0, 0, 0, 0));
         addListeners();
-
-        createTransforms();
-        graphProfile();
-
     }
 
     public Pane pane() {
@@ -102,14 +100,14 @@ public final class ElevationProfileManager {
             resizeRectangle();
             createTransforms();
             graphProfile();
-            createGrid();
+            createGridAndEtiquettes();
         });
 
         pane.heightProperty().addListener((p, o, n) -> {
             resizeRectangle();
             createTransforms();
             graphProfile();
-            createGrid();
+            createGridAndEtiquettes();
         });
     }
 
@@ -181,44 +179,70 @@ public final class ElevationProfileManager {
         borderPane.setBottom(vBox);
     }
 
-    private void createGrid() {
-        path.setId("grid");
+    private void createGridAndEtiquettes() {
         path.getElements().clear();
-        Transform worldToScreen = worldToScreenProperty.get();
+        group.getChildren().clear();
         Rectangle2D rect = profileRectangleProperty.get();
+        if (rect.getWidth() == 0 || rect.getHeight() == 0) return;
+        Transform worldToScreen = worldToScreenProperty.get();
         ElevationProfile ep = profileProperty.get();
-        Point2D verticalPt = new Point2D(rect.getMinX() + MIN_VERTICAL_OFFSET, rect.getMaxY());
-        verticalPt = screenToWorldProperty.get().transform(verticalPt);
 
-        int vIndex = Arrays.binarySearch(POS_STEPS, (int) Math.ceil(verticalPt.getX()));
-        vIndex = vIndex < 0 ? -vIndex - 1 : vIndex;
-        int step = POS_STEPS[vIndex];
-        for (int pos = 0; pos <= ep.length(); pos += step) {
+        Point2D verticalLinesGap = new Point2D(rect.getMinX() + MIN_VERTICAL_OFFSET, 0);
+        verticalLinesGap = screenToWorldProperty.get().transform(verticalLinesGap);
+
+        int vIndex = Arrays.binarySearch(POS_STEPS, (int) verticalLinesGap.getX());
+        if (vIndex < 0) vIndex = Math2.clamp(0, -vIndex - 1, POS_STEPS.length - 1);
+        int vStep = POS_STEPS[vIndex];
+
+        for (int pos = 0; pos <= ep.length(); pos += vStep) {
             Point2D movePt = worldToScreen.transform(new Point2D(pos, ep.minElevation()));
             PathElement moveTo = new MoveTo(movePt.getX(), movePt.getY());
             Point2D linePt = worldToScreen.transform(new Point2D(pos, ep.maxElevation()));
             PathElement lineTo = new LineTo(linePt.getX(), linePt.getY());
             path.getElements().addAll(moveTo, lineTo);
+
+            createPositionEtiquette(pos, movePt.getX(), movePt.getY());
         }
-        Point2D pt = new Point2D(rect.getMinX(), rect.getMaxY() - MIN_HORIZONTAL_OFFSET);
-        pt = screenToWorldProperty.get().transform(pt);
-        System.out.println(pt.getY());
-        int hIndex = Arrays.binarySearch(ELE_STEPS, (int) Math.ceil(pt.getY() - ep.minElevation()));
-        hIndex = hIndex < 0 ? -hIndex - 1 : hIndex;
-        hIndex = hIndex == ELE_STEPS.length ? hIndex - 1 : hIndex;
-        step = ELE_STEPS[hIndex];
-        System.out.println(step);
-        int smallestEle = (int) Math.ceil(ep.minElevation() / step) * step;
-        for (int ele = smallestEle; ele <= ep.maxElevation(); ele += step) {
+
+        Point2D horizontalLinesGap = new Point2D(0, rect.getMaxY() - MIN_HORIZONTAL_OFFSET);
+        horizontalLinesGap = screenToWorldProperty.get().transform(horizontalLinesGap);
+
+        int hIndex = Arrays.binarySearch(ELE_STEPS, (int) (horizontalLinesGap.getY() - ep.minElevation()));
+        if (hIndex < 0) hIndex = Math2.clamp(0, -hIndex - 1, ELE_STEPS.length - 1);
+        int hStep = ELE_STEPS[hIndex];
+
+        int smallestEleMultiple = (int) Math.ceil(ep.minElevation() / hStep) * hStep;
+
+        for (int ele = smallestEleMultiple; ele <= ep.maxElevation(); ele += hStep) {
             Point2D movePt = worldToScreen.transform(new Point2D(0, ele));
             PathElement moveTo = new MoveTo(movePt.getX(), movePt.getY());
             Point2D linePt = worldToScreen.transform(new Point2D(ep.length(), ele));
             PathElement lineTo = new LineTo(linePt.getX(), linePt.getY());
             path.getElements().addAll(moveTo, lineTo);
+
+            createElevationEtiquette(ele, movePt.getX(), movePt.getY());
         }
     }
 
-    private void setEtiquettes() {
+    private void createPositionEtiquette(double position, double x, double y) {
+        Text posText = new Text(Integer.toString((int) position / 1000));
+        group.getChildren().add(posText);
+        posText.getStyleClass().addAll("grid_label", "horizontal");
+        posText.setFont(FONT);
+        posText.setTextOrigin(VPos.TOP);
+        double centering = 0.5 * posText.prefWidth(0);
+        posText.setLayoutX(x - centering);
+        posText.setLayoutY(y);
+    }
 
+    private void createElevationEtiquette(double elevation, double x, double y) {
+        Text eleText = new Text(Integer.toString((int) elevation));
+        group.getChildren().add(eleText);
+        eleText.getStyleClass().addAll("grid_label", "vertical");
+        eleText.setFont(FONT);
+        eleText.setTextOrigin(VPos.CENTER);
+        double centering = eleText.prefWidth(0) + 2;
+        eleText.setLayoutX(x - centering);
+        eleText.setLayoutY(y);
     }
 }

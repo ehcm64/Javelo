@@ -56,7 +56,6 @@ public final class RouteManager {
     private void addListeners() {
 
         routeBean.highlightedPositionProperty().addListener((p, o, n) -> {
-            setRouteLine();
             setCircle();
         });
 
