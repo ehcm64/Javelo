@@ -82,7 +82,7 @@ public final class RouteComputer {
                 if (distances[arrivalNodeId] == ALREADY_EXPLORED)
                     continue;
                 float pathToArrivalNodeLength = (float) (
-                                  pathToNodeLength
+                        pathToNodeLength
                                 + costFunction.costFactor(node.nodeId, edgeId)
                                 * graph.edgeLength(edgeId));
                 if (pathToArrivalNodeLength < distances[arrivalNodeId]) {
@@ -118,7 +118,7 @@ public final class RouteComputer {
             }
             double length = graph.edgeLength(edgeId);
             DoubleUnaryOperator profile = graph.edgeProfile(edgeId);
-            edges.add(new Edge(predecessor,nodeId, fromPoint, toPoint, length, profile));
+            edges.add(new Edge(predecessor, nodeId, fromPoint, toPoint, length, profile));
             nodeId = predecessor;
         }
         // reverse the list to get the route's edges in correct order

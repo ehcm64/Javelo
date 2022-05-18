@@ -3,6 +3,7 @@ package ch.epfl.javelo.gui;
 import ch.epfl.javelo.Math2;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.Canvas;
@@ -119,16 +120,19 @@ public final class BaseMapManager {
                 mouseAnchor.set(eXY);
             }
         });
-
+        SimpleLongProperty minScrollTime = new SimpleLongProperty();
         pane.setOnScroll(e -> {
+            if (e.getDeltaY() == 0d) return;
+            long currentTime = System.currentTimeMillis();
+            if (currentTime < minScrollTime.get()) return;
+            minScrollTime.set(currentTime + 200);
+            int zoomDelta = (int) Math.signum(e.getDeltaY());
 
             MapViewParameters mvp = mapViewParameters.get();
             int zoomLevel = mvp.zoomLevel();
-            int zoomDiff = (int) Math.round(
-                    Math2.clamp(-1, e.getDeltaY(), 1));
             int newZoomLevel = Math2.clamp(
                     LOWEST_ZOOM_LEVEL,
-                    zoomLevel + zoomDiff,
+                    zoomLevel + zoomDelta,
                     HIGHEST_ZOOM_LEVEL);
 
             double newMouseX = Math.scalb(e.getX() + mvp.xTopLeft(),
