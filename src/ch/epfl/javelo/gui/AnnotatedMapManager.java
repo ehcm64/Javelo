@@ -9,6 +9,7 @@ import javafx.beans.binding.Bindings;
 import javafx.beans.property.*;
 import javafx.geometry.Point2D;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 
 import java.util.function.Consumer;
 
@@ -17,12 +18,12 @@ public final class AnnotatedMapManager {
     private final ObjectProperty<Point2D> mousePositionProperty;
     private final DoubleProperty mousePositionOnRouteProperty;
     private final ObjectProperty<MapViewParameters> mvpProperty;
-    private final ReadOnlyObjectProperty<Route> routeProperty;
+    private final RouteBean routeBean;
     private final Pane pane;
 
 
-    private static final int INITIAL_X_TOP_LEFT = 543200;
-    private static final int INITIAL_Y_TOP_LEFT = 370650;
+    private static final int INITIAL_X_TOP_LEFT = 543_200;
+    private static final int INITIAL_Y_TOP_LEFT = 370_650;
     private static final int INITIAL_ZOOM_LEVEL = 12;
 
     public AnnotatedMapManager(Graph graph,
@@ -39,34 +40,25 @@ public final class AnnotatedMapManager {
         mousePositionProperty = new SimpleObjectProperty<>();
         mousePositionOnRouteProperty = new SimpleDoubleProperty();
 
-        WaypointsManager wpm = new WaypointsManager(graph, mvpProperty, routeBean.waypointsObservableList(), errorConsumer);
+        WaypointsManager wpm = new WaypointsManager(
+                graph,
+                mvpProperty,
+                routeBean.waypointsObservableList(),
+                errorConsumer);
+
+        this.routeBean = routeBean;
+
         BaseMapManager bmp = new BaseMapManager(tileManager, wpm, mvpProperty);
-        RouteManager routeManager = new RouteManager(routeBean, mvpProperty, errorConsumer);
+        RouteManager routeManager = new RouteManager(routeBean,
+                                                     mvpProperty);
 
-        routeProperty = routeBean.getRoute();
 
-        pane = new Pane();
 
-        pane.getChildren().addAll(bmp.pane(), wpm.pane(), routeManager.pane());
+        pane = new StackPane(bmp.pane(), wpm.pane(), routeManager.pane());
+        pane.getStylesheets().add("map.css");
 
         addEvents();
-        mousePositionOnRouteProperty.bind(
-                Bindings.createDoubleBinding(() -> {
-                    MapViewParameters mvp = mvpProperty.get();
-                    Route route = routeProperty.get();
-                    Point2D mouse = mousePositionProperty.get();
-                    PointCh mousePoint = mvp
-                            .pointAt(mouse.getX(), mouse.getY())
-                            .toPointCh();
-                    RoutePoint routePoint = route.pointClosestTo(mousePoint);
-                    double pos = routePoint.position();
-                    PointCh routePointCh = routePoint.point();
-                    PointWebMercator routePwm = PointWebMercator.ofPointCh(routePointCh);
-                    Point2D routePoint2D = new Point2D(mvp.viewX(routePwm), mvp.viewY(routePwm));
-                    double distance = routePoint2D.distance(mouse);
-                    if (distance > 15) return Double.NaN;
-                    return pos;
-        }, mousePositionProperty));
+        addBinds();
     }
 
     public Pane pane() {
@@ -78,10 +70,30 @@ public final class AnnotatedMapManager {
     }
 
     private void addEvents() {
-        pane.setOnMouseMoved(e -> {
-            mousePositionProperty.set(new Point2D(e.getX(), e.getY()));
-        });
+        pane.setOnMouseMoved(e ->
+                mousePositionProperty.set(new Point2D(e.getX(), e.getY())));
 
-        pane.setOnMouseExited(e -> mousePositionOnRouteProperty.set(Double.NaN));
+        pane.setOnMouseExited(e -> mousePositionProperty.set(null));
+    }
+
+    private void addBinds() {
+        mousePositionOnRouteProperty.bind(
+                Bindings.createDoubleBinding(() -> {
+                    MapViewParameters mvp = mvpProperty.get();
+                    Route route = routeBean.route();
+                    Point2D mouse = mousePositionProperty.get();
+                    if (mouse == null || route == null) return Double.NaN;
+                    PointCh mousePoint = mvp
+                            .pointAt(mouse.getX(), mouse.getY())
+                            .toPointCh();
+                    RoutePoint routePoint = route.pointClosestTo(mousePoint);
+                    double pos = routePoint.position();
+                    PointCh routePointCh = routePoint.point();
+                    PointWebMercator routePwm = PointWebMercator.ofPointCh(routePointCh);
+                    Point2D routePoint2D = new Point2D(mvp.viewX(routePwm), mvp.viewY(routePwm));
+                    double distance = routePoint2D.distance(mouse);
+                    if (distance > 15) return Double.NaN;
+                    return pos;
+                }, mousePositionProperty, routeBean.getRoute(), mvpProperty));
     }
 }

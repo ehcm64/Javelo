@@ -30,6 +30,7 @@ public final class RouteBean {
         this.elevationProfile = new SimpleObjectProperty<>();
         this.route = new SimpleObjectProperty<>();
         this.routeComputer = routeComputer;
+        this.highlightedPosition = new SimpleDoubleProperty();
 
         waypoints = FXCollections.observableArrayList();
 

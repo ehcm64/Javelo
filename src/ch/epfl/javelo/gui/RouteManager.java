@@ -15,7 +15,6 @@ public final class RouteManager {
     private final Pane pane;
     private final RouteBean routeBean;
     private final ReadOnlyProperty<MapViewParameters> mapViewParameters;
-    private final Consumer<String> errorConsumer;
     private final Polyline routeLine;
     private final Circle positionCircle;
 
@@ -23,12 +22,10 @@ public final class RouteManager {
     private static final String HIGHLIGHT_ID = "highlight";
 
     public RouteManager(RouteBean routeBean,
-                        ReadOnlyProperty<MapViewParameters> mapViewParameters,
-                        Consumer<String> errorConsumer) {
+                        ReadOnlyProperty<MapViewParameters> mapViewParameters) {
 
         this.routeBean = routeBean;
         this.mapViewParameters = mapViewParameters;
-        this.errorConsumer = errorConsumer;
 
         pane = new Pane();
         pane.setPickOnBounds(false);
@@ -88,7 +85,7 @@ public final class RouteManager {
             PointCh point = mvp.pointAt(mouse.getX(), mouse.getY()).toPointCh();
             int circleNode = route.nodeClosestTo(hPosition);
             Waypoint circleWaypoint = new Waypoint(point, circleNode);
-            int waypointIndex = route.indexOfSegmentAt(hPosition) + 1;
+            int waypointIndex = routeBean.indexOfNonEmptySegmentAt(hPosition) + 1;
             routeBean.waypointsObservableList().add(waypointIndex, circleWaypoint);
         });
     }
@@ -112,7 +109,7 @@ public final class RouteManager {
     }
 
     private void setCircle() {
-        Route route = routeBean.getRoute().get();
+        Route route = routeBean.route();
         if (route == null) {
             positionCircle.setVisible(false);
             return;

@@ -82,14 +82,14 @@ public final class ElevationProfileManager {
                         worldToScreenProperty
                                 .get()
                                 .transform(
-                                        new Point2D(positionProperty.doubleValue(), 0))
-                                .getX(), positionProperty, worldToScreenProperty));
+                                        new Point2D(this.positionProperty.doubleValue(), 0))
+                                .getX(), this.positionProperty, worldToScreenProperty));
 
         line.startYProperty().bind(Bindings.select(profileRectangleProperty, "minY"));
 
         line.endYProperty().bind(Bindings.select(profileRectangleProperty, "maxY"));
 
-        line.visibleProperty().bind(BooleanBinding.booleanExpression(positionProperty.greaterThanOrEqualTo(0)));
+        line.visibleProperty().bind(BooleanBinding.booleanExpression(this.positionProperty.greaterThanOrEqualTo(0)));
 
         borderPane.setCenter(pane);
         createBottomText();
@@ -192,7 +192,7 @@ public final class ElevationProfileManager {
                         "     Montée : %.0f m" +
                         "     Descente : %.0f m" +
                         "     Altitude : de %.0f m à %.0f m",
-                ep.length(),
+                ep.length() / 1000,
                 ep.totalAscent(),
                 ep.totalDescent(),
                 ep.minElevation(),
@@ -205,10 +205,11 @@ public final class ElevationProfileManager {
     private void createGridAndEtiquettes() {
         path.getElements().clear();
         group.getChildren().clear();
+        ElevationProfile ep = profileProperty.get();
         Rectangle2D rect = profileRectangleProperty.get();
         if (rect.getWidth() == 0 || rect.getHeight() == 0) return;
         Transform worldToScreen = worldToScreenProperty.get();
-        ElevationProfile ep = profileProperty.get();
+
 
         Point2D verticalLinesGap = new Point2D(rect.getMinX() + MIN_VERTICAL_OFFSET, 0);
         verticalLinesGap = screenToWorldProperty.get().transform(verticalLinesGap);
