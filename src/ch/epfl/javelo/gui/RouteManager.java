@@ -21,8 +21,6 @@ public final class RouteManager {
 
     private static final String ROUTE_ID = "route";
     private static final String HIGHLIGHT_ID = "highlight";
-    private static final String WAYPOINT_ALREADY_EXISTS_WARNING =
-            "Un point de passage est déja présent à cet endroit !";
 
     public RouteManager(RouteBean routeBean,
                         ReadOnlyProperty<MapViewParameters> mapViewParameters,
@@ -55,9 +53,7 @@ public final class RouteManager {
 
     private void addListeners() {
 
-        routeBean.highlightedPositionProperty().addListener((p, o, n) -> {
-            setCircle();
-        });
+        routeBean.highlightedPositionProperty().addListener((p, o, n) -> setCircle());
 
         routeBean.getRoute().addListener((p, o, n) -> {
             setRouteLine();
