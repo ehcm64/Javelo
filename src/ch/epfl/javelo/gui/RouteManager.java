@@ -91,18 +91,9 @@ public final class RouteManager {
 
             PointCh point = mvp.pointAt(mouse.getX(), mouse.getY()).toPointCh();
             int circleNode = route.nodeClosestTo(hPosition);
-
-            for (int i = 1; i < routeBean.waypointsObservableList().size(); i++) {
-                Waypoint w = routeBean.waypointsObservableList().get(i);
-                if (circleNode == w.closestNodeId()) {
-                    errorConsumer.accept(WAYPOINT_ALREADY_EXISTS_WARNING);
-                    break;
-                } else if (route.pointClosestTo(w.position()).position() > hPosition) {
-                    Waypoint circleWaypoint = new Waypoint(point, circleNode);
-                    routeBean.waypointsObservableList().add(i, circleWaypoint);
-                    break;
-                }
-            }
+            Waypoint circleWaypoint = new Waypoint(point, circleNode);
+            int waypointIndex = route.indexOfSegmentAt(hPosition) + 1;
+            routeBean.waypointsObservableList().add(waypointIndex, circleWaypoint);
         });
     }
 

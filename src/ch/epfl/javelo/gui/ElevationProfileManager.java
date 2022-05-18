@@ -78,7 +78,7 @@ public final class ElevationProfileManager {
         createTransforms();
 
         line.layoutXProperty().bind(
-                Bindings.createDoubleBinding( () ->
+                Bindings.createDoubleBinding(() ->
                         worldToScreenProperty
                                 .get()
                                 .transform(
