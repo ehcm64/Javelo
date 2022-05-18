@@ -3,6 +3,7 @@ package ch.epfl.javelo.gui;
 import ch.epfl.javelo.Math2;
 import ch.epfl.javelo.routing.ElevationProfile;
 import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
 import javafx.beans.property.*;
 import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
@@ -56,7 +57,7 @@ public final class ElevationProfileManager {
 
         screenToWorldProperty = new SimpleObjectProperty<>();
         worldToScreenProperty = new SimpleObjectProperty<>();
-
+        profileRectangleProperty = new SimpleObjectProperty<>();
 
         borderPane = new BorderPane();
 
@@ -73,18 +74,30 @@ public final class ElevationProfileManager {
 
         pane.getChildren().addAll(group, polygon, path, line);
 
+        resizeRectangle();
+        createTransforms();
+
         line.layoutXProperty().bind(
-                Bindings.createDoubleBinding(
-                        positionProperty::doubleValue,
-                        positionProperty));
+                Bindings.createDoubleBinding( () ->
+                        worldToScreenProperty
+                                .get()
+                                .transform(
+                                        new Point2D(positionProperty.doubleValue(), 0))
+                                .getX(), positionProperty, worldToScreenProperty));
+
+        line.startYProperty().bind(Bindings.select(profileRectangleProperty, "minY"));
+
+        line.endYProperty().bind(Bindings.select(profileRectangleProperty, "maxY"));
+
+        line.visibleProperty().bind(BooleanBinding.booleanExpression(positionProperty.greaterThanOrEqualTo(0)));
 
         borderPane.setCenter(pane);
         createBottomText();
 
         borderPane.getStylesheets().add("elevation_profile.css");
 
-        profileRectangleProperty = new SimpleObjectProperty<>();
         addListeners();
+        addEvents();
     }
 
     public Pane pane() {
@@ -93,6 +106,16 @@ public final class ElevationProfileManager {
 
     public ReadOnlyDoubleProperty mousePositionOnProfileProperty() {
         return mousePositionProperty;
+    }
+
+    private void addEvents() {
+        pane.setOnMouseMoved(e -> {
+            Point2D screen = new Point2D(e.getX(), 0);
+            Point2D world = screenToWorldProperty.get().transform(screen);
+            mousePositionProperty.set(world.getX());
+        });
+
+        pane.setOnMouseExited(e -> mousePositionProperty.set(Double.NaN));
     }
 
     private void addListeners() {
