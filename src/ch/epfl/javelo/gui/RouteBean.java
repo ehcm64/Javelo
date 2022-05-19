@@ -43,7 +43,7 @@ public final class RouteBean {
 
         waypoints.addListener((ListChangeListener<? super Waypoint>) e -> buildRoute());
 
-        route.addListener((p, o, n) -> buildElevationProfile());
+        route.addListener(p -> buildElevationProfile());
     }
 
     private void buildElevationProfile() {
@@ -63,11 +63,11 @@ public final class RouteBean {
             for (int i = 0; i < waypoints.size() - 1; i++) {
                 int startNodeId = waypoints.get(i).closestNodeId();
                 int endNodeId = waypoints.get(i + 1).closestNodeId();
+                if (startNodeId == endNodeId) continue;
                 Pair<Integer, Integer> pair = new Pair<>(startNodeId, endNodeId);
                 boolean needToCalculateRoute = true;
-                if (startNodeId == endNodeId)
-                    continue;
-                for (Pair p : memoryCache.keySet()) {
+
+                for (Pair<Integer, Integer> p : memoryCache.keySet()) {
                     if (p.equals(pair)) {
                         singleRoutes.add(memoryCache.get(p));
                         needToCalculateRoute = false;
@@ -112,10 +112,6 @@ public final class RouteBean {
         return highlightedPosition.doubleValue();
     }
 
-    public ObservableList<Waypoint> waypointsObservableList() {
-        return waypoints;
-    }
-
     public ReadOnlyObjectProperty<ElevationProfile> getElevationProfile() {
         return elevationProfile;
     }
@@ -130,5 +126,9 @@ public final class RouteBean {
 
     public Route route() {
         return route.get();
+    }
+
+    public ObservableList<Waypoint> waypointsObservableList() {
+        return waypoints;
     }
 }

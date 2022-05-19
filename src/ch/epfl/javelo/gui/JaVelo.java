@@ -27,6 +27,9 @@ public final class JaVelo extends Application {
     private static final Path CACHE_PATH = Path.of("osm-cache");
     private static final String TILE_SERVER_NAME = "tile.openstreetmap.org";
     private static final String WINDOW_NAME = "JaVelo";
+    private static final String GPX_FILE_NAME = "javelo.gpx";
+    private static final int MIN_WIDTH = 800;
+    private static final int MIN_HEIGHT = 600;
 
     public static void main(String[] args) {
         launch(args);
@@ -35,17 +38,7 @@ public final class JaVelo extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
 
-        Graph graph = Graph.loadFrom(GRAPH_DATA_PATH);
-        CostFunction cf = new CityBikeCF(graph);
-
-        BorderPane mainPane = new BorderPane();
-
-
-        TileManager tm = new TileManager(CACHE_PATH, TILE_SERVER_NAME);
-        RouteComputer rc = new RouteComputer(graph, cf);
-        RouteBean routeBean = new RouteBean(rc);
         ErrorManager errorManager = new ErrorManager();
-
         final class ErrorConsumer
                 implements Consumer<String> {
             @Override
@@ -53,9 +46,18 @@ public final class JaVelo extends Application {
                 errorManager.displayError(s);
             }
         }
+
+        Graph graph = Graph.loadFrom(GRAPH_DATA_PATH);
+        CostFunction cf = new CityBikeCF(graph);
+
+        BorderPane mainPane = new BorderPane();
+        SplitPane mapAndProfile = new SplitPane();
+
+        TileManager tm = new TileManager(CACHE_PATH, TILE_SERVER_NAME);
+        RouteComputer rc = new RouteComputer(graph, cf);
+        RouteBean routeBean = new RouteBean(rc);
+
         ErrorConsumer errorConsumer = new ErrorConsumer();
-
-
         AnnotatedMapManager amm = new AnnotatedMapManager(graph, tm, routeBean, errorConsumer);
         ElevationProfileManager epm = new ElevationProfileManager(
                 routeBean.getElevationProfile(),
@@ -63,38 +65,22 @@ public final class JaVelo extends Application {
 
         Pane profilePane = epm.pane();
 
-        SplitPane mapAndProfile = new SplitPane(amm.pane());
+        mapAndProfile.getItems().add(amm.pane());
         mapAndProfile.setOrientation(Orientation.VERTICAL);
 
-        routeBean.highlightedPositionProperty().bind(Bindings.createDoubleBinding(() -> {
-
-            if (!Double.isNaN(epm.mousePositionOnProfileProperty().get()))
-                return epm.mousePositionOnProfileProperty().get();
-            else if (!Double.isNaN(amm.mousePositionOnRouteProperty().get()))
-                return amm.mousePositionOnRouteProperty().get();
-            else {
-                return Double.NaN;
-            }
-        }, epm.mousePositionOnProfileProperty(), amm.mousePositionOnRouteProperty()));
-
-        routeBean.getElevationProfile().addListener((property, oldValue, newValue) -> {
-            ElevationProfile ep = routeBean.elevationProfile();
-            if (newValue == null) {
-                mapAndProfile.getItems().remove(profilePane);
-            } else if (oldValue == null){
-                mapAndProfile.getItems().add(profilePane);
-                SplitPane.setResizableWithParent(profilePane, false);
-            }
-        });
+        StackPane stackPane = new StackPane(mapAndProfile, errorManager.pane());
+        mainPane.setCenter(stackPane);
 
         MenuBar menuBar = new MenuBar();
         Menu menu = new Menu("Fichier");
         MenuItem menuItem = new MenuItem("Exporter GPX");
-        menuItem.disableProperty().bind(BooleanBinding.booleanExpression(routeBean.getRoute().isNull()));
+
+        menuItem.disableProperty().bind(
+                BooleanBinding.booleanExpression(routeBean.getRoute().isNull()));
         menuItem.setOnAction(e -> {
             try {
                 GpxGenerator.writeGpx(
-                        "javelo.gpx",
+                        GPX_FILE_NAME,
                         routeBean.route(),
                         routeBean.elevationProfile());
             } catch (IOException ex) {
@@ -104,19 +90,34 @@ public final class JaVelo extends Application {
         menu.getItems().add(menuItem);
         menuBar.getMenus().add(menu);
 
-        StackPane stackPane = new StackPane(mapAndProfile, errorManager.pane());
-        mainPane.setCenter(stackPane);
         mainPane.setTop(menuBar);
+
+        routeBean.highlightedPositionProperty().bind(Bindings.createDoubleBinding(() -> {
+
+            if (!Double.isNaN(epm.mousePositionOnProfileProperty().doubleValue()))
+                return epm.mousePositionOnProfileProperty().doubleValue();
+            else if (!Double.isNaN(amm.mousePositionOnRouteProperty().doubleValue()))
+                return amm.mousePositionOnRouteProperty().doubleValue();
+            else {
+                return Double.NaN;
+            }
+        }, epm.mousePositionOnProfileProperty(), amm.mousePositionOnRouteProperty()));
+
+        routeBean.getElevationProfile().addListener((property, oldValue, newValue) -> {
+            if (newValue == null) {
+                mapAndProfile.getItems().remove(profilePane);
+            } else if (oldValue == null){
+                mapAndProfile.getItems().add(profilePane);
+                SplitPane.setResizableWithParent(profilePane, false);
+            }
+        });
 
         Scene scene = new Scene(mainPane);
 
-        primaryStage.setMinWidth(800);
-        primaryStage.setMinHeight(600);
+        primaryStage.setMinWidth(MIN_WIDTH);
+        primaryStage.setMinHeight(MIN_HEIGHT);
         primaryStage.setTitle(WINDOW_NAME);
         primaryStage.setScene(scene);
         primaryStage.show();
-
     }
-
-
 }

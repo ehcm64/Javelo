@@ -46,6 +46,7 @@ public final class ElevationProfileManager {
     private static final int MIN_VERTICAL_OFFSET = 50;
     private static final int MIN_HORIZONTAL_OFFSET = 25;
     private static final Font FONT = Font.font("Avenir", 10);
+    private static final int METERS_IN_KILOMETER = 1000;
 
 
     public ElevationProfileManager(ReadOnlyObjectProperty<ElevationProfile> profileProperty,
@@ -63,6 +64,8 @@ public final class ElevationProfileManager {
 
         vBox = new VBox();
         text = new Text();
+        vBox.getChildren().add(text);
+        vBox.setId("profile_data");
 
         pane = new Pane();
         path = new Path();
@@ -73,6 +76,25 @@ public final class ElevationProfileManager {
         line = new Line();
 
         pane.getChildren().addAll(group, polygon, path, line);
+
+        borderPane.setCenter(pane);
+        borderPane.setBottom(vBox);
+        borderPane.getStylesheets().add("elevation_profile.css");
+
+        addBinds();
+        addListeners();
+        addEvents();
+    }
+
+    public Pane pane() {
+        return borderPane;
+    }
+
+    public ReadOnlyDoubleProperty mousePositionOnProfileProperty() {
+        return mousePositionProperty;
+    }
+
+    private void addBinds() {
 
         profileRectangleProperty.bind(Bindings.createObjectBinding(() -> {
             double width = Math2.clamp(
@@ -116,30 +138,32 @@ public final class ElevationProfileManager {
                         worldToScreenProperty
                                 .get()
                                 .transform(
-                                        new Point2D(this.positionProperty.doubleValue(), 0))
-                                .getX(), this.positionProperty, worldToScreenProperty));
+                                        new Point2D(positionProperty.doubleValue(), 0))
+                                .getX(), positionProperty, worldToScreenProperty));
 
-        line.startYProperty().bind(Bindings.select(profileRectangleProperty, "minY"));
+        line.startYProperty().bind(
+                Bindings.select(profileRectangleProperty, "minY"));
 
-        line.endYProperty().bind(Bindings.select(profileRectangleProperty, "maxY"));
+        line.endYProperty().bind(
+                Bindings.select(profileRectangleProperty, "maxY"));
 
-        line.visibleProperty().bind(BooleanBinding.booleanExpression(this.positionProperty.greaterThanOrEqualTo(0)));
+        line.visibleProperty().bind(
+                BooleanBinding.booleanExpression(
+                        positionProperty.greaterThanOrEqualTo(0)));
 
-        borderPane.setCenter(pane);
-        createBottomText();
-
-        borderPane.getStylesheets().add("elevation_profile.css");
-
-        addListeners();
-        addEvents();
-    }
-
-    public Pane pane() {
-        return borderPane;
-    }
-
-    public ReadOnlyDoubleProperty mousePositionOnProfileProperty() {
-        return mousePositionProperty;
+        text.textProperty().bind(Bindings.createStringBinding(() -> {
+            ElevationProfile ep = profileProperty.get();
+            if (ep == null) return "";
+            return String.format("Longueur : %.1f km" +
+                            "     Montée : %.0f m" +
+                            "     Descente : %.0f m" +
+                            "     Altitude : de %.0f m à %.0f m",
+                    ep.length() / METERS_IN_KILOMETER,
+                    ep.totalAscent(),
+                    ep.totalDescent(),
+                    ep.minElevation(),
+                    ep.maxElevation());
+        }, profileProperty));
     }
 
     private void addEvents() {
@@ -153,14 +177,21 @@ public final class ElevationProfileManager {
     }
 
     private void addListeners() {
-        pane.widthProperty().addListener((p) -> {
+        profileProperty.addListener(p -> {
             ElevationProfile ep = profileProperty.get();
             if (ep == null) return;
             graphProfile();
             createGridAndEtiquettes();
         });
 
-        pane.heightProperty().addListener((p) -> {
+        pane.widthProperty().addListener(p -> {
+            ElevationProfile ep = profileProperty.get();
+            if (ep == null) return;
+            graphProfile();
+            createGridAndEtiquettes();
+        });
+
+        pane.heightProperty().addListener(p -> {
             ElevationProfile ep = profileProperty.get();
             if (ep == null) return;
             graphProfile();
@@ -175,7 +206,7 @@ public final class ElevationProfileManager {
         double step = ep.length() / (rect.getWidth());
         polygon.getPoints().clear();
         polygon.getPoints().addAll(rect.getMinX(), rect.getMaxY());
-        for (double i = 0; i < ep.length(); i += step) {
+        for (double i = 0; i <= ep.length(); i += step) {
             Point2D worldPoint = new Point2D(i, ep.elevationAt(i));
             Point2D screenPoint = worldToScreen.transform(worldPoint);
             polygon.getPoints().addAll(
@@ -185,25 +216,6 @@ public final class ElevationProfileManager {
         polygon.getPoints().addAll(rect.getMaxX(), rect.getMaxY());
     }
 
-    private void createBottomText() {
-        text.textProperty().bind(Bindings.createStringBinding(() -> {
-            ElevationProfile ep = profileProperty.get();
-            if (ep == null) return "";
-            return String.format("Longueur : %.1f km" +
-                            "     Montée : %.0f m" +
-                            "     Descente : %.0f m" +
-                            "     Altitude : de %.0f m à %.0f m",
-                    ep.length() / 1000,
-                    ep.totalAscent(),
-                    ep.totalDescent(),
-                    ep.minElevation(),
-                    ep.maxElevation());
-        }, profileProperty));
-        vBox.getChildren().add(text);
-        vBox.setId("profile_data");
-        borderPane.setBottom(vBox);
-    }
-
     private void createGridAndEtiquettes() {
         path.getElements().clear();
         group.getChildren().clear();
@@ -211,12 +223,13 @@ public final class ElevationProfileManager {
         Rectangle2D rect = profileRectangleProperty.get();
         if (rect.getWidth() == 0 || rect.getHeight() == 0) return;
         Transform worldToScreen = worldToScreenProperty.get();
+        Transform screenToWorld = screenToWorldProperty.get();
 
+        Point2D linesGap = screenToWorld.transform(
+                rect.getMinX() + MIN_VERTICAL_OFFSET,
+                rect.getMaxY() - MIN_HORIZONTAL_OFFSET);
 
-        Point2D verticalLinesGap = new Point2D(rect.getMinX() + MIN_VERTICAL_OFFSET, 0);
-        verticalLinesGap = screenToWorldProperty.get().transform(verticalLinesGap);
-
-        int vIndex = Arrays.binarySearch(POS_STEPS, (int) verticalLinesGap.getX());
+        int vIndex = Arrays.binarySearch(POS_STEPS, (int) linesGap.getX());
         if (vIndex < 0) vIndex = Math2.clamp(0, -vIndex - 1, POS_STEPS.length - 1);
         int vStep = POS_STEPS[vIndex];
 
@@ -230,10 +243,7 @@ public final class ElevationProfileManager {
             createPositionEtiquette(pos, movePt.getX(), movePt.getY());
         }
 
-        Point2D horizontalLinesGap = new Point2D(0, rect.getMaxY() - MIN_HORIZONTAL_OFFSET);
-        horizontalLinesGap = screenToWorldProperty.get().transform(horizontalLinesGap);
-
-        int hIndex = Arrays.binarySearch(ELE_STEPS, (int) (horizontalLinesGap.getY() - ep.minElevation()));
+        int hIndex = Arrays.binarySearch(ELE_STEPS, (int) (linesGap.getY() - ep.minElevation()));
         if (hIndex < 0) hIndex = Math2.clamp(0, -hIndex - 1, ELE_STEPS.length - 1);
         int hStep = ELE_STEPS[hIndex];
 
@@ -251,7 +261,7 @@ public final class ElevationProfileManager {
     }
 
     private void createPositionEtiquette(double position, double x, double y) {
-        Text posText = new Text(Integer.toString((int) position / 1000));
+        Text posText = new Text(Integer.toString((int) position / METERS_IN_KILOMETER));
         group.getChildren().add(posText);
         posText.getStyleClass().addAll("grid_label", "horizontal");
         posText.setFont(FONT);

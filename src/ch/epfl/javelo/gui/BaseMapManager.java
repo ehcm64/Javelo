@@ -16,11 +16,13 @@ import java.io.IOException;
 public final class BaseMapManager {
     private final TileManager tm;
     private final WaypointsManager wpm;
-    private final ObjectProperty<MapViewParameters> mapViewParameters;
-    private boolean redrawNeeded;
+    private final ObjectProperty<MapViewParameters> mvpProperty;
     private final Canvas canvas;
     private final Pane pane;
-    private final ObjectProperty<Point2D> mouseAnchor;
+    private final ObjectProperty<Point2D> mouseAnchorProperty;
+    private final SimpleLongProperty minScrollTime;
+
+    private boolean redrawNeeded;
 
     private static final int LOWEST_ZOOM_LEVEL = 8;
     private static final int HIGHEST_ZOOM_LEVEL = 19;
@@ -28,15 +30,16 @@ public final class BaseMapManager {
 
     public BaseMapManager(TileManager tileManager,
                           WaypointsManager waypointsManager,
-                          ObjectProperty<MapViewParameters> mapViewParameters) {
+                          ObjectProperty<MapViewParameters> mvpProperty) {
 
         this.tm = tileManager;
         this.wpm = waypointsManager;
-        this.mapViewParameters = mapViewParameters;
-        this.pane = new Pane();
-        this.canvas = new Canvas();
-        this.redrawNeeded = true;
-        this.mouseAnchor = new SimpleObjectProperty<>();
+        this.mvpProperty = mvpProperty;
+        pane = new Pane();
+        canvas = new Canvas();
+        redrawNeeded = true;
+        mouseAnchorProperty = new SimpleObjectProperty<>();
+        minScrollTime = new SimpleLongProperty();
 
         pane.getChildren().add(canvas);
 
@@ -54,33 +57,25 @@ public final class BaseMapManager {
         redrawNeeded = false;
 
         GraphicsContext gc = canvas.getGraphicsContext2D();
-        MapViewParameters mvp = mapViewParameters.get();
+        MapViewParameters mvp = mvpProperty.get();
 
-        int zl = mvp.zoomLevel();
-        double xTopLeft = mvp.xTopLeft();
-        double yTopLeft = mvp.yTopLeft();
+        int xTopLeftTileId = (int) (mvp.xTopLeft() / TILE_LENGTH);
+        int yTopLeftTileId = (int) (mvp.yTopLeft() / TILE_LENGTH);
 
-        int xTopLeftTileId = (int) (xTopLeft / TILE_LENGTH);
-        int yTopLeftTileId = (int) (yTopLeft / TILE_LENGTH);
-
-        int xBottomRightTileId = (int) ((xTopLeft + pane.getWidth()) / TILE_LENGTH);
-        int yBottomRightTileId = (int) ((yTopLeft + pane.getHeight()) / TILE_LENGTH);
+        int xBottomRightTileId = (int) ((mvp.xTopLeft() + pane.getWidth()) / TILE_LENGTH);
+        int yBottomRightTileId = (int) ((mvp.yTopLeft() + pane.getHeight()) / TILE_LENGTH);
 
         for (int x = xTopLeftTileId; x <= xBottomRightTileId; x++) {
             for (int y = yTopLeftTileId; y <= yBottomRightTileId; y++) {
-                TileManager.TileId tileId = new TileManager.TileId(zl, x, y);
+                TileManager.TileId tileId = new TileManager.TileId(mvp.zoomLevel(), x, y);
+                double xAnchor = x * TILE_LENGTH - mvp.xTopLeft();
+                double yAnchor = y * TILE_LENGTH - mvp.yTopLeft();
+
                 try {
-                    gc.drawImage(
-                            tm.imageForTileAt(tileId),
-                            x * TILE_LENGTH - xTopLeft,
-                            y * TILE_LENGTH - yTopLeft);
+                    gc.drawImage(tm.imageForTileAt(tileId), xAnchor, yAnchor);
                 } catch (IOException e) {
                     gc.setFill(Color.PAPAYAWHIP);
-                    gc.fillRect(
-                            x * TILE_LENGTH - xTopLeft,
-                            y * TILE_LENGTH - yTopLeft,
-                            TILE_LENGTH,
-                            TILE_LENGTH);
+                    gc.fillRect(xAnchor, yAnchor, TILE_LENGTH, TILE_LENGTH);
                     // We draw a beige rectangle instead of the tile if there is an exception
                 }
             }
@@ -100,27 +95,26 @@ public final class BaseMapManager {
             }
         });
 
-        pane.setOnMousePressed(e -> mouseAnchor.set(
+        pane.setOnMousePressed(e -> mouseAnchorProperty.set(
                 new Point2D(e.getX(), e.getY())));
 
         pane.setOnMouseDragged(e -> {
 
             if (!e.isStillSincePress()) {
-
-                MapViewParameters mvp = mapViewParameters.get();
+                MapViewParameters mvp = mvpProperty.get();
 
                 Point2D topLeft = mvp.topLeft();
-                Point2D eXY = new Point2D(e.getX(), e.getY());
-                Point2D newTopLeft = topLeft.add(mouseAnchor.get())
-                                            .subtract(eXY);
+                Point2D oldMousePos = mouseAnchorProperty.get();
+                Point2D newMousePos = new Point2D(e.getX(), e.getY());
+                Point2D newTopLeft = topLeft.add(oldMousePos).subtract(newMousePos);
 
-                mapViewParameters.set(
+                mvpProperty.set(
                         mvp.withMinXY(newTopLeft.getX(),
-                                      newTopLeft.getY()));
-                mouseAnchor.set(eXY);
+                                newTopLeft.getY()));
+                mouseAnchorProperty.set(newMousePos);
             }
         });
-        SimpleLongProperty minScrollTime = new SimpleLongProperty();
+
         pane.setOnScroll(e -> {
             if (e.getDeltaY() == 0d) return;
             long currentTime = System.currentTimeMillis();
@@ -128,22 +122,21 @@ public final class BaseMapManager {
             minScrollTime.set(currentTime + 200);
             int zoomDelta = (int) Math.signum(e.getDeltaY());
 
-            MapViewParameters mvp = mapViewParameters.get();
-            int zoomLevel = mvp.zoomLevel();
+            MapViewParameters mvp = mvpProperty.get();
             int newZoomLevel = Math2.clamp(
                     LOWEST_ZOOM_LEVEL,
-                    zoomLevel + zoomDelta,
+                    mvp.zoomLevel() + zoomDelta,
                     HIGHEST_ZOOM_LEVEL);
 
             double newMouseX = Math.scalb(e.getX() + mvp.xTopLeft(),
-                    newZoomLevel - zoomLevel);
+                    newZoomLevel - mvp.zoomLevel());
             double newMouseY = Math.scalb(e.getY() + mvp.yTopLeft(),
-                    newZoomLevel - zoomLevel);
+                    newZoomLevel - mvp.zoomLevel());
 
             double newXTopLeft = newMouseX - e.getX();
             double newYTopLeft = newMouseY - e.getY();
 
-            mapViewParameters.set(
+            mvpProperty.set(
                     new MapViewParameters(newZoomLevel,
                             newXTopLeft,
                             newYTopLeft));
@@ -152,10 +145,10 @@ public final class BaseMapManager {
 
     private void addListeners() {
 
-        mapViewParameters.addListener((p, o, n) -> redrawOnNextPulse());
-        pane.widthProperty().addListener((p, o, n) -> redrawOnNextPulse());
-        pane.heightProperty().addListener((p, o, n) -> redrawOnNextPulse());
-        mouseAnchor.addListener((p, o, n) -> redrawOnNextPulse());
+        mvpProperty.addListener(p -> redrawOnNextPulse());
+        pane.widthProperty().addListener(p -> redrawOnNextPulse());
+        pane.heightProperty().addListener(p -> redrawOnNextPulse());
+        mouseAnchorProperty.addListener(p -> redrawOnNextPulse());
 
         canvas.sceneProperty().addListener((p, oldS, newS) -> {
             assert oldS == null;

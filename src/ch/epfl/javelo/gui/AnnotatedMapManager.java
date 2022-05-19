@@ -25,6 +25,7 @@ public final class AnnotatedMapManager {
     private static final int INITIAL_X_TOP_LEFT = 543_200;
     private static final int INITIAL_Y_TOP_LEFT = 370_650;
     private static final int INITIAL_ZOOM_LEVEL = 12;
+    private static final int MAX_MOUSE_TO_ROAD_DISTANCE = 15;
 
     public AnnotatedMapManager(Graph graph,
                                TileManager tileManager,
@@ -78,22 +79,24 @@ public final class AnnotatedMapManager {
     private void addBinds() {
         mousePositionOnRouteProperty.bind(
                 Bindings.createDoubleBinding(() -> {
-                    MapViewParameters mvp = mvpProperty.get();
+
                     Route route = routeBean.route();
                     Point2D mouse = mousePositionProperty.get();
                     if (mouse == null || route == null) return Double.NaN;
 
+                    MapViewParameters mvp = mvpProperty.get();
                     PointCh mousePoint = mvp
                             .pointAt(mouse.getX(), mouse.getY())
                             .toPointCh();
+
                     RoutePoint routePoint = route.pointClosestTo(mousePoint);
-                    double pos = routePoint.position();
-                    PointCh routePointCh = routePoint.point();
-                    PointWebMercator routePwm = PointWebMercator.ofPointCh(routePointCh);
-                    Point2D routePoint2D = new Point2D(mvp.viewX(routePwm), mvp.viewY(routePwm));
+                    PointWebMercator pwm = PointWebMercator.ofPointCh(routePoint.point());
+                    Point2D routePoint2D = new Point2D(mvp.viewX(pwm), mvp.viewY(pwm));
+
                     double distance = routePoint2D.distance(mouse);
-                    if (distance > 15) return Double.NaN;
-                    return pos;
+
+                    if (distance > MAX_MOUSE_TO_ROAD_DISTANCE) return Double.NaN;
+                    else return routePoint.position();
                 }, mousePositionProperty, routeBean.getRoute(), mvpProperty));
     }
 }

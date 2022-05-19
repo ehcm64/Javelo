@@ -18,6 +18,7 @@ public final class RouteManager {
 
     private static final String ROUTE_ID = "route";
     private static final String HIGHLIGHT_ID = "highlight";
+    private static final int POSITION_CIRCLE_RADIUS = 5;
 
     public RouteManager(RouteBean routeBean,
                         ReadOnlyProperty<MapViewParameters> mapViewParameters) {
@@ -31,7 +32,7 @@ public final class RouteManager {
         routeLine = new Polyline();
         routeLine.setId(ROUTE_ID);
 
-        positionCircle = new Circle(5);
+        positionCircle = new Circle(POSITION_CIRCLE_RADIUS);
         positionCircle.setVisible(false);
         positionCircle.setId(HIGHLIGHT_ID);
 
@@ -48,9 +49,9 @@ public final class RouteManager {
 
     private void addListeners() {
 
-        routeBean.highlightedPositionProperty().addListener((p, o, n) -> setCircle());
+        routeBean.highlightedPositionProperty().addListener(p -> setCircle());
 
-        routeBean.getRoute().addListener((p, o, n) -> {
+        routeBean.getRoute().addListener(p -> {
             setRouteLine();
             setCircle();
         });
@@ -75,7 +76,7 @@ public final class RouteManager {
     private void addEvents() {
 
         positionCircle.setOnMouseClicked(e -> {
-            Route route = routeBean.getRoute().get();
+            Route route = routeBean.route();
             double hPosition = routeBean.highlightedPosition();
             MapViewParameters mvp = mapViewParameters.getValue();
             Point2D mouse = positionCircle.localToParent(e.getX(), e.getY());
@@ -89,7 +90,7 @@ public final class RouteManager {
     }
 
     private void setRouteLine() {
-        Route route = routeBean.getRoute().get();
+        Route route = routeBean.route();
         if (route == null) {
             routeLine.setVisible(false);
             return;
@@ -112,12 +113,12 @@ public final class RouteManager {
             positionCircle.setVisible(false);
             return;
         }
-        MapViewParameters mvp = mapViewParameters.getValue();
         double hPosition = routeBean.highlightedPosition();
         if (Double.isNaN(hPosition)) {
             positionCircle.setVisible(false);
             return;
         }
+        MapViewParameters mvp = mapViewParameters.getValue();
         PointCh point = route.pointAt(hPosition);
         PointWebMercator pwm = PointWebMercator.ofPointCh(point);
         positionCircle.setLayoutX(mvp.viewX(pwm));
