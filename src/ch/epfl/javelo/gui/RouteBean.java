@@ -74,7 +74,6 @@ public final class RouteBean {
                         break;
                     }
                 }
-
                 if (needToCalculateRoute) {
                     Route singleRoute = routeComputer.bestRouteBetween(startNodeId, endNodeId);
                     if (singleRoute == null) {
@@ -85,9 +84,9 @@ public final class RouteBean {
                     singleRoutes.add(singleRoute);
                 }
             }
-            if (!singleRoutes.isEmpty()){
+            if (!singleRoutes.isEmpty()) {
                 route.set(new MultiRoute(singleRoutes));
-            }else{
+            } else {
                 route.set(null);
             }
         } else {
@@ -129,7 +128,7 @@ public final class RouteBean {
         return route;
     }
 
-    public Route route(){
+    public Route route() {
         return route.get();
     }
 }

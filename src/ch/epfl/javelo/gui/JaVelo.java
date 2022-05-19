@@ -60,17 +60,21 @@ public final class JaVelo extends Application {
         ElevationProfileManager epm = new ElevationProfileManager(
                 routeBean.getElevationProfile(),
                 routeBean.highlightedPositionProperty());
+
         Pane profilePane = epm.pane();
 
         SplitPane mapAndProfile = new SplitPane(amm.pane());
         mapAndProfile.setOrientation(Orientation.VERTICAL);
 
         routeBean.highlightedPositionProperty().bind(Bindings.createDoubleBinding(() -> {
-            if (!Double.isNaN(epm.mousePositionOnProfileProperty().doubleValue()))
-                return epm.mousePositionOnProfileProperty().doubleValue();
-            else if (!Double.isNaN(amm.mousePositionOnRouteProperty().doubleValue()))
-                return amm.mousePositionOnRouteProperty().doubleValue();
-            else return null;
+
+            if (!Double.isNaN(epm.mousePositionOnProfileProperty().get()))
+                return epm.mousePositionOnProfileProperty().get();
+            else if (!Double.isNaN(amm.mousePositionOnRouteProperty().get()))
+                return amm.mousePositionOnRouteProperty().get();
+            else {
+                return Double.NaN;
+            }
         }, epm.mousePositionOnProfileProperty(), amm.mousePositionOnRouteProperty()));
 
         routeBean.getElevationProfile().addListener(p -> {

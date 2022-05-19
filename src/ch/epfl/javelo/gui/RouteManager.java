@@ -114,6 +114,10 @@ public final class RouteManager {
         }
         MapViewParameters mvp = mapViewParameters.getValue();
         double hPosition = routeBean.highlightedPosition();
+        if (Double.isNaN(hPosition)) {
+            positionCircle.setVisible(false);
+            return;
+        }
         PointCh point = route.pointAt(hPosition);
         PointWebMercator pwm = PointWebMercator.ofPointCh(point);
         positionCircle.setLayoutX(mvp.viewX(pwm));

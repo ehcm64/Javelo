@@ -50,8 +50,7 @@ public final class AnnotatedMapManager {
 
         BaseMapManager bmp = new BaseMapManager(tileManager, wpm, mvpProperty);
         RouteManager routeManager = new RouteManager(routeBean,
-                                                     mvpProperty);
-
+                mvpProperty);
 
 
         pane = new StackPane(bmp.pane(), wpm.pane(), routeManager.pane());
@@ -71,7 +70,7 @@ public final class AnnotatedMapManager {
 
     private void addEvents() {
         pane.setOnMouseMoved(e ->
-                mousePositionProperty.set(new Point2D(e.getX(), e.getY())));
+            mousePositionProperty.set(new Point2D(e.getX(), e.getY())));
 
         pane.setOnMouseExited(e -> mousePositionProperty.set(null));
     }
@@ -83,6 +82,7 @@ public final class AnnotatedMapManager {
                     Route route = routeBean.route();
                     Point2D mouse = mousePositionProperty.get();
                     if (mouse == null || route == null) return Double.NaN;
+
                     PointCh mousePoint = mvp
                             .pointAt(mouse.getX(), mouse.getY())
                             .toPointCh();
