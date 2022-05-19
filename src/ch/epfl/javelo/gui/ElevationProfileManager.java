@@ -38,7 +38,7 @@ public final class ElevationProfileManager {
     private final Line line;
     private final Text text;
 
-    private static final Insets insets = new Insets(10, 10, 20, 40);
+    private static final Insets INSETS = new Insets(10, 10, 20, 40);
     private static final int[] POS_STEPS =
             {1000, 2000, 5000, 10_000, 25_000, 50_000, 100_000};
     private static final int[] ELE_STEPS =
@@ -53,7 +53,7 @@ public final class ElevationProfileManager {
 
         this.profileProperty = profileProperty;
         this.positionProperty = positionProperty;
-        mousePositionProperty = new SimpleDoubleProperty();
+        mousePositionProperty = new SimpleDoubleProperty(Double.NaN);
 
         screenToWorldProperty = new SimpleObjectProperty<>();
         worldToScreenProperty = new SimpleObjectProperty<>();
@@ -74,8 +74,42 @@ public final class ElevationProfileManager {
 
         pane.getChildren().addAll(group, polygon, path, line);
 
-        resizeRectangle();
-        createTransforms();
+        profileRectangleProperty.bind(Bindings.createObjectBinding(() -> {
+            double width = Math2.clamp(
+                    0,
+                    pane.getWidth() - INSETS.getRight() - INSETS.getLeft(),
+                    pane.getWidth());
+            double height = Math2.clamp(
+                    0,
+                    pane.getHeight() - INSETS.getTop() - INSETS.getBottom(),
+                    pane.getHeight());
+            return new Rectangle2D(
+                    INSETS.getLeft(),
+                    INSETS.getTop(),
+                    width,
+                    height);
+        }, pane.widthProperty(), pane.heightProperty()));
+
+        screenToWorldProperty.bind(Bindings.createObjectBinding(() -> {
+            ElevationProfile ep = profileProperty.get();
+            Affine screenToWorld = new Affine();
+            if (ep == null) return screenToWorld;
+            Rectangle2D rect = profileRectangleProperty.get();
+            double elevationDelta = ep.maxElevation() - ep.minElevation();
+            screenToWorld.prependTranslation(-rect.getMinX(), -rect.getMaxY());
+            screenToWorld.prependScale(
+                    ep.length() / rect.getWidth(),
+                    -elevationDelta / rect.getHeight());
+            screenToWorld.prependTranslation(0, ep.minElevation());
+            return screenToWorld;
+        }, profileRectangleProperty, profileProperty));
+
+        worldToScreenProperty.bind(Bindings.createObjectBinding(() -> {
+            try {
+                return screenToWorldProperty.get().createInverse();
+            } catch (NonInvertibleTransformException ignored) {}
+            return new Affine();
+        }, screenToWorldProperty));
 
         line.layoutXProperty().bind(
                 Bindings.createDoubleBinding(() ->
@@ -119,16 +153,16 @@ public final class ElevationProfileManager {
     }
 
     private void addListeners() {
-        pane.widthProperty().addListener((p, o, n) -> {
-            resizeRectangle();
-            createTransforms();
+        pane.widthProperty().addListener((p) -> {
+            ElevationProfile ep = profileProperty.get();
+            if (ep == null) return;
             graphProfile();
             createGridAndEtiquettes();
         });
 
-        pane.heightProperty().addListener((p, o, n) -> {
-            resizeRectangle();
-            createTransforms();
+        pane.heightProperty().addListener((p) -> {
+            ElevationProfile ep = profileProperty.get();
+            if (ep == null) return;
             graphProfile();
             createGridAndEtiquettes();
         });
@@ -151,52 +185,20 @@ public final class ElevationProfileManager {
         polygon.getPoints().addAll(rect.getMaxX(), rect.getMaxY());
     }
 
-    private void resizeRectangle() {
-        double width = Math2.clamp(
-                0,
-                pane.getWidth() - insets.getRight() - insets.getLeft(),
-                pane.getWidth());
-        double height = Math2.clamp(
-                0,
-                pane.getHeight() - insets.getTop() - insets.getBottom(),
-                pane.getHeight());
-        Rectangle2D rect = new Rectangle2D(
-                insets.getLeft(),
-                insets.getTop(),
-                width,
-                height);
-        profileRectangleProperty.set(rect);
-    }
-
-    private void createTransforms() {
-        Affine screenToWorld = new Affine();
-        ElevationProfile ep = profileProperty.get();
-        Rectangle2D rect = profileRectangleProperty.get();
-        double elevationDelta = ep.maxElevation() - ep.minElevation();
-        screenToWorld.prependTranslation(-rect.getMinX(), -rect.getMaxY());
-        screenToWorld.prependScale(
-                ep.length() / rect.getWidth(),
-                -elevationDelta / rect.getHeight());
-        screenToWorld.prependTranslation(0, ep.minElevation());
-        screenToWorldProperty.set(screenToWorld);
-        try {
-            Affine worldToScreen = screenToWorld.createInverse();
-            worldToScreenProperty.set(worldToScreen);
-        } catch (NonInvertibleTransformException ignored) {
-        }
-    }
-
     private void createBottomText() {
-        ElevationProfile ep = profileProperty.get();
-        text.setText(String.format("Longueur : %.1f km" +
-                        "     Montée : %.0f m" +
-                        "     Descente : %.0f m" +
-                        "     Altitude : de %.0f m à %.0f m",
-                ep.length() / 1000,
-                ep.totalAscent(),
-                ep.totalDescent(),
-                ep.minElevation(),
-                ep.maxElevation()));
+        text.textProperty().bind(Bindings.createStringBinding(() -> {
+            ElevationProfile ep = profileProperty.get();
+            if (ep == null) return "";
+            return String.format("Longueur : %.1f km" +
+                            "     Montée : %.0f m" +
+                            "     Descente : %.0f m" +
+                            "     Altitude : de %.0f m à %.0f m",
+                    ep.length() / 1000,
+                    ep.totalAscent(),
+                    ep.totalDescent(),
+                    ep.minElevation(),
+                    ep.maxElevation());
+        }, profileProperty));
         vBox.getChildren().add(text);
         vBox.setId("profile_data");
         borderPane.setBottom(vBox);

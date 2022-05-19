@@ -36,7 +36,6 @@ public final class Stage8Test extends Application {
         Consumer<String> errorConsumer = new ErrorConsumer();
 
         RouteBean routeBean = new RouteBean(new RouteComputer(graph, new CityBikeCF(graph)));
-        routeBean.setHighlightedPosition(new SimpleDoubleProperty(1000));
 
         WaypointsManager waypointsManager =
                 new WaypointsManager(graph,
@@ -49,7 +48,7 @@ public final class Stage8Test extends Application {
                         waypointsManager,
                         mapViewParametersP);
 
-        RouteManager routeManager = new RouteManager(routeBean, mapViewParametersP, errorConsumer);
+        RouteManager routeManager = new RouteManager(routeBean, mapViewParametersP);
 
         StackPane mainPane =
                 new StackPane(baseMapManager.pane(),

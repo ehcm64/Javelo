@@ -18,7 +18,7 @@ public final class RouteBean {
     private final ObservableList<Waypoint> waypoints;
     private final ObjectProperty<Route> route;
     private final ObjectProperty<ElevationProfile> elevationProfile;
-    private DoubleProperty highlightedPosition;
+    private final DoubleProperty highlightedPosition;
     private final RouteComputer routeComputer;
     private final Map<Pair<Integer, Integer>, Route> memoryCache;
 
@@ -30,7 +30,7 @@ public final class RouteBean {
         this.elevationProfile = new SimpleObjectProperty<>();
         this.route = new SimpleObjectProperty<>();
         this.routeComputer = routeComputer;
-        this.highlightedPosition = new SimpleDoubleProperty();
+        this.highlightedPosition = new SimpleDoubleProperty(Double.NaN);
 
         waypoints = FXCollections.observableArrayList();
 
@@ -105,13 +105,6 @@ public final class RouteBean {
         return index;
     }
 
-    public Route route(){
-        return route.get();
-    }
-    public void setHighlightedPosition(DoubleProperty newHighlightedPosition) {
-        highlightedPosition = newHighlightedPosition;
-    }
-
     public DoubleProperty highlightedPositionProperty() {
         return highlightedPosition;
     }
@@ -128,7 +121,15 @@ public final class RouteBean {
         return elevationProfile;
     }
 
+    public ElevationProfile elevationProfile() {
+        return elevationProfile.get();
+    }
+
     public ReadOnlyObjectProperty<Route> getRoute() {
         return route;
+    }
+
+    public Route route(){
+        return route.get();
     }
 }

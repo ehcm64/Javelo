@@ -65,7 +65,7 @@ public record Edge(int fromNodeId, int toNodeId, PointCh fromPoint, PointCh toPo
         double pX = Math2.interpolate(aX, bX, position / length);
         double pY = Math2.interpolate(aY, bY, position / length);
 
-        return new PointCh(pX, pY);
+        return length == 0 ? fromPoint : new PointCh(pX, pY);
     }
 
     /**

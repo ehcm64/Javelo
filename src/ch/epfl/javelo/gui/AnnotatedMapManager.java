@@ -38,7 +38,7 @@ public final class AnnotatedMapManager {
 
         mvpProperty = new SimpleObjectProperty<>(mapViewParameters);
         mousePositionProperty = new SimpleObjectProperty<>();
-        mousePositionOnRouteProperty = new SimpleDoubleProperty();
+        mousePositionOnRouteProperty = new SimpleDoubleProperty(Double.NaN);
 
         WaypointsManager wpm = new WaypointsManager(
                 graph,

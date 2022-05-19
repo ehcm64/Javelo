@@ -9,8 +9,6 @@ import javafx.scene.layout.Pane;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Polyline;
 
-import java.util.function.Consumer;
-
 public final class RouteManager {
     private final Pane pane;
     private final RouteBean routeBean;
