@@ -82,12 +82,12 @@ public final class AnnotatedMapManager {
 
                     Route route = routeBean.route();
                     Point2D mouse = mousePositionProperty.get();
-                    if (mouse == null || route == null) return Double.NaN;
-
+                    if (mouse == null) return Double.NaN;
                     MapViewParameters mvp = mvpProperty.get();
                     PointCh mousePoint = mvp
                             .pointAt(mouse.getX(), mouse.getY())
                             .toPointCh();
+                    if (route == null || mousePoint == null) return Double.NaN;
 
                     RoutePoint routePoint = route.pointClosestTo(mousePoint);
                     PointWebMercator pwm = PointWebMercator.ofPointCh(routePoint.point());
