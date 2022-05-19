@@ -77,11 +77,11 @@ public final class JaVelo extends Application {
             }
         }, epm.mousePositionOnProfileProperty(), amm.mousePositionOnRouteProperty()));
 
-        routeBean.getElevationProfile().addListener(p -> {
+        routeBean.getElevationProfile().addListener((property, oldValue, newValue) -> {
             ElevationProfile ep = routeBean.elevationProfile();
-            if (ep == null) {
+            if (newValue == null) {
                 mapAndProfile.getItems().remove(profilePane);
-            } else {
+            } else if (oldValue == null){
                 mapAndProfile.getItems().add(profilePane);
                 SplitPane.setResizableWithParent(profilePane, false);
             }
