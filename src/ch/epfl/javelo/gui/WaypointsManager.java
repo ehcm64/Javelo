@@ -16,6 +16,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
+/**
+ * Manages the display and interaction with the waypoints
+ * @author Edouard Mignan (345875)
+ * @author Timo Moebel (345665)
+ */
 public final class WaypointsManager {
 
     private final Graph graph;
@@ -28,6 +33,13 @@ public final class WaypointsManager {
     private static final double SEARCH_DISTANCE = 500;
     private static final String NO_ROAD_WARNING = "Aucune route à proximité !";
 
+    /**
+     * Constructs a manager for the waypoints
+     * @param graph the road network
+     * @param mapViewParameters contains the parameters of the displayed map
+     * @param wayPoints a list of all way points
+     * @param error  allows to report errors
+     */
     public WaypointsManager(Graph graph,
                             ObjectProperty<MapViewParameters> mapViewParameters,
                             ObservableList<Waypoint> wayPoints,
@@ -44,10 +56,19 @@ public final class WaypointsManager {
         addListeners();
     }
 
+    /**
+     * Returns the panel containing the waypoints
+     * @return the panel containing the waypoints
+     */
     public Pane pane() {
         return pane;
     }
 
+    /**
+     * Adds a new crossing point to the node of the graph that is closest to it
+     * @param x x coordinate of the point
+     * @param y y coordinate of the point
+     */
     public void addWaypoint(double x, double y) {
         if (waypointCanExist(x, y)) {
             Waypoint w = waypointFromXAndY(x, y);
@@ -60,7 +81,6 @@ public final class WaypointsManager {
     private void addHandlers() {
         for (Group g : groups) {
             int indexOfg = groups.indexOf(g);
-
             g.setOnMouseDragged(e -> {
                 if (!e.isStillSincePress()) {
                     g.setLayoutX(e.getSceneX());

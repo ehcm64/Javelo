@@ -13,6 +13,10 @@ import javafx.scene.paint.Color;
 
 import java.io.IOException;
 
+/**
+ * Manages the display and interaction with the background map
+ * @author Edouard Mignan (345875)
+ */
 public final class BaseMapManager {
     private final TileManager tm;
     private final WaypointsManager wpm;
@@ -28,6 +32,12 @@ public final class BaseMapManager {
     private static final int HIGHEST_ZOOM_LEVEL = 19;
     private static final int TILE_LENGTH = 256;
 
+    /**
+     * Constructs a background map
+     * @param tileManager the tile manager to be used to get the tiles on the map
+     * @param waypointsManager the way point manager
+     * @param mvpProperty contains the parameters of the displayed map
+     */
     public BaseMapManager(TileManager tileManager,
                           WaypointsManager waypointsManager,
                           ObjectProperty<MapViewParameters> mvpProperty) {
@@ -47,7 +57,10 @@ public final class BaseMapManager {
         addListeners();
         addHandlers();
     }
-
+    /**
+     * Displays the background map
+     * @return a pane containing the background map
+     */
     public Pane pane() {
         return pane;
     }
@@ -58,9 +71,9 @@ public final class BaseMapManager {
 
         GraphicsContext gc = canvas.getGraphicsContext2D();
         MapViewParameters mvp = mvpProperty.get();
-
         int xTopLeftTileId = (int) (mvp.xTopLeft() / TILE_LENGTH);
         int yTopLeftTileId = (int) (mvp.yTopLeft() / TILE_LENGTH);
+
 
         int xBottomRightTileId = (int) ((mvp.xTopLeft() + pane.getWidth()) / TILE_LENGTH);
         int yBottomRightTileId = (int) ((mvp.yTopLeft() + pane.getHeight()) / TILE_LENGTH);
@@ -70,6 +83,7 @@ public final class BaseMapManager {
                 TileManager.TileId tileId = new TileManager.TileId(mvp.zoomLevel(), x, y);
                 double xAnchor = x * TILE_LENGTH - mvp.xTopLeft();
                 double yAnchor = y * TILE_LENGTH - mvp.yTopLeft();
+
 
                 try {
                     gc.drawImage(tm.imageForTileAt(tileId), xAnchor, yAnchor);

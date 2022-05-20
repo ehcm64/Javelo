@@ -9,6 +9,10 @@ import javafx.scene.layout.Pane;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Polyline;
 
+/**
+ * Manages the display of the route and (part of) the interaction with it
+ * @author Edouard Mignan (345875)
+ */
 public final class RouteManager {
     private final Pane pane;
     private final RouteBean routeBean;
@@ -20,6 +24,12 @@ public final class RouteManager {
     private static final String HIGHLIGHT_ID = "highlight";
     private static final int POSITION_CIRCLE_RADIUS = 5;
 
+    /**
+     * Constructs the route which will be displayed
+     * @param routeBean the properties relating to the crossing points
+     *                  and the corresponding route
+     * @param mapViewParameters contains the parameters of the displayed map
+     */
     public RouteManager(RouteBean routeBean,
                         ReadOnlyProperty<MapViewParameters> mapViewParameters) {
 
@@ -43,6 +53,10 @@ public final class RouteManager {
         addEvents();
     }
 
+    /**
+     * Returns the pane containing the route
+     * @return the pane containing the route
+     */
     public Pane pane() {
         return pane;
     }
@@ -54,6 +68,7 @@ public final class RouteManager {
         routeBean.getRoute().addListener(p -> {
             setRouteLine();
             setCircle();
+
         });
 
         mapViewParameters.addListener((p, o, n) -> {
@@ -74,9 +89,8 @@ public final class RouteManager {
     }
 
     private void addEvents() {
-
         positionCircle.setOnMouseClicked(e -> {
-            Route route = routeBean.route();
+            Route route = routeBean.getRoute().get();
             double hPosition = routeBean.highlightedPosition();
             MapViewParameters mvp = mapViewParameters.getValue();
             Point2D mouse = positionCircle.localToParent(e.getX(), e.getY());
@@ -89,8 +103,10 @@ public final class RouteManager {
         });
     }
 
+
+
     private void setRouteLine() {
-        Route route = routeBean.route();
+        Route route = routeBean.getRoute().get();;
         if (route == null) {
             routeLine.setVisible(false);
             return;
@@ -108,7 +124,7 @@ public final class RouteManager {
     }
 
     private void setCircle() {
-        Route route = routeBean.route();
+        Route route = routeBean.getRoute().get();;
         if (route == null) {
             positionCircle.setVisible(false);
             return;

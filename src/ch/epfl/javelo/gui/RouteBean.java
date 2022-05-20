@@ -12,7 +12,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-
+/**
+ * Groups the properties relating to the crossing points and the corresponding route
+ * @author Edouard Mignan (345875)
+ * @author Timo Moebel (345665)
+ */
 public final class RouteBean {
 
     private final ObservableList<Waypoint> waypoints;
@@ -24,13 +28,19 @@ public final class RouteBean {
 
     private static final int MAX_STEP_LENGTH = 5;
     private static final int CACHE_SIZE = 50;
+    private static final double MOUSE_NOT_ON_ROAD = Double.NaN;
 
+    /**
+     * Constructs a a group which contains properties relating
+     * to the crossing points and the corresponding route
+     * @param routeComputer used to determine the best route between two transit points.
+     */
     public RouteBean(RouteComputer routeComputer) {
 
         this.elevationProfile = new SimpleObjectProperty<>();
         this.route = new SimpleObjectProperty<>();
         this.routeComputer = routeComputer;
-        this.highlightedPosition = new SimpleDoubleProperty(Double.NaN);
+        this.highlightedPosition = new SimpleDoubleProperty(MOUSE_NOT_ON_ROAD);
 
         waypoints = FXCollections.observableArrayList();
 
@@ -44,6 +54,7 @@ public final class RouteBean {
         waypoints.addListener((ListChangeListener<? super Waypoint>) e -> buildRoute());
 
         route.addListener(p -> buildElevationProfile());
+
     }
 
     private void buildElevationProfile() {
@@ -94,6 +105,11 @@ public final class RouteBean {
         }
     }
 
+    /**
+     * Returns the index of the segment containing it, ignoring empty segments
+     * @param position a position along the itinerary
+     * @return the index of the segment containing it, ignoring empty segments
+     */
     public int indexOfNonEmptySegmentAt(double position) {
         int index = route().indexOfSegmentAt(position);
         for (int i = 0; i <= index; i += 1) {
@@ -104,30 +120,45 @@ public final class RouteBean {
         return index;
     }
 
+    private Route route() {
+        return route.get();
+    }
+    /**
+     * Returns the highlighted position on the route
+     * @return the highlighted position on the route
+     */
     public DoubleProperty highlightedPositionProperty() {
         return highlightedPosition;
     }
+
+    /**
+     * Returns the highlighted position on the route
+     * @return the double value of the highlighted position on the map
+     */
 
     public double highlightedPosition() {
         return highlightedPosition.doubleValue();
     }
 
+    /**
+     * Returns the profile of the elevation which is read-only
+     * @return profile of the elevation (ReadOnlyObjectProperty)
+     */
     public ReadOnlyObjectProperty<ElevationProfile> getElevationProfile() {
         return elevationProfile;
     }
 
-    public ElevationProfile elevationProfile() {
-        return elevationProfile.get();
-    }
-
+    /**
+     * Returns the itinerary which is read-only
+     * @return itinerary (ReadOnlyObjectProperty)
+     */
     public ReadOnlyObjectProperty<Route> getRoute() {
         return route;
     }
-
-    public Route route() {
-        return route.get();
-    }
-
+    /**
+     * Returns the list of all the waypoints
+     * @return list of waypoints (ObservableList)
+     */
     public ObservableList<Waypoint> waypointsObservableList() {
         return waypoints;
     }

@@ -11,12 +11,22 @@ import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+/**
+ * Represents an OSM tile manager
+ * @author Edouard Mignan (345875)
+ * @author Timo Moebel (345665)
+ */
 public final class TileManager {
     private LinkedHashMap<TileId, Image> memoryCache;
     private final Path cachePath;
     private final String tileServerName;
     private final int CACHE_SIZE = 100;
 
+    /**
+     * Constructs a tile manager
+     * @param cachePath the path to the directory containing the disk cache
+     * @param tileServerName the name of the tile server
+     */
     public TileManager(Path cachePath, String tileServerName) {
         memoryCache = new LinkedHashMap<>(CACHE_SIZE, 0.75F, true) {
             @Override
@@ -28,6 +38,12 @@ public final class TileManager {
         this.tileServerName = tileServerName;
     }
 
+    /**
+     * Returns an image from a tile
+     * @param tileId identity of a tile
+     * @return an image from this tile
+     * @throws IOException if a stream throws an exception
+     */
     public Image imageForTileAt(TileId tileId) throws IOException {
         Preconditions.checkArgument(
                 TileId.isValid(tileId.zoomLevel, tileId.xIndex, tileId.yIndex));
@@ -75,8 +91,21 @@ public final class TileManager {
         }
     }
 
+    /**
+     * Represents a tile OSM
+     * @param zoomLevel zoom level of the tile
+     * @param xIndex X index of the tile
+     * @param yIndex Y index of the tile
+     */
     record TileId(int zoomLevel, int xIndex, int yIndex) {
 
+        /**
+         * Checks if a tile is valid or not
+         * @param zoomLevel zoom level of the tile
+         * @param xIndex X index of the tile
+         * @param yIndex Y index of the tile
+         * @return true if the tile is valid and false otherwise
+         */
         public static boolean isValid(int zoomLevel, int xIndex, int yIndex) {
             return zoomLevel <= 20
                     && 0 <= xIndex && xIndex < Math.scalb(1, zoomLevel)

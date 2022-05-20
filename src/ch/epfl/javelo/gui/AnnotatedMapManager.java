@@ -5,14 +5,21 @@ import ch.epfl.javelo.projection.PointCh;
 import ch.epfl.javelo.projection.PointWebMercator;
 import ch.epfl.javelo.routing.Route;
 import ch.epfl.javelo.routing.RoutePoint;
+import com.sun.scenario.effect.impl.sw.java.JSWBlend_SRC_OUTPeer;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.*;
 import javafx.geometry.Point2D;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.StackPane;
+import org.w3c.dom.ls.LSOutput;
 
 import java.util.function.Consumer;
 
+/**
+ * manages the display of the background map over which
+ * the route and waypoints are stacked
+ * @author Edouard Mignan (345875)
+ */
 public final class AnnotatedMapManager {
 
     private final ObjectProperty<Point2D> mousePositionProperty;
@@ -26,7 +33,16 @@ public final class AnnotatedMapManager {
     private static final int INITIAL_Y_TOP_LEFT = 370_650;
     private static final int INITIAL_ZOOM_LEVEL = 12;
     private static final int MAX_MOUSE_TO_ROAD_DISTANCE = 15;
+    private static final double MOUSE_NOT_ON_ROAD = Double.NaN;
 
+    /**
+     * Constructs the background map
+     * @param graph the road network graph
+     * @param tileManager the OpenStreetMap tile manager
+     * @param routeBean the properties relating to the crossing points
+     *      *                  and the corresponding route
+     * @param errorConsumer allows to report an error
+     */
     public AnnotatedMapManager(Graph graph,
                                TileManager tileManager,
                                RouteBean routeBean,
@@ -39,7 +55,7 @@ public final class AnnotatedMapManager {
 
         mvpProperty = new SimpleObjectProperty<>(mapViewParameters);
         mousePositionProperty = new SimpleObjectProperty<>();
-        mousePositionOnRouteProperty = new SimpleDoubleProperty(Double.NaN);
+        mousePositionOnRouteProperty = new SimpleDoubleProperty(MOUSE_NOT_ON_ROAD);
 
         WaypointsManager wpm = new WaypointsManager(
                 graph,
@@ -61,10 +77,21 @@ public final class AnnotatedMapManager {
         addBinds();
     }
 
+    /**
+     * Returns the background map over which
+     *  the route and waypoints are stacked
+     * @return background map over which
+     * the route and waypoints are stacked
+     */
     public Pane pane() {
         return pane;
     }
-
+    /**
+     * Returns a read-only property containing the position of
+     * the mouse pointer along the profile
+     * @return a property containing the position
+     *          of the mouse pointer along the profile (ReadOnlyDoubleProperty)
+     */
     public ReadOnlyDoubleProperty mousePositionOnRouteProperty() {
         return mousePositionOnRouteProperty;
     }
@@ -73,21 +100,22 @@ public final class AnnotatedMapManager {
         pane.setOnMouseMoved(e ->
             mousePositionProperty.set(new Point2D(e.getX(), e.getY())));
 
-        pane.setOnMouseExited(e -> mousePositionProperty.set(null));
+        pane.setOnMouseExited(e -> {
+            mousePositionProperty.set(null);
+        });
     }
 
     private void addBinds() {
         mousePositionOnRouteProperty.bind(
                 Bindings.createDoubleBinding(() -> {
-
-                    Route route = routeBean.route();
+                    Route route = routeBean.getRoute().get();
                     Point2D mouse = mousePositionProperty.get();
-                    if (mouse == null) return Double.NaN;
+                    if (mouse == null) return MOUSE_NOT_ON_ROAD;
                     MapViewParameters mvp = mvpProperty.get();
                     PointCh mousePoint = mvp
                             .pointAt(mouse.getX(), mouse.getY())
                             .toPointCh();
-                    if (route == null || mousePoint == null) return Double.NaN;
+                    if (route == null || mousePoint == null) return MOUSE_NOT_ON_ROAD;
 
                     RoutePoint routePoint = route.pointClosestTo(mousePoint);
                     PointWebMercator pwm = PointWebMercator.ofPointCh(routePoint.point());
@@ -95,7 +123,7 @@ public final class AnnotatedMapManager {
 
                     double distance = routePoint2D.distance(mouse);
 
-                    if (distance > MAX_MOUSE_TO_ROAD_DISTANCE) return Double.NaN;
+                    if (distance > MAX_MOUSE_TO_ROAD_DISTANCE) return MOUSE_NOT_ON_ROAD;
                     else return routePoint.position();
                 }, mousePositionProperty, routeBean.getRoute(), mvpProperty));
     }

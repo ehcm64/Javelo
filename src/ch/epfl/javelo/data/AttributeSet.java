@@ -7,6 +7,7 @@ import java.util.StringJoiner;
 /**
  * Represents a set of OpenStreetMap attributes
  * @author Edouard Mignan (345875)
+ * @param bits represents the content of the set with one bit per possible value
  */
 public record AttributeSet(long bits) {
 

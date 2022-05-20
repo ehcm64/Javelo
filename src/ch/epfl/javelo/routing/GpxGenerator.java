@@ -12,6 +12,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 
+/**
+ * Represents a route generator in GPX format
+ * @author Edouard Mignan (345875)
+ */
 public class GpxGenerator {
 
     private GpxGenerator() {}
@@ -27,6 +31,12 @@ public class GpxGenerator {
         }
     }
 
+    /**
+     * Creates a document in GPX format from itinerary and elevation profile
+     * @param itinerary the itinerary to put in the document
+     * @param profile the profile to put in the document
+     * @return a document
+     */
     public static Document createGpx(Route itinerary, ElevationProfile profile) {
         Document doc = newDocument();
 
@@ -74,6 +84,13 @@ public class GpxGenerator {
         return doc;
     }
 
+    /**
+     * Saves the document
+     * @param fileName the name of the file
+     * @param itinerary the itinerary to put in the document
+     * @param profile the profile of the elevation to put in the document
+     * @throws IOException if the transformer throws an Exception
+     */
     public static void writeGpx(String fileName,
                                 Route itinerary,
                                 ElevationProfile profile) throws IOException {

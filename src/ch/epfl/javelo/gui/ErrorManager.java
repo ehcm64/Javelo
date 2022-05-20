@@ -6,10 +6,17 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
 
+/**
+ * Manages the display of error messages
+ * @author Edouard Mignan (345875)
+ */
 public final class ErrorManager {
     private final Pane pane;
     private final Transition errorAnimation;
 
+    /**
+     * Constructs an error manager
+     */
     public ErrorManager() {
         pane = new VBox();
         pane.getStylesheets().add("error.css");
@@ -31,10 +38,18 @@ public final class ErrorManager {
                 lastTransition);
     }
 
+    /**
+     * Returns the pane on which the error messages appear
+     * @return the pane on which the error messages appear
+     */
     public Pane pane() {
         return pane;
     }
 
+    /**
+     * Displays a short message error
+     * @param errorMessage the error message to display
+     */
     public void displayError(String errorMessage) {
         if (errorAnimation.getStatus() == Animation.Status.RUNNING)
             errorAnimation.stop();

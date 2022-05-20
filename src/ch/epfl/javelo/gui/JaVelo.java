@@ -21,6 +21,10 @@ import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.util.function.Consumer;
 
+/**
+ * Main class of the application
+ * @author Edouard Mignan (345875)
+ */
 public final class JaVelo extends Application {
 
     private static final Path GRAPH_DATA_PATH = Path.of("javelo-data");
@@ -81,8 +85,8 @@ public final class JaVelo extends Application {
             try {
                 GpxGenerator.writeGpx(
                         GPX_FILE_NAME,
-                        routeBean.route(),
-                        routeBean.elevationProfile());
+                        routeBean.getRoute().get(),
+                        routeBean.getElevationProfile().get());
             } catch (IOException ex) {
                 throw new UncheckedIOException(ex);
             }
@@ -96,11 +100,9 @@ public final class JaVelo extends Application {
 
             if (!Double.isNaN(epm.mousePositionOnProfileProperty().doubleValue()))
                 return epm.mousePositionOnProfileProperty().doubleValue();
-            else if (!Double.isNaN(amm.mousePositionOnRouteProperty().doubleValue()))
+            else
                 return amm.mousePositionOnRouteProperty().doubleValue();
-            else {
-                return Double.NaN;
-            }
+
         }, epm.mousePositionOnProfileProperty(), amm.mousePositionOnRouteProperty()));
 
         routeBean.getElevationProfile().addListener((property, oldValue, newValue) -> {

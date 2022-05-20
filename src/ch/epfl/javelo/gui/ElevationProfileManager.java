@@ -20,7 +20,10 @@ import javafx.scene.transform.*;
 
 import java.util.Arrays;
 
-
+/**
+ * Manages the display and interaction with the longitudinal profile of a route.
+ * @author Edouard Mignan (345875)
+ */
 public final class ElevationProfileManager {
     private final ReadOnlyObjectProperty<ElevationProfile> profileProperty;
     private final ReadOnlyDoubleProperty positionProperty;
@@ -47,14 +50,19 @@ public final class ElevationProfileManager {
     private static final int MIN_HORIZONTAL_OFFSET = 25;
     private static final Font FONT = Font.font("Avenir", 10);
     private static final int METERS_IN_KILOMETER = 1000;
+    private static final double MOUSE_NOT_ON_ROAD = Double.NaN;
 
-
+    /**
+     * Constructs the profile of the route which will be displayed
+     * @param profileProperty contains the profile to be displayed
+     * @param positionProperty contains the position along the profile to be highlighted 
+     */
     public ElevationProfileManager(ReadOnlyObjectProperty<ElevationProfile> profileProperty,
                                    ReadOnlyDoubleProperty positionProperty) {
 
         this.profileProperty = profileProperty;
         this.positionProperty = positionProperty;
-        mousePositionProperty = new SimpleDoubleProperty(Double.NaN);
+        mousePositionProperty = new SimpleDoubleProperty(MOUSE_NOT_ON_ROAD);
 
         screenToWorldProperty = new SimpleObjectProperty<>();
         worldToScreenProperty = new SimpleObjectProperty<>();
@@ -86,16 +94,25 @@ public final class ElevationProfileManager {
         addEvents();
     }
 
+    /**
+     * Returns the pane containing profile of the route
+     * @return the pane containing profile of the route
+     */
     public Pane pane() {
         return borderPane;
     }
 
+    /**
+     * Returns a read-only property containing the position of
+     * the mouse pointer along the profile
+     * @return a property containing the position
+     *          of the mouse pointer along the profile (ReadOnlyDoubleProperty)
+     */
     public ReadOnlyDoubleProperty mousePositionOnProfileProperty() {
         return mousePositionProperty;
     }
 
     private void addBinds() {
-
         profileRectangleProperty.bind(Bindings.createObjectBinding(() -> {
             double width = Math2.clamp(
                     0,
@@ -173,7 +190,7 @@ public final class ElevationProfileManager {
             mousePositionProperty.set(world.getX());
         });
 
-        pane.setOnMouseExited(e -> mousePositionProperty.set(Double.NaN));
+        pane.setOnMouseExited(e -> mousePositionProperty.set(MOUSE_NOT_ON_ROAD));
     }
 
     private void addListeners() {

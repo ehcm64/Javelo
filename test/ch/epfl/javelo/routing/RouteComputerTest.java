@@ -108,7 +108,7 @@ class RouteComputerTest {
 
     @Test
     void checkTest2() throws IOException {
-        Graph g = Graph.loadFrom(Path.of("ch_west"));
+        Graph g = Graph.loadFrom(Path.of("javelo-data"));
         CostFunction cf = new CityBikeCF(g);
         RouteComputer rc = new RouteComputer(g, cf);
         long t0 = System.nanoTime();
