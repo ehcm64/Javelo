@@ -16,6 +16,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
+/**
+ * Represents the part of the GUI handling the waypoints.
+ *
+ * @author Timo Moebel (345665)
+ */
 public final class WaypointsManager {
 
     private final Graph graph;
@@ -28,6 +33,14 @@ public final class WaypointsManager {
     private static final double SEARCH_DISTANCE = 500;
     private static final String NO_ROAD_WARNING = "Aucune route à proximité !";
 
+    /**
+     * Creates a waypoints manager.
+     *
+     * @param graph             the graph
+     * @param mapViewParameters the property containing the parameters of the map view
+     * @param wayPoints         the observable list containing the waypoints
+     * @param error             an error consumer to display an error message
+     */
     public WaypointsManager(Graph graph,
                             ObjectProperty<MapViewParameters> mapViewParameters,
                             ObservableList<Waypoint> wayPoints,
@@ -44,10 +57,21 @@ public final class WaypointsManager {
         addListeners();
     }
 
+    /**
+     * Returns a pane containing the graphical representation of the waypoints.
+     *
+     * @return the pane
+     */
     public Pane pane() {
         return pane;
     }
 
+    /**
+     * Adds a waypoint (if possible) to the list of waypoints and displays it on the pane.
+     *
+     * @param x the x coordinate in the coordinate system of the pane
+     * @param y the y coordinate in the coordinate system of the pane
+     */
     public void addWaypoint(double x, double y) {
         if (waypointCanExist(x, y)) {
             Waypoint w = waypointFromXAndY(x, y);

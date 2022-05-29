@@ -20,7 +20,11 @@ import javafx.scene.transform.*;
 
 import java.util.Arrays;
 
-
+/**
+ * Represents the part of the GUI that displays the elevation profile.
+ *
+ * @author Edouard Mignan (345875)
+ */
 public final class ElevationProfileManager {
     private final ReadOnlyObjectProperty<ElevationProfile> profileProperty;
     private final ReadOnlyDoubleProperty positionProperty;
@@ -43,12 +47,19 @@ public final class ElevationProfileManager {
             {1000, 2000, 5000, 10_000, 25_000, 50_000, 100_000};
     private static final int[] ELE_STEPS =
             {5, 10, 20, 25, 50, 100, 200, 250, 500, 1_000};
+
     private static final int MIN_VERTICAL_OFFSET = 50;
     private static final int MIN_HORIZONTAL_OFFSET = 25;
     private static final Font FONT = Font.font("Avenir", 10);
     private static final int METERS_IN_KILOMETER = 1000;
 
-
+    /**
+     * Creates an elevation profile manager.
+     *
+     * @param profileProperty the property containing the elevation profile
+     * @param positionProperty the property containing the position
+     *                         to highlight on the profile
+     */
     public ElevationProfileManager(ReadOnlyObjectProperty<ElevationProfile> profileProperty,
                                    ReadOnlyDoubleProperty positionProperty) {
 
@@ -86,10 +97,21 @@ public final class ElevationProfileManager {
         addEvents();
     }
 
+    /**
+     * Returns a pane containing the displayed elevation profile.
+     *
+     * @return the pane
+     */
     public Pane pane() {
         return borderPane;
     }
 
+    /**
+     * Returns a read-only property containing the position (in meters) highlighted
+     * by the mouse on the profile.
+     *
+     * @return the property
+     */
     public ReadOnlyDoubleProperty mousePositionOnProfileProperty() {
         return mousePositionProperty;
     }

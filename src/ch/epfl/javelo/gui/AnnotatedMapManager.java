@@ -13,6 +13,12 @@ import javafx.scene.layout.StackPane;
 
 import java.util.function.Consumer;
 
+/**
+ * Represents the part of the GUI that displays the map and all its elements
+ * (waypoints, route, highlighted position, displayed errors).
+ *
+ * @author Edouard Mignan (345875)
+ */
 public final class AnnotatedMapManager {
 
     private final ObjectProperty<Point2D> mousePositionProperty;
@@ -21,12 +27,19 @@ public final class AnnotatedMapManager {
     private final RouteBean routeBean;
     private final Pane pane;
 
-
     private static final int INITIAL_X_TOP_LEFT = 543_200;
     private static final int INITIAL_Y_TOP_LEFT = 370_650;
     private static final int INITIAL_ZOOM_LEVEL = 12;
     private static final int MAX_MOUSE_TO_ROAD_DISTANCE = 15;
 
+    /**
+     * Creates an annotated map manager.
+     *
+     * @param graph         the graph
+     * @param tileManager   the tile manager
+     * @param routeBean     the route bean
+     * @param errorConsumer the error consumer
+     */
     public AnnotatedMapManager(Graph graph,
                                TileManager tileManager,
                                RouteBean routeBean,
@@ -61,17 +74,28 @@ public final class AnnotatedMapManager {
         addBinds();
     }
 
+    /**
+     * Returns a pane displaying the map and all its elements.
+     *
+     * @return the pane
+     */
     public Pane pane() {
         return pane;
     }
 
+    /**
+     * Returns a read-only property containing the position (in meters) of the
+     * position highlighted by the mouse on the route.
+     *
+     * @return the property
+     */
     public ReadOnlyDoubleProperty mousePositionOnRouteProperty() {
         return mousePositionOnRouteProperty;
     }
 
     private void addEvents() {
         pane.setOnMouseMoved(e ->
-            mousePositionProperty.set(new Point2D(e.getX(), e.getY())));
+                mousePositionProperty.set(new Point2D(e.getX(), e.getY())));
 
         pane.setOnMouseExited(e -> mousePositionProperty.set(null));
     }

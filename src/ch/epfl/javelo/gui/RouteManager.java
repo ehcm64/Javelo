@@ -9,6 +9,11 @@ import javafx.scene.layout.Pane;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Polyline;
 
+/**
+ * Represents the part of the GUI that handles displaying the itinerary.
+ *
+ * @author Edouard Mignan (345875)
+ */
 public final class RouteManager {
     private final Pane pane;
     private final RouteBean routeBean;
@@ -20,6 +25,12 @@ public final class RouteManager {
     private static final String HIGHLIGHT_ID = "highlight";
     private static final int POSITION_CIRCLE_RADIUS = 5;
 
+    /**
+     * Creates a route manager.
+     *
+     * @param routeBean         a Java Bean containing properties about the route
+     * @param mapViewParameters the property containing the parameters of the map view
+     */
     public RouteManager(RouteBean routeBean,
                         ReadOnlyProperty<MapViewParameters> mapViewParameters) {
 
@@ -43,6 +54,11 @@ public final class RouteManager {
         addEvents();
     }
 
+    /**
+     * Returns a pane displaying the route (if there is one).
+     *
+     * @return the pane
+     */
     public Pane pane() {
         return pane;
     }

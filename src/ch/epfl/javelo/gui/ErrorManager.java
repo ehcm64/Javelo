@@ -6,10 +6,18 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
 
+/**
+ * Represents the part of the GUI that displays errors.
+ *
+ * @author Edouard Mignan (345875)
+ */
 public final class ErrorManager {
     private final Pane pane;
     private final Transition errorAnimation;
 
+    /**
+     * Creates an error manager.
+     */
     public ErrorManager() {
         pane = new VBox();
         pane.getStylesheets().add("error.css");
@@ -31,10 +39,20 @@ public final class ErrorManager {
                 lastTransition);
     }
 
+    /**
+     * Returns a translucent pane only visible when an error message is displayed.
+     *
+     * @return the pane
+     */
     public Pane pane() {
         return pane;
     }
 
+    /**
+     * Displays the error message contained in the given string.
+     *
+     * @param errorMessage the error message as a string
+     */
     public void displayError(String errorMessage) {
         if (errorAnimation.getStatus() == Animation.Status.RUNNING)
             errorAnimation.stop();

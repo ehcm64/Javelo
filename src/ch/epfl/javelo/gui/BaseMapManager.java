@@ -28,6 +28,13 @@ public final class BaseMapManager {
     private static final int HIGHEST_ZOOM_LEVEL = 19;
     private static final int TILE_LENGTH = 256;
 
+    /**
+     * Represents the part of the GUI that displays the map.
+     *
+     * @param tileManager      the tile manager
+     * @param waypointsManager the waypoints manager
+     * @param mvpProperty      the property containing the map view parameters
+     */
     public BaseMapManager(TileManager tileManager,
                           WaypointsManager waypointsManager,
                           ObjectProperty<MapViewParameters> mvpProperty) {
@@ -48,6 +55,11 @@ public final class BaseMapManager {
         addHandlers();
     }
 
+    /**
+     * Returns a pane containing the displayed map.
+     *
+     * @return the pane
+     */
     public Pane pane() {
         return pane;
     }

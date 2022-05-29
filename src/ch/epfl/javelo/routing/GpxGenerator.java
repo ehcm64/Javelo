@@ -12,9 +12,16 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 
+/**
+ * This class allows the creation of a Gpx file with information
+ * on an itinerary (length, elevations, etc)
+ *
+ * @author Timo Moebel (345665)
+ */
 public class GpxGenerator {
 
-    private GpxGenerator() {}
+    private GpxGenerator() {
+    }
 
     private static Document newDocument() {
         try {
@@ -27,6 +34,13 @@ public class GpxGenerator {
         }
     }
 
+    /**
+     * Returns a Document containing the Gpx Information of an itinerary and its profile.
+     *
+     * @param itinerary the route itinerary
+     * @param profile   the profile of the route
+     * @return a Document instance
+     */
     public static Document createGpx(Route itinerary, ElevationProfile profile) {
         Document doc = newDocument();
 
@@ -61,9 +75,9 @@ public class GpxGenerator {
 
             Element routePoint = doc.createElement("rtept");
             routePoint.setAttribute("lat", Double.toString(
-                                                 Math.toDegrees(point.lat())));
+                    Math.toDegrees(point.lat())));
             routePoint.setAttribute("lon", Double.toString(
-                                                 Math.toDegrees(point.lon())));
+                    Math.toDegrees(point.lon())));
 
             Element elevation = doc.createElement("ele");
             elevation.setTextContent(Double.toString(altitude));
@@ -74,6 +88,14 @@ public class GpxGenerator {
         return doc;
     }
 
+    /**
+     * Creates a Gpx file containing the information of an itinerary and its profile.
+     *
+     * @param fileName  the name to give to the file (must include the extension)
+     * @param itinerary the itinerary
+     * @param profile   the profile
+     * @throws IOException if there is an IO problem
+     */
     public static void writeGpx(String fileName,
                                 Route itinerary,
                                 ElevationProfile profile) throws IOException {

@@ -21,6 +21,11 @@ import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.util.function.Consumer;
 
+/**
+ * Main Class of the JaVelo Application.
+ *
+ * @author Edouard Mignan (345875)
+ */
 public final class JaVelo extends Application {
 
     private static final Path GRAPH_DATA_PATH = Path.of("javelo-data");
@@ -31,10 +36,24 @@ public final class JaVelo extends Application {
     private static final int MIN_WIDTH = 800;
     private static final int MIN_HEIGHT = 600;
 
+    /**
+     * Main method of the class.
+     *
+     * @param args string args
+     */
     public static void main(String[] args) {
         launch(args);
     }
 
+    /**
+     * Start method of the application.
+     *
+     * @param primaryStage the primary stage for this application, onto which
+     *                     the application scene can be set.
+     *                     Applications may create other stages, if needed,
+     *                     but they will not be primary stages.
+     * @throws Exception if there is a problem
+     */
     @Override
     public void start(Stage primaryStage) throws Exception {
 
@@ -96,17 +115,15 @@ public final class JaVelo extends Application {
 
             if (!Double.isNaN(epm.mousePositionOnProfileProperty().doubleValue()))
                 return epm.mousePositionOnProfileProperty().doubleValue();
-            else if (!Double.isNaN(amm.mousePositionOnRouteProperty().doubleValue()))
+            else
                 return amm.mousePositionOnRouteProperty().doubleValue();
-            else {
-                return Double.NaN;
-            }
+
         }, epm.mousePositionOnProfileProperty(), amm.mousePositionOnRouteProperty()));
 
         routeBean.getElevationProfile().addListener((property, oldValue, newValue) -> {
             if (newValue == null) {
                 mapAndProfile.getItems().remove(profilePane);
-            } else if (oldValue == null){
+            } else if (oldValue == null) {
                 mapAndProfile.getItems().add(profilePane);
                 SplitPane.setResizableWithParent(profilePane, false);
             }

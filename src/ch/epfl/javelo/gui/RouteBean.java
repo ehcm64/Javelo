@@ -12,7 +12,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-
+/**
+ * Represents a JavaFX Bean containing properties related to the route.
+ *
+ * @author Timo Moebel (345665)
+ */
 public final class RouteBean {
 
     private final ObservableList<Waypoint> waypoints;
@@ -25,6 +29,11 @@ public final class RouteBean {
     private static final int MAX_STEP_LENGTH = 5;
     private static final int CACHE_SIZE = 50;
 
+    /**
+     * Creates a route bean.
+     *
+     * @param routeComputer the route computer used to compute a route
+     */
     public RouteBean(RouteComputer routeComputer) {
 
         this.elevationProfile = new SimpleObjectProperty<>();
@@ -94,6 +103,13 @@ public final class RouteBean {
         }
     }
 
+    /**
+     * Returns the index of the segment a given position
+     * accounting for empty segments in the route.
+     *
+     * @param position the position on the route
+     * @return the index
+     */
     public int indexOfNonEmptySegmentAt(double position) {
         int index = route().indexOfSegmentAt(position);
         for (int i = 0; i <= index; i += 1) {
@@ -104,30 +120,66 @@ public final class RouteBean {
         return index;
     }
 
+    /**
+     * Returns the Property containing the highlighted position on the route
+     * (where to place a circle).
+     *
+     * @return the property
+     */
     public DoubleProperty highlightedPositionProperty() {
         return highlightedPosition;
     }
 
+    /**
+     * Returns the highlighted position on the route (where to place a circle).
+     *
+     * @return the highlighted position
+     */
     public double highlightedPosition() {
         return highlightedPosition.doubleValue();
     }
 
+    /**
+     * Returns a read-only property containing the elevation profile of the route.
+     *
+     * @return the property
+     */
     public ReadOnlyObjectProperty<ElevationProfile> getElevationProfile() {
         return elevationProfile;
     }
 
+    /**
+     * Returns the elevation profile of the route.
+     *
+     * @return the elevation profile
+     */
     public ElevationProfile elevationProfile() {
         return elevationProfile.get();
     }
 
+    /**
+     * Returns a read-only property containing the route.
+     *
+     * @return the property
+     */
     public ReadOnlyObjectProperty<Route> getRoute() {
         return route;
     }
 
+    /**
+     * Returns the route.
+     *
+     * @return the route
+     */
     public Route route() {
         return route.get();
     }
 
+    /**
+     * Returns an observable list containing all waypoints in order from start to finish.
+     *
+     * @return the list of waypoints
+     */
     public ObservableList<Waypoint> waypointsObservableList() {
         return waypoints;
     }
