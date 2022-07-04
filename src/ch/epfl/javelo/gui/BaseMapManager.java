@@ -13,6 +13,11 @@ import javafx.scene.paint.Color;
 
 import java.io.IOException;
 
+/**
+ * Represents the part of the GUI that manages and displays the tiles.
+ *
+ * @author Edouard Mignan (345875)
+ */
 public final class BaseMapManager {
     private final TileManager tm;
     private final WaypointsManager wpm;
@@ -29,7 +34,7 @@ public final class BaseMapManager {
     private static final int TILE_LENGTH = 256;
 
     /**
-     * Represents the part of the GUI that displays the map.
+     * Creates a BaseMapManager to display the tiles on its pane.
      *
      * @param tileManager      the tile manager
      * @param waypointsManager the waypoints manager
